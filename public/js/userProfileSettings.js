@@ -171,7 +171,14 @@ class UserProfileSettingsManager {
         // Full name
         const fullNameDisplay = document.getElementById('user-fullname-display');
         if (fullNameDisplay) {
-            fullNameDisplay.textContent = this.currentUser.fullName || 'Sin nombre';
+            if (window.verificationSystem && this.currentUser.email) {
+                fullNameDisplay.innerHTML = window.verificationSystem.generateVerifiedDisplayName(this.currentUser, { 
+                    isProfileModal: true 
+                });
+                fullNameDisplay.setAttribute('data-user-email', this.currentUser.email);
+            } else {
+                fullNameDisplay.textContent = this.currentUser.fullName || 'Sin nombre';
+            }
         }
 
         // Email
@@ -540,7 +547,13 @@ class UserProfileSettingsManager {
                 // Update name in sidebar
                 const currentUserNameElement = document.getElementById('current-user-name');
                 if (currentUserNameElement) {
-                    currentUserNameElement.textContent = newValue;
+                    if (window.verificationSystem && this.currentUser.email) {
+                        const updatedUser = { ...this.currentUser, fullName: newValue };
+                        currentUserNameElement.innerHTML = window.verificationSystem.generateVerifiedDisplayName(updatedUser);
+                        currentUserNameElement.setAttribute('data-user-email', this.currentUser.email);
+                    } else {
+                        currentUserNameElement.textContent = newValue;
+                    }
                 }
                 
                 // Update name in any profile modals that might be open

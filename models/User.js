@@ -20,7 +20,10 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true,
+        required: function() {
+            // Password is not required if user has Google ID (OAuth user)
+            return !this.googleId;
+        },
         minlength: 6
     },
     fullName: {
@@ -123,7 +126,16 @@ const userSchema = new mongoose.Schema({
             type: Date,
             default: Date.now
         }
-    }]
+    }],
+    googleId: {
+        type: String,
+        unique: true,
+        sparse: true // Allows null values and only enforces uniqueness on non-null values
+    },
+    isVerified: {
+        type: Boolean,
+        default: false
+    }
 }, {
     timestamps: true
 });
@@ -134,7 +146,8 @@ userSchema.index({ 'contacts.user': 1 });
 
 // Hash password before saving
 userSchema.pre('save', async function(next) {
-    if (!this.isModified('password')) return next();
+    // Skip hashing if password is not modified or doesn't exist (Google OAuth users)
+    if (!this.isModified('password') || !this.password) return next();
     
     try {
         const salt = await bcrypt.genSalt(12);

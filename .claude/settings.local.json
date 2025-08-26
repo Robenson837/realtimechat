@@ -18,7 +18,9 @@
       "Bash(taskkill:*)",
       "Bash(npm run dev:*)",
       "Bash(npm uninstall:*)",
-      "Bash(tasklist:*)"
+      "Bash(tasklist:*)",
+      "Bash(del test-email.js)",
+      "Bash(timeout:*)"
     ],
     "deny": [],
     "ask": []

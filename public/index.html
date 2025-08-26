@@ -18,6 +18,7 @@
     <link rel="stylesheet" href="css/touch-scroll.css">
     <link rel="stylesheet" href="css/language-selector.css">
     <link rel="stylesheet" href="css/menu-language.css">
+    <link rel="stylesheet" href="css/verification.css">
     <meta name="theme-color" content="#4f46e5">
     <meta name="description" content="VigiChat - Aplicación de mensajería avanzada con funciones de vigilancia y tiempo real">
     <meta name="keywords" content="chat, mensajería, vigilancia, tiempo real, seguridad">
@@ -70,6 +71,24 @@
                     <i class="fas fa-arrow-right icon-slide"></i>
                 </button>
             </form>
+            
+            <!-- Alternative Auth Methods -->
+            <div class="auth-alternatives">
+                <div class="divider">
+                    <span>o</span>
+                </div>
+                <div class="alt-auth-buttons">
+                    <button type="button" class="alt-auth-btn google-auth-btn" id="google-auth-btn">
+                        <i class="fab fa-google"></i>
+                        <span>Google</span>
+                    </button>
+                    <button type="button" class="alt-auth-btn magic-link-btn" id="magic-link-btn">
+                        <i class="fas fa-key"></i>
+                        <span>Iniciar con OTP</span>
+                    </button>
+                </div>
+            </div>
+            
             <div class="auth-footer">
                 <p>¿No tienes cuenta? <a href="#" id="show-register">Regístrate aquí</a></p>
                 <p><a href="#" id="show-forgot-password">¿Olvidaste tu contraseña?</a></p>
@@ -208,6 +227,31 @@
                 <span>Iniciar sesión</span>
                 <i class="fas fa-arrow-right"></i>
             </button>
+        </div>
+
+        <!-- Magic Link Form -->
+        <div id="magic-link-form" class="auth-form hidden">
+            <div class="auth-header">
+                <div class="logo">
+                    <i class="fas fa-comments"></i>
+                    <span>VigiChat</span>
+                </div>
+                <h2>Iniciar con OTP</h2>
+                <p>Ingresa tu correo y te enviaremos un código OTP para iniciar sesión sin contraseña</p>
+            </div>
+            <form id="magic-link-form-element">
+                <div class="form-group">
+                    <input type="email" id="magic-link-email" placeholder="Correo electrónico" required>
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <button type="submit" class="auth-button">
+                    <span>Enviar OTP</span>
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+            <div class="auth-footer">
+                <p><a href="#" id="back-to-login-from-magic">← Volver al inicio de sesión</a></p>
+            </div>
         </div>
     </div>
 
@@ -1327,7 +1371,6 @@
     <!-- ULTRA-FAST MESSAGING SYSTEM SCRIPTS -->
     <script src="/socket.io/socket.io.js"></script>
     <script src="js/utils.js"></script>
-    <script src="js/directClickFix.js"></script> <!-- Direct fix for non-working clicks -->
     <script src="js/touch-scroll-handler.js"></script>
     <script src="js/welcomeScreenManager.js"></script>
     <script src="js/autoResizeInput.js"></script>
@@ -1537,8 +1580,10 @@
     <script src="js/languageSelector.js"></script>
     <script src="js/i18n-init.js"></script>
     <script src="js/intelligentPhotoCrop.js"></script>
+    <script src="js/verificationSystem.js"></script>
     <script src="js/mobileNavigation.js"></script>
     <script src="js/app.js"></script>
+    
     
 </body>
 </html>

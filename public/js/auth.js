@@ -69,6 +69,22 @@ class AuthManager {
             this.showLoginForm();
         });
 
+        // Alternative auth buttons
+        Utils.$('#google-auth-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            this.handleGoogleAuth();
+        });
+
+        Utils.$('#magic-link-btn').addEventListener('click', (e) => {
+            e.preventDefault();
+            this.showMagicLinkForm();
+        });
+
+        Utils.$('#back-to-login-from-magic').addEventListener('click', (e) => {
+            e.preventDefault();
+            this.showLoginForm();
+        });
+
         // Form submissions
         Utils.$('#login-form-element').addEventListener('submit', (e) => {
             e.preventDefault();
@@ -90,6 +106,11 @@ class AuthManager {
             this.handleResetPassword();
         });
 
+        Utils.$('#magic-link-form-element').addEventListener('submit', (e) => {
+            e.preventDefault();
+            this.handleMagicLink();
+        });
+
         // Password visibility toggles
         Utils.$$('.password-toggle').forEach(toggle => {
             toggle.addEventListener('click', (e) => {
@@ -105,8 +126,26 @@ class AuthManager {
         // Real-time validation
         this.setupRealTimeValidation();
         
-        // Check for reset token in URL
-        this.checkResetToken();
+        // Check URL parameters to determine the type of authentication
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const magicLogin = urlParams.get('magic_login');
+        const googleLogin = urlParams.get('google_login');
+        
+        // Only check reset token if there's no other auth flow in progress
+        if (!token || (!magicLogin && !googleLogin)) {
+            this.checkResetToken();
+        }
+        
+        // Check for magic login token in URL
+        if (token && magicLogin === 'success') {
+            this.checkMagicLogin();
+        }
+        
+        // Check for Google login token in URL
+        if (token && googleLogin === 'success') {
+            this.checkGoogleLogin();
+        }
     }
 
     setupRealTimeValidation() {
@@ -527,8 +566,18 @@ class AuthManager {
         Utils.$('#password-reset-success').classList.remove('hidden');
     }
 
+    showMagicLinkForm() {
+        this.hideAllForms();
+        Utils.$('#magic-link-form').classList.remove('hidden');
+        
+        // Focus email input
+        setTimeout(() => {
+            Utils.$('#magic-link-email').focus();
+        }, 100);
+    }
+
     hideAllForms() {
-        const forms = ['login-form', 'register-form', 'forgot-password-form', 'reset-password-form', 'password-reset-success'];
+        const forms = ['login-form', 'register-form', 'forgot-password-form', 'reset-password-form', 'password-reset-success', 'magic-link-form'];
         forms.forEach(formId => {
             const form = Utils.$(`#${formId}`);
             if (form) {
@@ -538,26 +587,37 @@ class AuthManager {
     }
 
     async checkAuthStatus() {
+        // Check URL parameters first for magic login or Google login
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const magicLogin = urlParams.get('magic_login');
+        const googleLogin = urlParams.get('google_login');
+        
+        // If we have login tokens in URL, skip normal auth check and let the specific handlers deal with it
+        if (token && (magicLogin === 'success' || googleLogin === 'success')) {
+            console.log('Processing authentication from URL parameters...');
+            return; // Let checkMagicLogin or checkGoogleLogin handle this
+        }
+        
         // Fix any token inconsistencies before checking auth
         const tokensCleared = Utils.Storage.fixTokenInconsistency();
         if (tokensCleared) {
             console.log('Token inconsistency fixed, user will need to re-login');
         }
         
-        const token = Utils.Storage.get('authToken');
+        const storedToken = Utils.Storage.get('authToken');
         const user = Utils.Storage.get('currentUser');
         
         // Check if accessing with a shared session URL from a different device
-        const urlParams = new URLSearchParams(window.location.search);
         const sharedSessionToken = urlParams.get('session');
         
-        if (sharedSessionToken && (!token || !user)) {
+        if (sharedSessionToken && (!storedToken || !user)) {
             // Show device verification modal for shared session
             this.showDeviceVerificationModal(sharedSessionToken);
             return;
         }
         
-        if (!token || !user) {
+        if (!storedToken || !user) {
             this.showAuth();
             return;
         }
@@ -1044,11 +1104,36 @@ class AuthManager {
 
             await API.Auth.forgotPassword(email);
             
-            Utils.Notifications.success('Se ha enviado un enlace de recuperación a tu correo electrónico', 4000);
+            // Hide form elements (input and button)
+            const formElement = Utils.$('#forgot-password-form-element');
+            const authFooter = Utils.$('#forgot-password-form .auth-footer');
             
-            // Show success message
-            Utils.$('#forgot-password-form .auth-header p').innerHTML = 
-                `<strong>¡Enlace enviado!</strong><br>Revisa tu correo electrónico y sigue las instrucciones para restablecer tu contraseña.`;
+            if (formElement) formElement.style.display = 'none';
+            if (authFooter) authFooter.style.display = 'none';
+            
+            // Show success state with checkmark and green background
+            const authHeader = Utils.$('#forgot-password-form .auth-header');
+            if (authHeader) {
+                authHeader.innerHTML = `
+                    <div class="logo">
+                        <i class="fas fa-comments"></i>
+                        <span>VigiChat</span>
+                    </div>
+                    <h2>Recuperar contraseña</h2>
+                    <div class="forgot-password-success">
+                        <div class="success-checkmark">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h3>¡Enlace enviado!</h3>
+                        <p>Revisa tu correo electrónico y sigue las instrucciones para restablecer tu contraseña.</p>
+                        <p class="email-sent-to">Instrucciones enviadas a: <strong>${email}</strong></p>
+                        <button class="auth-button return-login-btn" onclick="window.AuthManager.showLoginForm()">
+                            <span>Volver al inicio de sesión</span>
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                    </div>
+                `;
+            }
 
         } catch (error) {
             console.error('Forgot password error:', error);
@@ -1071,7 +1156,6 @@ class AuthManager {
             }
             
             Utils.Notifications.error(message, 4000);
-        } finally {
             this.setButtonLoading(submitBtn, false, 'Enviar enlace');
         }
     }
@@ -1154,6 +1238,133 @@ class AuthManager {
                 console.error('Token verification error:', error);
                 
                 Utils.Notifications.error('El enlace de restablecimiento ha expirado o no es válido', 4500);
+                
+                // Clean URL and show login
+                window.history.replaceState({}, document.title, window.location.pathname);
+                this.showLoginForm();
+            }
+        }
+    }
+
+    async checkMagicLogin() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const magicLogin = urlParams.get('magic_login');
+
+        if (token && magicLogin === 'success') {
+            try {
+                // Store the token and user data
+                Utils.Storage.set('authToken', token);
+                
+                // Set the token in API for immediate use
+                if (window.API && window.API.api) {
+                    window.API.api.setToken(token);
+                }
+                
+                // Get user profile with the token
+                const response = await API.Users.getProfile();
+                if (response && response.data) {
+                    this.currentUser = response.data;
+                    Utils.Storage.set('currentUser', this.currentUser);
+                    
+                    // Show success message
+                    Utils.Notifications.success('¡Inicio de sesión con OTP exitoso!', 3000);
+                    
+                    // Clean URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    
+                    // Initialize app
+                    this.showApp();
+                    
+                    // Initialize other modules
+                    if (window.Chat) {
+                        window.Chat.initialize(this.currentUser);
+                    }
+                    if (window.SocketManager) {
+                        window.SocketManager.connect();
+                    }
+                    if (window.contactsManager) {
+                        window.contactsManager.loadUserData();
+                    }
+                } else {
+                    throw new Error('No se pudo obtener los datos del usuario');
+                }
+                
+            } catch (error) {
+                console.error('Magic login error:', error);
+                
+                // Clear invalid token data
+                Utils.Storage.clear();
+                
+                Utils.Notifications.error('Error al procesar el inicio de sesión con OTP', 4500);
+                
+                // Clean URL and show login
+                window.history.replaceState({}, document.title, window.location.pathname);
+                this.showLoginForm();
+            }
+        }
+    }
+
+    async checkGoogleLogin() {
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const googleLogin = urlParams.get('google_login');
+        const error = urlParams.get('error');
+
+        if (error === 'google_auth_failed') {
+            Utils.Notifications.error('Error en la autenticación con Google. Intenta nuevamente.', 4500);
+            // Clean URL
+            window.history.replaceState({}, document.title, window.location.pathname);
+            this.showLoginForm();
+            return;
+        }
+
+        if (token && googleLogin === 'success') {
+            try {
+                // Store the token and user data
+                Utils.Storage.set('authToken', token);
+                
+                // Set the token in API for immediate use
+                if (window.API && window.API.api) {
+                    window.API.api.setToken(token);
+                }
+                
+                // Get user profile with the token
+                const response = await API.Users.getProfile();
+                if (response && response.data) {
+                    this.currentUser = response.data;
+                    Utils.Storage.set('currentUser', this.currentUser);
+                    
+                    // Show success message
+                    Utils.Notifications.success('¡Inicio de sesión con Google exitoso!', 3000);
+                    
+                    // Clean URL
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                    
+                    // Initialize app
+                    this.showApp();
+                    
+                    // Initialize other modules
+                    if (window.Chat) {
+                        window.Chat.initialize(this.currentUser);
+                    }
+                    if (window.SocketManager) {
+                        window.SocketManager.connect();
+                    }
+                    if (window.contactsManager) {
+                        window.contactsManager.loadUserData();
+                    }
+                } else {
+                    throw new Error('No se pudo obtener los datos del usuario');
+                }
+                
+            } catch (error) {
+                console.error('Google login error:', error);
+                
+                // Clear invalid token data
+                Utils.Storage.clear();
+                
+                Utils.Notifications.error('Error al procesar el inicio de sesión con Google', 4500);
                 
                 // Clean URL and show login
                 window.history.replaceState({}, document.title, window.location.pathname);
@@ -1373,6 +1584,92 @@ class AuthManager {
         
         // If user canceled verification, redirect to normal auth
         this.showAuth();
+    }
+
+    async handleMagicLink() {
+        const email = Utils.$('#magic-link-email').value.trim();
+        const submitBtn = Utils.$('#magic-link-form-element').querySelector('button[type="submit"]');
+
+        if (!email) {
+            Utils.Notifications.error('Por favor ingresa tu correo electrónico', 3500);
+            return;
+        }
+
+        if (!Utils.validateEmail(email)) {
+            Utils.Notifications.error('Por favor ingresa un email válido', 3500);
+            return;
+        }
+
+        try {
+            this.setButtonLoading(submitBtn, true, 'Enviando...');
+
+            await API.Auth.sendMagicLink(email);
+            
+            // Hide form elements (input and button)
+            const formElement = Utils.$('#magic-link-form-element');
+            const authFooter = Utils.$('#magic-link-form .auth-footer');
+            
+            if (formElement) formElement.style.display = 'none';
+            if (authFooter) authFooter.style.display = 'none';
+            
+            // Show success state with checkmark
+            const authHeader = Utils.$('#magic-link-form .auth-header');
+            if (authHeader) {
+                authHeader.innerHTML = `
+                    <div class="logo">
+                        <i class="fas fa-comments"></i>
+                        <span>VigiChat</span>
+                    </div>
+                    <h2>Enlace Mágico</h2>
+                    <div class="forgot-password-success">
+                        <div class="success-checkmark">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <h3>¡OTP enviado!</h3>
+                        <p>Revisa tu correo electrónico y haz clic en el enlace para iniciar sesión automáticamente.</p>
+                        <p class="email-sent-to">Código OTP enviado a: <strong>${email}</strong></p>
+                        <button class="auth-button return-login-btn" onclick="window.AuthManager.showLoginForm()">
+                            <span>Volver al inicio de sesión</span>
+                            <i class="fas fa-arrow-left"></i>
+                        </button>
+                    </div>
+                `;
+            }
+
+        } catch (error) {
+            console.error('Magic link error:', error);
+            
+            let message = 'Error al procesar la solicitud';
+            
+            if (error instanceof API.ApiError) {
+                switch (error.status) {
+                    case 404:
+                        message = 'No existe una cuenta asociada a este correo electrónico';
+                        break;
+                    case 500:
+                        message = 'Error al enviar el código OTP. Verifica tu conexión e intenta nuevamente';
+                        break;
+                    default:
+                        message = error.message || 'Error al procesar la solicitud';
+                }
+            } else {
+                message = 'Error de conexión. Verifica tu conexión a internet e intenta nuevamente';
+            }
+            
+            Utils.Notifications.error(message, 4000);
+            this.setButtonLoading(submitBtn, false, 'Enviar OTP');
+        }
+    }
+
+    async handleGoogleAuth() {
+        try {
+            // Redirect to Google OAuth
+            window.location.href = '/api/auth/google';
+            
+        } catch (error) {
+            console.error('Google auth error:', error);
+            Utils.Notifications.error('Error al iniciar autenticación con Google', 4000);
+        }
     }
 
     setupDynamicPasswordToggle() {

@@ -292,6 +292,10 @@ const Auth = {
         return api.get(`/auth/verify-reset-token/${token}`);
     },
 
+    async sendMagicLink(email) {
+        return api.post('/auth/magic-link', { email });
+    },
+
     isAuthenticated() {
         return !!api.token;
     }

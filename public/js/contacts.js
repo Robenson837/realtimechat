@@ -513,8 +513,11 @@ class ContactsManager {
                                      style="position: absolute; bottom: -2px; right: -2px; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; background: ${user.status === 'online' ? '#10b981' : '#6b7280'};"></div>
                             </div>
                             <div class="user-info" style="flex: 1; min-width: 0;">
-                                <div class="user-name" style="font-weight: 600; font-size: 14px; color: #0f172a; margin-bottom: 4px; word-wrap: break-word;">
-                                    ${Utils.escapeHtml(user.fullName || user.username)}
+                                <div class="user-name" style="font-weight: 600; font-size: 14px; color: #0f172a; margin-bottom: 4px; word-wrap: break-word;" data-user-email="${user.email || ''}">
+                                    ${window.verificationSystem ? 
+                                        window.verificationSystem.generateVerifiedDisplayName(user) : 
+                                        Utils.escapeHtml(user.fullName || user.username)
+                                    }
                                 </div>
                                 <div class="user-details" style="display: flex; align-items: center; gap: 8px; flex-wrap: wrap;">
                                     <span class="username" style="font-size: 12px; color: #64748b; background: #f1f5f9; padding: 2px 6px; border-radius: 4px;">
@@ -645,7 +648,12 @@ class ContactsManager {
                     <div class="status-indicator ${user.status}"></div>
                 </div>
                 <div class="user-info">
-                    <div class="user-name">${user.fullName}</div>
+                    <div class="user-name" data-user-email="${user.email || ''}">
+                        ${window.verificationSystem ? 
+                            window.verificationSystem.generateVerifiedDisplayName(user) : 
+                            user.fullName
+                        }
+                    </div>
                     <div class="username">@${user.username}</div>
                 </div>
                 <button class="change-user-btn" data-clear-user="true">
@@ -799,6 +807,14 @@ class ContactsManager {
                 // Cache the fresh data
                 this.cacheContacts(data.data);
                 this.displayContacts(data.data);
+                
+                // Aplicar verificación después de mostrar contactos
+                setTimeout(() => {
+                    if (window.verificationSystem) {
+                        console.log('🔵 Aplicando verificación a contactos del ContactsManager...');
+                        window.verificationSystem.updateAllUserElements();
+                    }
+                }, 300);
             } else {
                 this.showContactsErrorState(contactsList);
             }
@@ -814,6 +830,14 @@ class ContactsManager {
                 this.displayContacts(cachedContacts, true);
                 // Show a subtle warning about using cached data
                 this.showCacheWarning();
+                
+                // Aplicar verificación a contactos desde caché
+                setTimeout(() => {
+                    if (window.verificationSystem) {
+                        console.log('🔵 Aplicando verificación a contactos desde caché...');
+                        window.verificationSystem.updateAllUserElements();
+                    }
+                }, 300);
             } else if (contactsList) {
                 this.showContactsErrorState(contactsList);
             }
@@ -1104,11 +1128,15 @@ class ContactsManager {
 
             return `
                 <div class="contact-item" data-user-id="${contact._id}">
-                    <div class="contact-avatar-container" data-avatar-click="${contact._id}" data-is-current="${isCurrentUser}">
+                    <div class="contact-avatar-container" data-avatar-click="${contact._id}" data-is-current="${isCurrentUser}" data-user-email="${email}">
                         <img src="${contact.avatar || '/images/user-placeholder-40.svg'}" 
                              alt="${fullName}" 
                              class="contact-avatar"
                              onerror="this.src='/images/user-placeholder-40.svg'">
+                        ${window.verificationSystem && window.verificationSystem.isUserVerified(contact) ? 
+                            window.verificationSystem.generateProfilePhotoBadge() : 
+                            ''
+                        }
                         ${statusClass === 'online' ? 
                             `<div class="status-indicator ${statusClass}" title="${tooltipText}"></div>` :
                             statusClass === 'away' ? 
@@ -1119,7 +1147,12 @@ class ContactsManager {
                     </div>
                     <div class="contact-info" data-view-profile="${contact._id}">
                         <div class="contact-details">
-                            <div class="contact-name" title="${Utils.escapeHtml(fullName)}">${Utils.escapeHtml(fullName)}</div>
+                            <div class="contact-name" title="${Utils.escapeHtml(fullName)}" data-user-email="${email}">
+                                ${window.verificationSystem && email ? 
+                                    window.verificationSystem.generateVerifiedDisplayName(contact) : 
+                                    Utils.escapeHtml(fullName)
+                                }
+                            </div>
                             <div class="contact-username" title="@${Utils.escapeHtml(username)}">@${Utils.escapeHtml(username)}</div>
                             ${email ? `<div class="contact-email" title="${Utils.escapeHtml(email)}">${Utils.escapeHtml(email)}</div>` : ''}
                         </div>

@@ -10,6 +10,8 @@ const compression = require('compression');
 const cookieParser = require('cookie-parser');
 const cron = require('node-cron');
 const path = require('path');
+const session = require('express-session');
+const passport = require('passport');
 
 // Try MongoDB routes first, fallback if needed
 let authRoutes, userRoutes, messageRoutes, contactRoutes, uploadRoutes, sessionAuthRoutes;
@@ -173,6 +175,21 @@ const limiter = rateLimit({
     message: 'Too many requests from this IP, please try again later.'
 });
 app.use('/api/', limiter);
+
+// Configure session for Passport
+app.use(session({
+    secret: process.env.SESSION_SECRET || 'your-session-secret-change-in-production',
+    resave: false,
+    saveUninitialized: false,
+    cookie: {
+        secure: process.env.NODE_ENV === 'production', // Use secure cookies in production
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
+}));
+
+// Initialize Passport
+app.use(passport.initialize());
+app.use(passport.session());
 
 // Serve static files
 app.use(express.static(path.join(__dirname, 'public')));

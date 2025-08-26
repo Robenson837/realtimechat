@@ -1755,6 +1755,14 @@ class ChatManager {
       });
 
       this.renderContacts();
+      
+      // Aplicar verificación después de renderizar contactos
+      setTimeout(() => {
+        if (window.verificationSystem) {
+          console.log('🔵 Aplicando verificación a contactos cargados...');
+          window.verificationSystem.updateAllUserElements();
+        }
+      }, 200);
     } catch (error) {
       console.error("Error loading contacts:", error);
       API.handleApiError(error);
@@ -2640,7 +2648,12 @@ class ChatManager {
                  alt="${contact.fullName}" class="contact-img">
             <div class="contact-info">
                 <div class="contact-top-row">
-                    <h3 class="contact-name">${Utils.escapeHtml(contact.fullName)}</h3>
+                    <h3 class="contact-name" data-user-email="${contact.email || ''}">
+                        ${window.verificationSystem ? 
+                            window.verificationSystem.generateVerifiedDisplayName(contact) : 
+                            Utils.escapeHtml(contact.fullName)
+                        }
+                    </h3>
                     <div class="status-indicator ${contact.status}"></div>
                 </div>
                 <div class="contact-status">
@@ -2715,7 +2728,13 @@ class ChatManager {
       }
 
       if (name) {
-        name.textContent = contactName;
+        // Aplicar verificación si está disponible el sistema
+        if (window.verificationSystem && contactData && contactData.email) {
+          name.innerHTML = window.verificationSystem.generateVerifiedDisplayName(contactData);
+          name.setAttribute('data-user-email', contactData.email);
+        } else {
+          name.textContent = contactName;
+        }
       }
 
       // Update status with persistent display - always show En línea OR última conexión
@@ -6427,7 +6446,9 @@ class ChatManager {
   showMessageNotification(message) {
     try {
       const senderName =
-        message.sender.fullName || message.sender.username || "Usuario";
+        window.verificationSystem && message.sender.email ? 
+            window.verificationSystem.generateVerifiedDisplayName(message.sender).replace(/<[^>]*>/g, '').trim() : 
+            (message.sender.fullName || message.sender.username || "Usuario");
       const content = message.content?.text || "Nuevo mensaje";
 
       const notification = new Notification(`${senderName}`, {
@@ -9516,7 +9537,9 @@ class ChatManager {
                 <div class="reply-header" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
                     <div style="display: flex; align-items: center; gap: 6px;">
                         <i class="fas fa-reply" style="color: #4f46e5; font-size: 12px;"></i>
-                        <span style="font-size: 12px; color: #4f46e5; font-weight: 600;">Respondiendo a ${message.sender.fullName || message.sender.username}</span>
+                        <span style="font-size: 12px; color: #4f46e5; font-weight: 600;">Respondiendo a ${window.verificationSystem && message.sender.email ? 
+                            window.verificationSystem.generateVerifiedDisplayName(message.sender, { badgeSize: 'small' }).replace(/<[^>]*>/g, '').trim() : 
+                            (message.sender.fullName || message.sender.username)}</span>
                     </div>
                     <button class="close-reply-btn" style="background: none; border: none; cursor: pointer; color: #64748b; font-size: 16px; padding: 2px;">×</button>
                 </div>
@@ -15821,7 +15844,9 @@ class ForwardManager {
   showMessagePreview(message) {
     if (!this.messagePreview) return;
 
-    const senderName = message.sender.fullName || message.sender.username;
+    const senderName = window.verificationSystem && message.sender.email ? 
+        window.verificationSystem.generateVerifiedDisplayName(message.sender).replace(/<[^>]*>/g, '').trim() : 
+        (message.sender.fullName || message.sender.username);
     const messageText = Utils.truncateText(message.content.text, 100);
 
     this.messagePreview.innerHTML = `
@@ -15930,7 +15955,12 @@ class ForwardManager {
                         <div class="status-indicator ${statusClass}"></div>
                     </div>
                     <div class="contact-info">
-                        <div class="contact-name">${Utils.escapeHtml(contact.fullName || contact.username)}</div>
+                        <div class="contact-name" data-user-email="${contact.email || ''}">
+                            ${window.verificationSystem ? 
+                                window.verificationSystem.generateVerifiedDisplayName(contact) : 
+                                Utils.escapeHtml(contact.fullName || contact.username)
+                            }
+                        </div>
                         <div class="contact-username">@${Utils.escapeHtml(contact.username)}</div>
                     </div>
                     <div class="contact-action">

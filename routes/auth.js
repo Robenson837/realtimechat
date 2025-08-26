@@ -5,8 +5,71 @@ const { getModels } = require('../models');
 const { generateToken } = require('../middleware/auth');
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const passport = require('passport');
+const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
 const router = express.Router();
+
+// Configure Google OAuth Strategy
+passport.use(new GoogleStrategy({
+    clientID: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    callbackURL: process.env.GOOGLE_CALLBACK_URL || "/api/auth/google/callback"
+}, async (accessToken, refreshToken, profile, done) => {
+    try {
+        const { User } = getModels();
+        
+        // Check if user already exists with this Google ID
+        let user = await User.findOne({ googleId: profile.id });
+        
+        if (user) {
+            // User exists, return user
+            return done(null, user);
+        }
+        
+        // Check if user exists with same email
+        const existingUser = await User.findOne({ email: profile.emails[0].value });
+        
+        if (existingUser) {
+            // Link Google account to existing user
+            existingUser.googleId = profile.id;
+            await existingUser.save();
+            return done(null, existingUser);
+        }
+        
+        // Create new user
+        const newUser = new User({
+            googleId: profile.id,
+            fullName: profile.displayName,
+            email: profile.emails[0].value,
+            username: await generateUsernameFromEmail(profile.emails[0].value),
+            avatar: profile.photos[0]?.value,
+            isVerified: true // Google accounts are pre-verified
+        });
+        
+        await newUser.save();
+        return done(null, newUser);
+        
+    } catch (error) {
+        console.error('Google OAuth error:', error);
+        return done(error, null);
+    }
+}));
+
+// Passport serialization
+passport.serializeUser((user, done) => {
+    done(null, user._id);
+});
+
+passport.deserializeUser(async (id, done) => {
+    try {
+        const { User } = getModels();
+        const user = await User.findById(id);
+        done(null, user);
+    } catch (error) {
+        done(error, null);
+    }
+});
 
 // Password reset tokens storage (in production, use Redis or database with TTL)
 const resetTokens = new Map(); // email -> { token, expires, userId }
@@ -54,6 +117,36 @@ const generateUsername = async (fullName) => {
     }
     
     return username + counter;
+};
+
+const generateUsernameFromEmail = async (email) => {
+    const { User } = getModels();
+    
+    // Extract name part from email (before @)
+    const baseName = email.split('@')[0].replace(/[^a-z0-9]/gi, '').toLowerCase();
+    
+    if (baseName.length < 3) {
+        return generateUsername('user');
+    }
+    
+    // Find unique username
+    let username = baseName;
+    let counter = Math.floor(Math.random() * 9999) + 1;
+    
+    while (true) {
+        const existingUser = await User.findOne({ username });
+        if (!existingUser) {
+            return username;
+        }
+        
+        username = baseName + counter;
+        counter++;
+        
+        // Prevent infinite loop
+        if (counter > 99999) {
+            return baseName + Date.now();
+        }
+    }
 };
 
 // Generate secure reset token
@@ -154,6 +247,72 @@ const sendPasswordResetEmail = async (email, token, fullName = '') => {
     } catch (error) {
         console.error('❌ Email sending failed:', error);
         throw new Error('Failed to send password reset email');
+    }
+};
+
+const sendMagicLinkEmail = async (email, token, fullName = '') => {
+    // The magic link should point to the backend server, not the frontend
+    const serverUrl = process.env.SERVER_URL || 'http://localhost:3000';
+    const magicLink = `${serverUrl}/api/auth/magic-login/${token}`;
+    
+    try {
+        const transporter = await createEmailTransporter();
+        
+        const mailOptions = {
+            from: process.env.EMAIL_FROM || '"VigiChat" <noreply@vigichat.com>',
+            to: email,
+            subject: 'Tu código OTP para iniciar sesión - VigiChat',
+            html: `
+                <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+                    <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+                        <div style="text-align: center; margin-bottom: 30px;">
+                            <h1 style="color: #4f46e5; margin: 0; font-size: 28px;">💬 VigiChat</h1>
+                        </div>
+                        <h2 style="color: #333; margin-bottom: 20px;">Iniciar sesión con OTP</h2>
+                        <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">Hola${fullName ? ' ' + fullName : ''},</p>
+                        <p style="color: #666; line-height: 1.6; margin-bottom: 30px;">
+                            Recibiste este correo porque solicitaste iniciar sesión con un código OTP en VigiChat.
+                            Haz clic en el botón de abajo para iniciar sesión automáticamente:
+                        </p>
+                        <div style="text-align: center; margin: 30px 0;">
+                            <a href="${magicLink}" 
+                               style="background-color: #10b981; color: white; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+                                🔐 Iniciar Sesión con OTP
+                            </a>
+                        </div>
+                        <p style="color: #666; line-height: 1.6; margin-bottom: 20px;">
+                            Si no puedes hacer clic en el botón, copia y pega este enlace en tu navegador:
+                        </p>
+                        <p style="background-color: #f5f5f5; padding: 15px; border-radius: 6px; word-break: break-all; font-family: monospace; font-size: 12px;">
+                            ${magicLink}
+                        </p>
+                        <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
+                            <p style="color: #999; font-size: 14px; margin-bottom: 10px;">⏰ Este enlace expira en 10 minutos por seguridad.</p>
+                            <p style="color: #999; font-size: 14px; margin-bottom: 10px;">🔒 Si no solicitaste este código, puedes ignorar este correo.</p>
+                            <p style="color: #999; font-size: 14px;">📧 Este es un correo automático, no responder.</p>
+                        </div>
+                    </div>
+                </div>
+            `,
+            text: `VigiChat - Iniciar sesión con OTP\n\nHola${fullName ? ' ' + fullName : ''},\n\nRecibiste este correo porque solicitaste iniciar sesión con un código OTP en VigiChat.\n\nHaz clic en este enlace para iniciar sesión automáticamente:\n${magicLink}\n\nEste enlace expira en 10 minutos por seguridad.\n\nSi no solicitaste este código, puedes ignorar este correo.\n\nVigiChat Team`
+        };
+
+        const info = await transporter.sendMail(mailOptions);
+        
+        console.log('✅ Magic link OTP email sent successfully');
+        console.log('Message ID:', info.messageId);
+        
+        // If using Ethereal, show preview URL
+        if (info.envelope && info.envelope.from && info.envelope.from.includes('ethereal')) {
+            console.log('📧 Preview URL:', nodemailer.getTestMessageUrl(info));
+            console.log('🔗 Magic Link:', magicLink);
+        }
+        
+        return { success: true, messageId: info.messageId };
+        
+    } catch (error) {
+        console.error('❌ Magic link email sending failed:', error);
+        throw new Error('Failed to send magic link email');
     }
 };
 
@@ -459,6 +618,159 @@ router.post('/forgot-password', authLimiter, [
     }
 });
 
+// Storage for magic link tokens (in production, use Redis or database with TTL)
+const magicLinkTokens = new Map(); // email -> { token, expires, userId }
+
+// @route   POST /api/auth/magic-link
+// @desc    Send magic link for passwordless login
+// @access  Public
+router.post('/magic-link', authLimiter, [
+    body('email')
+        .isEmail()
+        .normalizeEmail()
+        .withMessage('Please provide a valid email')
+], async (req, res) => {
+    try {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({
+                success: false,
+                message: 'Error de validación',
+                errors: errors.array()
+            });
+        }
+
+        const { email } = req.body;
+        const { User } = getModels();
+        const user = await User.findOne({ email });
+
+        // Check if user exists first
+        if (!user) {
+            return res.status(404).json({
+                success: false,
+                message: 'No existe una cuenta asociada a este correo electrónico'
+            });
+        }
+
+        // Generate magic link token
+        const token = generateResetToken(); // Reuse the same token generation function
+        const expires = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes for magic link
+
+        // Store token
+        magicLinkTokens.set(email, {
+            token,
+            expires,
+            userId: user._id.toString()
+        });
+
+        // Send magic link email (using same email service as password reset)
+        try {
+            await sendMagicLinkEmail(email, token, user.fullName);
+            
+            // Clean up expired tokens periodically
+            setTimeout(() => {
+                if (magicLinkTokens.has(email) && magicLinkTokens.get(email).token === token) {
+                    magicLinkTokens.delete(email);
+                }
+            }, 10 * 60 * 1000);
+
+            res.json({
+                success: true,
+                message: 'Se ha enviado un código OTP a tu correo electrónico'
+            });
+        } catch (emailError) {
+            console.error('Magic link email sending failed:', emailError);
+            
+            // Clean up token if email failed
+            magicLinkTokens.delete(email);
+            
+            res.status(500).json({
+                success: false,
+                message: 'Error al enviar el código OTP. Intenta nuevamente'
+            });
+        }
+
+    } catch (error) {
+        console.error('Magic link error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error processing magic link request'
+        });
+    }
+});
+
+// @route   GET /api/auth/magic-login/:token
+// @desc    Authenticate user with magic link token
+// @access  Public
+router.get('/magic-login/:token', async (req, res) => {
+    try {
+        const { token } = req.params;
+        
+        if (!token) {
+            return res.status(400).json({
+                success: false,
+                message: 'Token es requerido'
+            });
+        }
+
+        // Find token data
+        let tokenData = null;
+        let userEmail = null;
+        
+        for (const [email, data] of magicLinkTokens.entries()) {
+            if (data.token === token) {
+                tokenData = data;
+                userEmail = email;
+                break;
+            }
+        }
+
+        if (!tokenData) {
+            return res.status(400).json({
+                success: false,
+                message: 'Token inválido o expirado'
+            });
+        }
+
+        // Check if token has expired
+        if (new Date() > tokenData.expires) {
+            magicLinkTokens.delete(userEmail);
+            return res.status(400).json({
+                success: false,
+                message: 'El enlace mágico ha expirado'
+            });
+        }
+
+        // Get user
+        const { User } = getModels();
+        const user = await User.findById(tokenData.userId);
+        if (!user) {
+            magicLinkTokens.delete(userEmail);
+            return res.status(404).json({
+                success: false,
+                message: 'Usuario no encontrado'
+            });
+        }
+
+        // Generate JWT token for the user
+        const jwtToken = generateToken(user._id);
+
+        // Clean up magic link token
+        magicLinkTokens.delete(userEmail);
+
+        // Redirect to frontend with token as query parameter
+        const frontendUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+        res.redirect(`${frontendUrl}?token=${jwtToken}&magic_login=success`);
+
+    } catch (error) {
+        console.error('Magic login error:', error);
+        res.status(500).json({
+            success: false,
+            message: 'Server error processing magic login'
+        });
+    }
+});
+
 // @route   POST /api/auth/reset-password
 // @desc    Reset password with token
 // @access  Public
@@ -687,5 +999,35 @@ router.post('/create-test-user', async (req, res) => {
         });
     }
 });
+
+// @route   GET /api/auth/google
+// @desc    Initiate Google OAuth
+// @access  Public
+router.get('/google', 
+    passport.authenticate('google', { 
+        scope: ['profile', 'email'] 
+    })
+);
+
+// @route   GET /api/auth/google/callback
+// @desc    Google OAuth callback
+// @access  Public
+router.get('/google/callback', 
+    passport.authenticate('google', { failureRedirect: '/' }),
+    async (req, res) => {
+        try {
+            // Generate JWT token for the authenticated user
+            const token = generateToken(req.user._id);
+            
+            // Redirect to frontend with token
+            const frontendUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+            res.redirect(`${frontendUrl}?token=${token}&google_login=success`);
+            
+        } catch (error) {
+            console.error('Google callback error:', error);
+            res.redirect(`${process.env.CLIENT_URL || 'http://localhost:3000'}?error=google_auth_failed`);
+        }
+    }
+);
 
 module.exports = router;
