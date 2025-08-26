@@ -20,7 +20,8 @@
       "Bash(npm uninstall:*)",
       "Bash(tasklist:*)",
       "Bash(del test-email.js)",
-      "Bash(timeout:*)"
+      "Bash(timeout:*)",
+      "Bash(git add:*)"
     ],
     "deny": [],
     "ask": []

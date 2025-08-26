@@ -34,11 +34,14 @@ class ApiClient {
 
     // Set authentication token
     setToken(token) {
+        console.log('🔧 API: Setting token:', token ? token.substring(0, 20) + '...' : 'null');
         this.token = token;
         if (token) {
             Utils.Storage.set('authToken', token);
+            console.log('✅ API: Token set and stored in localStorage');
         } else {
             Utils.Storage.remove('authToken');
+            console.log('🗑️ API: Token removed from localStorage');
         }
     }
 
@@ -50,6 +53,9 @@ class ApiClient {
 
         if (this.token) {
             headers['Authorization'] = `Bearer ${this.token}`;
+            console.log('🔑 API: Adding Authorization header with token:', this.token.substring(0, 20) + '...');
+        } else {
+            console.warn('⚠️ API: No token available for Authorization header');
         }
 
         return headers;

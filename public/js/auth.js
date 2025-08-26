@@ -1252,16 +1252,32 @@ class AuthManager {
         const magicLogin = urlParams.get('magic_login');
 
         if (token && magicLogin === 'success') {
+            console.log('🔐 Processing magic login with JWT token...');
             try {
-                // Store the token and user data
-                Utils.Storage.set('authToken', token);
-                
-                // Set the token in API for immediate use
-                if (window.API && window.API.api) {
-                    window.API.api.setToken(token);
+                // Validate that the token looks like a JWT (has 3 parts separated by dots)
+                if (!token.includes('.') || token.split('.').length !== 3) {
+                    throw new Error('Token inválido - no es un JWT válido');
                 }
                 
+                // Store the token and user data
+                Utils.Storage.set('authToken', token);
+                console.log('📝 Magic login - Token stored in localStorage');
+                
+                // Set the token in API for immediate use
+                console.log('🔧 Magic login - Setting token in API client:', token.substring(0, 20) + '...');
+                if (window.API && window.API.client) {
+                    window.API.client.setToken(token);
+                    console.log('✅ Magic login - Token set in API client');
+                } else {
+                    console.warn('❌ Magic login - API not available');
+                    console.log('Available API properties:', window.API ? Object.keys(window.API) : 'API not found');
+                }
+                
+                // Small delay to ensure token is properly set
+                await new Promise(resolve => setTimeout(resolve, 200));
+                
                 // Get user profile with the token
+                console.log('🚀 Magic login - Making API call to get user profile...');
                 const response = await API.Users.getProfile();
                 if (response && response.data) {
                     this.currentUser = response.data;
@@ -1286,6 +1302,8 @@ class AuthManager {
                     if (window.contactsManager) {
                         window.contactsManager.loadUserData();
                     }
+                    
+                    console.log('✅ Magic login completed successfully');
                 } else {
                     throw new Error('No se pudo obtener los datos del usuario');
                 }
@@ -1296,7 +1314,14 @@ class AuthManager {
                 // Clear invalid token data
                 Utils.Storage.clear();
                 
-                Utils.Notifications.error('Error al procesar el inicio de sesión con OTP', 4500);
+                let errorMessage = 'Error al procesar el inicio de sesión con OTP';
+                if (error.message && error.message.includes('JWT')) {
+                    errorMessage = 'Token de autenticación inválido. Intenta iniciar sesión nuevamente.';
+                } else if (error.status === 401) {
+                    errorMessage = 'Token expirado. Solicita un nuevo código OTP.';
+                }
+                
+                Utils.Notifications.error(errorMessage, 4500);
                 
                 // Clean URL and show login
                 window.history.replaceState({}, document.title, window.location.pathname);
@@ -1320,16 +1345,32 @@ class AuthManager {
         }
 
         if (token && googleLogin === 'success') {
+            console.log('🔐 Processing Google login with JWT token...');
             try {
-                // Store the token and user data
-                Utils.Storage.set('authToken', token);
-                
-                // Set the token in API for immediate use
-                if (window.API && window.API.api) {
-                    window.API.api.setToken(token);
+                // Validate that the token looks like a JWT (has 3 parts separated by dots)
+                if (!token.includes('.') || token.split('.').length !== 3) {
+                    throw new Error('Token inválido - no es un JWT válido');
                 }
                 
+                // Store the token and user data
+                Utils.Storage.set('authToken', token);
+                console.log('📝 Google login - Token stored in localStorage');
+                
+                // Set the token in API for immediate use
+                console.log('🔧 Google login - Setting token in API client:', token.substring(0, 20) + '...');
+                if (window.API && window.API.client) {
+                    window.API.client.setToken(token);
+                    console.log('✅ Google login - Token set in API client');
+                } else {
+                    console.warn('❌ Google login - API not available');
+                    console.log('Available API properties:', window.API ? Object.keys(window.API) : 'API not found');
+                }
+                
+                // Small delay to ensure token is properly set
+                await new Promise(resolve => setTimeout(resolve, 200));
+                
                 // Get user profile with the token
+                console.log('🚀 Google login - Making API call to get user profile...');
                 const response = await API.Users.getProfile();
                 if (response && response.data) {
                     this.currentUser = response.data;
@@ -1354,6 +1395,8 @@ class AuthManager {
                     if (window.contactsManager) {
                         window.contactsManager.loadUserData();
                     }
+                    
+                    console.log('✅ Google login completed successfully');
                 } else {
                     throw new Error('No se pudo obtener los datos del usuario');
                 }
@@ -1364,7 +1407,14 @@ class AuthManager {
                 // Clear invalid token data
                 Utils.Storage.clear();
                 
-                Utils.Notifications.error('Error al procesar el inicio de sesión con Google', 4500);
+                let errorMessage = 'Error al procesar el inicio de sesión con Google';
+                if (error.message && error.message.includes('JWT')) {
+                    errorMessage = 'Token de autenticación inválido. Intenta iniciar sesión nuevamente.';
+                } else if (error.status === 401) {
+                    errorMessage = 'Token expirado. Intenta iniciar sesión con Google nuevamente.';
+                }
+                
+                Utils.Notifications.error(errorMessage, 4500);
                 
                 // Clean URL and show login
                 window.history.replaceState({}, document.title, window.location.pathname);
