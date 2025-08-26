@@ -1,0 +1,90 @@
+{
+  "app_name": "VigiChat",
+  "main_menu.profile_settings": "Profile Settings",
+  "main_menu.add_contact": "Add Contact",
+  "main_menu.blocked_contacts": "Blocked Contacts", 
+  "main_menu.language": "Language",
+  "main_menu.help": "Help",
+  "main_menu.logout": "Logout",
+  "main_menu": {
+    "profile_settings": "Profile Settings",
+    "add_contact": "Add Contact",
+    "blocked_contacts": "Blocked Contacts", 
+    "language": "Language",
+    "help": "Help",
+    "logout": "Logout"
+  },
+  "chat": {
+    "online": "Online",
+    "offline": "Offline",
+    "away": "Away",
+    "typing": "Typing...",
+    "last_seen": "Last seen",
+    "last_seen_today": "today at",
+    "last_seen_yesterday": "yesterday at",
+    "search_placeholder": "Search chats...",
+    "no_messages": "No messages yet",
+    "message_placeholder": "Type a message..."
+  },
+  "buttons": {
+    "send": "Send",
+    "cancel": "Cancel", 
+    "save": "Save",
+    "delete": "Delete",
+    "edit": "Edit",
+    "copy": "Copy",
+    "reply": "Reply",
+    "forward": "Forward",
+    "select": "Select",
+    "close": "Close"
+  },
+  "calls": {
+    "incoming": "Incoming Call",
+    "outgoing": "Calling...",
+    "connected": "Connected",
+    "accept": "Accept",
+    "decline": "Decline",
+    "end": "End Call",
+    "mute": "Mute",
+    "unmute": "Unmute",
+    "video_on": "Turn Video On",
+    "video_off": "Turn Video Off", 
+    "speaker": "Speaker",
+    "missed_call": "Missed Call",
+    "call_ended": "Call Ended",
+    "call_duration": "Call Duration"
+  },
+  "notifications": {
+    "new_message": "New message",
+    "call_declined": "Call declined",
+    "user_online": "came online",
+    "user_offline": "went offline",
+    "contact_added": "Contact added",
+    "contact_blocked": "Contact blocked"
+  },
+  "profile": {
+    "edit_profile": "Edit Profile",
+    "full_name": "Full Name",
+    "username": "Username",
+    "email": "Email",
+    "phone": "Phone",
+    "bio": "Bio",
+    "change_avatar": "Change Avatar",
+    "privacy_settings": "Privacy Settings"
+  },
+  "settings": {
+    "general": "General",
+    "notifications": "Notifications",
+    "privacy": "Privacy",
+    "security": "Security",
+    "about": "About"
+  },
+  "errors": {
+    "connection_error": "Connection error",
+    "invalid_credentials": "Invalid credentials",
+    "user_not_found": "User not found",
+    "permission_denied": "Permission denied",
+    "file_too_large": "File too large",
+    "unsupported_format": "Unsupported format"
+  }
+}

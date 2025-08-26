@@ -116,7 +116,7 @@ class IntelligentPhotoCrop {
         // Botones principales
         this.closeCropBtn = document.getElementById('close-crop-modal');
         this.autoCenterBtn = document.getElementById('auto-center-btn');
-        this.savePhotoBtn = document.getElementById('save-photo-btn');
+        this.savePhotoBtn = document.getElementById('save-cropped-photo-btn');
         
         // Los botones de cambiar/eliminar están en el modal de vista previa
         

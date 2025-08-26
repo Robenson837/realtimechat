@@ -11,6 +11,7 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="icons-fallback.css">
     <link rel="stylesheet" href="css/camera.css">
+    <link rel="stylesheet" href="css/calls.css">
     <meta name="theme-color" content="#4f46e5">
     <meta name="description" content="VigiChat - Aplicación de mensajería avanzada con funciones de vigilancia y tiempo real">
     <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
@@ -130,10 +131,10 @@
                     <button class="icon-btn">
                         <i class="fas fa-search"></i>
                     </button>
-                    <button class="icon-btn">
+                    <button class="icon-btn" id="audio-call-btn" title="Llamada de voz">
                         <i class="fas fa-phone"></i>
                     </button>
-                    <button class="icon-btn">
+                    <button class="icon-btn" id="video-call-btn" title="Videollamada">
                         <i class="fas fa-video"></i>
                     </button>
                     <button class="icon-btn">
@@ -227,11 +228,32 @@
         </main>
     </div>
 
+    <!-- Include call UI components -->
+    <div id="call-ui-container"></div>
+    
+    <!-- Load call UI components -->
+    <script>
+        // Load call UI components
+        fetch('call-ui-components.html')
+            .then(response => response.text())
+            .then(html => {
+                document.getElementById('call-ui-container').innerHTML = html;
+                console.log('📞 Call UI components loaded');
+            })
+            .catch(error => {
+                console.error('Error loading call UI components:', error);
+            });
+    </script>
+    
     <!-- Real-time VigiChat with full functionality -->
     <script src="/socket.io/socket.io.js"></script>
     <script src="js/emojiPicker.js"></script>
+    <script src="js/callManager.js"></script>
     <script src="js/cameraHandler.js"></script>
     <script src="js/locationRealtime.js"></script>
+    
+    <!-- Call system tests (remove in production) -->
+    <script src="test-calls.js"></script>
     <script>
         // VigiChat Real-time Integration
         console.log('🚀 VigiChat Real-time Chat Initialized');

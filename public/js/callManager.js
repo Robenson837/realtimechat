@@ -18,6 +18,10 @@ class CallManager {
     this.currentCallType = null; // 'audio' or 'video'
     this.currentContact = null;
     this.facingMode = 'user'; // 'user' or 'environment'
+    this.callId = null;
+    this.isInitiator = false;
+    this.candidatesQueue = [];
+    this.connectionState = 'new';
     
     // Call sounds
     this.callSounds = {
@@ -28,12 +32,14 @@ class CallManager {
     };
     this.currentRingtone = null;
     
-    // ICE servers configuration (STUN servers)
+    // Enhanced ICE servers configuration with TURN server for NAT traversal
     this.iceServers = {
       iceServers: [
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
-        { urls: 'stun:stun2.l.google.com:19302' }
+        { urls: 'stun:stun2.l.google.com:19302' },
+        { urls: 'stun:stun3.l.google.com:19302' },
+        { urls: 'stun:stun4.l.google.com:19302' }
       ]
     };
 
@@ -282,7 +288,12 @@ class CallManager {
   }
 
   async initiateCall(type) {
-    console.log(`🔥 Iniciando llamada ${type}...`);
+    console.log(`📞 Iniciando llamada ${type}...`);
+    
+    if (this.isCallActive) {
+      this.showNotification('Ya hay una llamada en curso', 'error');
+      return;
+    }
     
     if (!window.chatManager || !window.chatManager.currentConversation) {
       this.showNotification('Selecciona una conversación primero', 'error');
@@ -292,6 +303,38 @@ class CallManager {
     this.currentCallType = type;
     this.currentContact = window.chatManager.currentConversation;
     
+    // Verificar estado del contacto antes de llamar
+    const recipientId = this.getRecipientId();
+    if (recipientId) {
+      try {
+        console.log(`🔍 Checking availability for ${this.currentContact.name} before calling...`);
+        
+        // Obtener estado actual del contacto en tiempo real
+        const contactStatus = await this.checkContactStatus(recipientId);
+        
+        if (contactStatus) {
+          console.log(`📊 Contact status result:`, contactStatus);
+          
+          if (!contactStatus.isAvailable) {
+            if (contactStatus.status === 'recently-active') {
+              this.showNotification(`${this.currentContact.name} estuvo activo recientemente, intentando llamar...`, 'info');
+            } else if (contactStatus.status === 'offline') {
+              this.showNotification(`${this.currentContact.name} no está disponible, pero intentando llamar de todos modos...`, 'info');
+            }
+          } else {
+            console.log(`✅ ${this.currentContact.name} está disponible para llamadas (${contactStatus.source})`);
+            this.showNotification(`Llamando a ${this.currentContact.name}...`, 'info');
+          }
+        } else {
+          console.warn(`⚠️ No se pudo verificar el estado de ${this.currentContact.name}, intentando llamar...`);
+          this.showNotification(`Verificando disponibilidad e intentando llamar...`, 'info');
+        }
+      } catch (error) {
+        console.warn('Could not check contact status:', error);
+        this.showNotification('Intentando llamar...', 'info');
+      }
+    }
+    
     try {
       // Setup local stream
       await this.setupLocalStream(type);
@@ -299,8 +342,15 @@ class CallManager {
       // Show call interface
       this.showCallInterface();
       
+      // Generate unique call ID
+      this.callId = 'call_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+      this.isInitiator = true;
+      
       // Setup peer connection
       await this.setupPeerConnection();
+      
+      // Create and set local description (offer)
+      const offer = await this.createOffer();
       
       // Update UI for outgoing call
       this.updateCallInterface('outgoing');
@@ -322,11 +372,12 @@ class CallManager {
       // Add call message to conversation
       this.addCallMessageToConversation('outgoing', type, 'calling');
       
-      // Emit call signal to server
-      this.emitCallSignal('call_request', {
+        // Emit call signal to server with offer
+      this.emitCallSignal('call:initiate', {
+        callId: this.callId,
         to: this.getRecipientId(),
         type: type,
-        offer: await this.createOffer(),
+        offer: offer,
         from: {
           userId: this.getCurrentUserId(),
           name: this.getCurrentUserName(),
@@ -381,6 +432,7 @@ class CallManager {
 
   async setupPeerConnection() {
     this.peerConnection = new RTCPeerConnection(this.iceServers);
+    this.connectionState = 'connecting';
     
     // Add local stream tracks
     if (this.localStream) {
@@ -391,53 +443,107 @@ class CallManager {
     
     // Handle remote stream
     this.peerConnection.ontrack = (event) => {
-      console.log('🎯 Remote track recibido');
+      console.log('🎯 Remote track received');
       this.remoteStream = event.streams[0];
       if (this.remoteVideo) {
         this.remoteVideo.srcObject = this.remoteStream;
       }
+      this.connectionState = 'connected';
       this.updateCallInterface('connected');
+      this.stopCallSound('outgoing');
+      this.playCallSound('connected');
     };
     
-    // Handle ICE candidates
+    // Handle ICE candidates with queueing
     this.peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
-        this.emitCallSignal('ice_candidate', {
+        this.emitCallSignal('call:ice-candidate', {
+          callId: this.callId,
           to: this.getRecipientId(),
           candidate: event.candidate
         });
+      } else {
+        console.log('🧊 ICE gathering completed');
       }
     };
     
-    // Handle connection state changes
+    // Handle connection state changes with detailed logging
     this.peerConnection.onconnectionstatechange = () => {
-      console.log('🔗 Connection state:', this.peerConnection.connectionState);
+      const state = this.peerConnection.connectionState;
+      console.log('🔗 Connection state changed to:', state);
+      this.connectionState = state;
       
-      switch (this.peerConnection.connectionState) {
+      switch (state) {
+        case 'connecting':
+          this.updateCallStatus('Conectando...');
+          break;
         case 'connected':
           this.updateCallStatus('Conectado');
+          this.onCallConnected();
           break;
         case 'disconnected':
+          this.updateCallStatus('Desconectado');
+          console.warn('Connection disconnected, attempting to reconnect...');
+          break;
         case 'failed':
-          this.updateCallStatus('Conexión perdida');
-          setTimeout(() => this.endCall(), 3000);
+          this.updateCallStatus('Conexión fallida');
+          console.error('Connection failed');
+          setTimeout(() => this.endCall('connection-failed'), 3000);
           break;
         case 'closed':
-          this.endCall();
+          console.log('Connection closed');
           break;
       }
+    };
+    
+    // Handle ICE connection state
+    this.peerConnection.oniceconnectionstatechange = () => {
+      console.log('🧊 ICE connection state:', this.peerConnection.iceConnectionState);
+      
+      switch (this.peerConnection.iceConnectionState) {
+        case 'checking':
+          this.updateCallStatus('Estableciendo conexión...');
+          break;
+        case 'connected':
+        case 'completed':
+          this.updateCallStatus('Conectado');
+          break;
+        case 'failed':
+          console.error('ICE connection failed');
+          this.updateCallStatus('Error de conexión');
+          setTimeout(() => this.endCall('ice-failed'), 5000);
+          break;
+        case 'disconnected':
+          this.updateCallStatus('Reconectando...');
+          break;
+        case 'closed':
+          console.log('ICE connection closed');
+          break;
+      }
+    };
+    
+    // Handle signaling state changes
+    this.peerConnection.onsignalingstatechange = () => {
+      console.log('📡 Signaling state:', this.peerConnection.signalingState);
     };
   }
 
   async createOffer() {
-    const offer = await this.peerConnection.createOffer();
+    const offerOptions = {
+      offerToReceiveAudio: true,
+      offerToReceiveVideo: this.currentCallType === 'video'
+    };
+    
+    const offer = await this.peerConnection.createOffer(offerOptions);
     await this.peerConnection.setLocalDescription(offer);
+    console.log('📤 Offer created and set as local description');
     return offer;
   }
 
   async createAnswer() {
     const answer = await this.peerConnection.createAnswer();
     await this.peerConnection.setLocalDescription(answer);
+    console.log('📤 Answer created and set as local description');
     return answer;
   }
 
@@ -670,28 +776,63 @@ class CallManager {
     }
   }
 
-  endCall() {
-    console.log('📞 Finalizando llamada...');
+  endCall(reason = 'ended') {
+    console.log('📞 Ending call...', { reason, callId: this.callId });
     
-    // Emit call ended event before resetting state
+    // Emit call ended event before cleanup
+    if (this.isCallActive && this.currentContact && reason !== 'remote-ended') {
+      this.emitCallSignal('call:end', {
+        callId: this.callId,
+        to: this.getRecipientId(),
+        reason: reason
+      });
+    }
+    
+    // Dispatch local event
     if (this.isCallActive && this.currentContact) {
       this.dispatchCallEvent('callEnded', {
         contactId: this.getRecipientId(),
         contactName: this.currentContact.name || this.currentContact.username,
         contactAvatar: this.currentContact.profilePhoto,
         type: this.currentCallType,
-        direction: 'outgoing' // This could be improved to track actual direction
+        direction: this.isInitiator ? 'outgoing' : 'incoming',
+        reason: reason,
+        duration: this.getCallDuration()
       });
     }
     
-    // Stop streams
+    // Update call message with final status
+    this.updateCallMessageInConversation(reason === 'remote-ended' ? 'ended' : reason);
+    
+    // Save final call record
+    this.saveCallToHistory(reason);
+    
+    // Cleanup resources
+    this.cleanup();
+    
+    // Hide interface
+    this.hideCallInterface();
+    
+    console.log('✅ Call ended successfully');
+  }
+  
+  cleanup() {
+    console.log('🧹 Cleaning up call resources...');
+    
+    // Stop all media streams
     if (this.localStream) {
-      this.localStream.getTracks().forEach(track => track.stop());
+      this.localStream.getTracks().forEach(track => {
+        track.stop();
+        console.log('Stopped local track:', track.kind);
+      });
       this.localStream = null;
     }
     
     if (this.remoteStream) {
-      this.remoteStream.getTracks().forEach(track => track.stop());
+      this.remoteStream.getTracks().forEach(track => {
+        track.stop();
+        console.log('Stopped remote track:', track.kind);
+      });
       this.remoteStream = null;
     }
     
@@ -699,47 +840,33 @@ class CallManager {
     if (this.peerConnection) {
       this.peerConnection.close();
       this.peerConnection = null;
+      console.log('Peer connection closed');
     }
     
     // Clear video elements
     if (this.localVideo) this.localVideo.srcObject = null;
     if (this.remoteVideo) this.remoteVideo.srcObject = null;
     
-    // Stop timer
+    // Stop timers
     this.stopCallTimer();
     
-    // Hide interface
-    this.hideCallInterface();
-    
-    // Notify remote peer
-    if (this.isCallActive) {
-      this.emitCallSignal('call_ended', {
-        to: this.getRecipientId()
-      });
-    }
-    
-    // Reset state
-    this.isCallActive = false;
-    this.currentCallType = null;
-    this.currentContact = null;
-    this.isVideoEnabled = true;
-    this.isAudioEnabled = true;
-    this.isSpeakerEnabled = false;
-    this.facingMode = 'user';
-    
-    // Reset button states
-    this.resetButtonStates();
-    
-    // Clear any call timeout
     if (this.callTimeout) {
       clearTimeout(this.callTimeout);
       this.callTimeout = null;
     }
     
-    // Stop any playing sounds
+    if (this.incomingCallTimeout) {
+      clearTimeout(this.incomingCallTimeout);
+      this.incomingCallTimeout = null;
+    }
+    
+    // Stop all sounds
     this.stopAllCallSounds();
     
-    console.log('✅ Llamada finalizada');
+    // Reset state
+    this.resetState();
+    
+    console.log('✅ Cleanup completed');
   }
 
   handleUnansweredCall() {
@@ -814,91 +941,182 @@ class CallManager {
     this.currentRingtone = null;
   }
 
-  acceptCall() {
-    console.log('📞 Aceptando llamada...');
+  async acceptCall() {
+    console.log('📞 Accepting incoming call from:', this.currentContact.name);
     
-    // Clear incoming call timeout
-    if (this.incomingCallTimeout) {
-      clearTimeout(this.incomingCallTimeout);
-      this.incomingCallTimeout = null;
+    try {
+      // Limpiar timeout de llamada perdida
+      if (this.incomingCallTimeout) {
+        clearTimeout(this.incomingCallTimeout);
+        this.incomingCallTimeout = null;
+      }
+      
+      // Detener sonido de llamada entrante
+      this.stopCallSound('incoming');
+      
+      // Mostrar notificación de aceptación
+      this.showNotification(`Aceptando llamada de ${this.currentContact.name}...`, 'info');
+      
+      // Ocultar interfaz de llamada entrante
+      this.hideIncomingCallInterface();
+      
+      // Configurar medios locales para la llamada
+      await this.setupLocalStreamForIncomingCall();
+      
+      // Configurar peer connection y procesar la oferta
+      await this.setupPeerConnectionForIncomingCall();
+      
+      // Crear y enviar respuesta
+      const answer = await this.createAnswer();
+      
+      // Enviar señal de aceptación al emisor
+      this.emitCallSignal('call:accept', {
+        callId: this.callId,
+        to: this.currentContact.userId,
+        answer: answer
+      });
+      
+      // Mostrar interfaz de llamada activa
+      this.showCallInterface();
+      this.updateCallInterface('connecting');
+      this.isCallActive = true;
+      
+      // Actualizar mensaje de llamada
+      this.updateCallMessageInConversation('accepted');
+      
+      console.log('✅ Call accepted successfully, waiting for connection...');
+      
+    } catch (error) {
+      console.error('❌ Error accepting call:', error);
+      this.showNotification(`Error al aceptar llamada: ${error.message}`, 'error');
+      this.declineCall();
     }
+  }
+  
+  async setupLocalStreamForIncomingCall() {
+    console.log('🎥 Setting up local media for incoming call');
     
-    // Stop incoming sound
-    this.stopCallSound('incoming');
+    const constraints = {
+      audio: {
+        echoCancellation: true,
+        noiseSuppression: true,
+        autoGainControl: true
+      },
+      video: this.currentCallType === 'video' ? {
+        width: { ideal: 1280, min: 640 },
+        height: { ideal: 720, min: 480 },
+        frameRate: { ideal: 30, min: 15 },
+        facingMode: 'user'
+      } : false
+    };
     
-    // Play connected sound
-    this.playCallSound('connected');
-    
-    // Hide incoming interface and show call interface
-    if (this.incomingCallInterface) {
-      this.incomingCallInterface.classList.remove('active');
+    try {
+      this.localStream = await navigator.mediaDevices.getUserMedia(constraints);
+      
+      // Conectar stream local al elemento de video
+      const localVideo = document.getElementById('local-video');
+      if (localVideo) {
+        localVideo.srcObject = this.localStream;
+      }
+      
+      console.log('✅ Local media stream ready for incoming call');
+      
+    } catch (error) {
+      console.error('❌ Error accessing media devices:', error);
+      
+      // Mostrar modal de permisos si es necesario
+      if (error.name === 'NotAllowedError') {
+        this.showPermissionsModal();
+      }
+      
+      throw new Error('No se pudo acceder a la cámara/micrófono');
     }
+  }
+  
+  async setupPeerConnectionForIncomingCall() {
+    console.log('🔗 Setting up peer connection for incoming call');
     
-    this.updateCallInterface('connected');
-    this.isCallActive = true;
-    this.startCallTimer();
+    // Configurar peer connection
+    await this.setupPeerConnection();
     
-    // Update call message status
-    this.updateCallMessageInConversation('answered');
-    
-    // Emit acceptance signal
-    this.emitCallSignal('call_accepted', {
-      to: this.currentContact.userId || this.currentContact.id
-    });
+    // Establecer descripción remota (oferta del emisor)
+    if (this.incomingOffer) {
+      await this.peerConnection.setRemoteDescription(new RTCSessionDescription(this.incomingOffer));
+      console.log('✅ Remote description (offer) set successfully');
+      
+      // Procesar candidatos ICE que puedan haber llegado antes
+      while (this.candidatesQueue.length > 0) {
+        const candidate = this.candidatesQueue.shift();
+        try {
+          await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+          console.log('🧊 Queued ICE candidate processed');
+        } catch (error) {
+          console.warn('⚠️ Error processing queued ICE candidate:', error);
+        }
+      }
+    }
   }
 
   declineCall() {
-    console.log('📞 Rechazando llamada...');
+    console.log('📞 Declining call from:', this.currentContact?.name);
     
-    // Clear incoming call timeout
+    // Limpiar timeout
     if (this.incomingCallTimeout) {
       clearTimeout(this.incomingCallTimeout);
       this.incomingCallTimeout = null;
     }
     
-    // Stop incoming sound
+    // Detener sonido de llamada entrante
     this.stopCallSound('incoming');
     
-    // Update call message status
-    this.updateCallMessageInConversation('declined');
+    // Mostrar notificación de rechazo
+    this.showNotification(`Llamada de ${this.currentContact?.name} rechazada`, 'info');
     
-    // Emit decline signal
+    // Enviar señal de rechazo al emisor con información detallada
     if (this.currentContact) {
-      this.emitCallSignal('call_declined', {
-        to: this.currentContact.userId || this.currentContact.id
+      this.emitCallSignal('call:decline', {
+        callId: this.callId,
+        to: this.currentContact.userId,
+        reason: 'user-declined',
+        declinedBy: this.getCurrentUserId(),
+        declinedByName: this.getCurrentUserName(),
+        timestamp: Date.now()
       });
+      
+      console.log('📤 Decline signal sent to caller:', this.currentContact.userId);
     }
     
-    // Hide interface and reset
-    this.hideCallInterface();
+    // Actualizar mensaje de llamada
+    this.updateCallMessageInConversation('declined');
+    
+    // Guardar en historial
+    this.saveCallToHistory('declined');
+    
+    // Ocultar interfaz y limpiar estado
+    this.hideIncomingCallInterface();
     this.resetState();
+    
+    console.log('✅ Call declined successfully');
   }
 
   resetState() {
     this.isCallActive = false;
     this.currentCallType = null;
     this.currentContact = null;
+    this.callId = null;
+    this.isInitiator = false;
+    this.candidatesQueue = [];
+    this.connectionState = 'new';
     this.isVideoEnabled = true;
     this.isAudioEnabled = true;
     this.isSpeakerEnabled = false;
     this.facingMode = 'user';
-    
-    // Clear timeouts
-    if (this.callTimeout) {
-      clearTimeout(this.callTimeout);
-      this.callTimeout = null;
-    }
-    
-    if (this.incomingCallTimeout) {
-      clearTimeout(this.incomingCallTimeout);
-      this.incomingCallTimeout = null;
-    }
-    
-    // Stop all sounds
-    this.stopAllCallSounds();
+    this.callStartTime = null;
     
     // Reset button states
     this.resetButtonStates();
+    
+    console.log('📱 Call state reset');
   }
 
   resetButtonStates() {
@@ -932,39 +1150,53 @@ class CallManager {
   }
 
   emitCallSignal(event, data) {
-    // Emit call signaling through socket.io
     const socket = window.SocketManager?.socket || window.socket;
-    if (socket && socket.connected) {
-      console.log(`🚀 Emitiendo señal: ${event}`, {
-        ...data,
-        timestamp: new Date().toISOString(),
-        socketId: socket.id
-      });
-      
-      // Add current user info if not present
-      if (!data.from && event === 'call_request') {
-        data.from = {
-          userId: this.getCurrentUserId(),
-          name: this.getCurrentUserName(),
-          profilePhoto: this.getCurrentUserAvatar()
-        };
-      }
-      
-      socket.emit(event, data);
-      
-      // Add acknowledgment callback for important events
-      if (['call_request', 'call_accepted', 'call_declined'].includes(event)) {
-        setTimeout(() => {
-          console.log(`✅ Signal ${event} sent successfully`);
-        }, 100);
-      }
-    } else {
-      console.error('❌ Socket.io no disponible para señalización', {
+    
+    if (!socket || !socket.connected) {
+      console.error('❌ Socket not available for signaling', {
         hasSocketManager: !!window.SocketManager,
         hasSocket: !!socket,
         isConnected: socket?.connected
       });
       this.showNotification('Error de conexión. Verifica tu conexión a internet.', 'error');
+      return;
+    }
+    
+    // Enhanced data with metadata
+    const signalData = {
+      ...data,
+      timestamp: Date.now(),
+      socketId: socket.id,
+      callId: data.callId || this.callId
+    };
+    
+    // Add user info for call initiation
+    if (event === 'call:initiate' && !signalData.from) {
+      signalData.from = {
+        userId: this.getCurrentUserId(),
+        name: this.getCurrentUserName(),
+        profilePhoto: this.getCurrentUserAvatar()
+      };
+    }
+    
+    console.log(`🚀 Emitting signal: ${event}`, {
+      event,
+      callId: signalData.callId,
+      to: signalData.to,
+      type: signalData.type || 'unknown',
+      hasOffer: !!signalData.offer,
+      hasAnswer: !!signalData.answer,
+      hasCandidate: !!signalData.candidate
+    });
+    
+    socket.emit(event, signalData);
+    
+    // Enhanced acknowledgment for critical events
+    const criticalEvents = ['call:initiate', 'call:accept', 'call:decline', 'call:end'];
+    if (criticalEvents.includes(event)) {
+      setTimeout(() => {
+        console.log(`✅ Signal ${event} sent (callId: ${signalData.callId})`);
+      }, 50);
     }
   }
 
@@ -981,45 +1213,112 @@ class CallManager {
     }
   }
 
-  // Public methods for socket.io integration
-  handleIncomingCall(data) {
-    console.log('📞 Llamada entrante:', data);
-    this.currentContact = data.from;
-    this.currentCallType = data.type;
+  onCallConnected() {
+    console.log('✅ Call connected successfully');
     
-    // Show incoming call interface
-    if (this.incomingCallInterface) {
-      this.incomingCallInterface.classList.add('active');
+    if (this.callTimeout) {
+      clearTimeout(this.callTimeout);
+      this.callTimeout = null;
     }
     
-    this.showCallInterface();
-    this.updateCallInterface('incoming');
+    if (this.incomingCallTimeout) {
+      clearTimeout(this.incomingCallTimeout);
+      this.incomingCallTimeout = null;
+    }
     
-    // Play incoming call sound (only for the receiver)
+    this.stopAllCallSounds();
+    this.playCallSound('connected');
+    
+    // Update call status
+    this.updateCallStatus('Conectado');
+    
+    // Start call timer
+    this.callStartTime = new Date();
+    this.startCallTimer();
+    
+    // Update call message
+    this.updateCallMessageInConversation('answered');
+    
+    // Save to history
+    this.saveCallToHistory('connected');
+  }
+  
+  saveCallToHistory(status) {
+    if (window.callHistoryManager && this.currentContact) {
+      const callData = {
+        contactId: this.getRecipientId(),
+        contactName: this.currentContact.name || this.currentContact.username,
+        contactAvatar: this.currentContact.profilePhoto,
+        type: this.currentCallType,
+        direction: this.isInitiator ? 'outgoing' : 'incoming',
+        status: status,
+        duration: this.getCallDuration(),
+        timestamp: Date.now()
+      };
+      
+      window.callHistoryManager.addCallRecord(callData);
+    }
+  }
+
+  // Enhanced socket.io integration methods
+  handleIncomingCall(data) {
+    console.log('📞 ===== HANDLE INCOMING CALL START =====');
+    console.log('📞 Incoming call received:', data);
+    console.log('📞 Current isCallActive:', this.isCallActive);
+    console.log('📞 Elements check:');
+    console.log('   - incomingCallInterface:', !!this.incomingCallInterface);
+    console.log('   - incomingContactName:', !!this.incomingContactName);
+    console.log('   - incomingContactAvatar:', !!this.incomingContactAvatar);
+    console.log('   - acceptCallBtn:', !!this.acceptCallBtn);
+    console.log('   - declineCallBtn:', !!this.declineCallBtn);
+    
+    // Verificar si ya hay una llamada activa
+    if (this.isCallActive) {
+      console.log('📞 User busy, rejecting incoming call');
+      // Enviar señal de ocupado
+      this.emitCallSignal('call:busy', {
+        callId: data.callId,
+        to: data.from.userId,
+        reason: 'user-busy'
+      });
+      return;
+    }
+    
+    // Configurar datos de la llamada entrante
+    this.callId = data.callId;
+    this.currentContact = {
+      userId: data.from.userId,
+      name: data.from.name || data.from.username || 'Usuario desconocido',
+      profilePhoto: data.from.profilePhoto || 'images/user-placeholder-40.svg',
+      ...data.from
+    };
+    this.currentCallType = data.type;
+    this.isInitiator = false;
+    this.incomingOffer = data.offer;
+    
+    console.log('📞 Showing incoming call interface for:', this.currentContact.name);
+    
+    // Mostrar interfaz de llamada entrante INMEDIATAMENTE
+    this.showIncomingCallInterface();
+    
+    // Actualizar información del contacto en la UI
+    this.updateIncomingCallUI();
+    
+    // Reproducir sonido de llamada entrante
     this.playCallSound('incoming');
-    console.log('🔊 Playing INCOMING sound for receiver');
+    console.log('🔊 Playing incoming ringtone for call from:', this.currentContact.name);
     
-    // Set timeout for missed calls (30 seconds)
+    // Mostrar notificación del sistema si está disponible
+    this.showIncomingCallNotification();
+    
+    // Timeout para llamadas perdidas (30 segundos)
     this.incomingCallTimeout = setTimeout(() => {
-      console.log('📞 Llamada entrante perdida después de 30 segundos');
+      console.log('📞 Incoming call missed after 30 seconds');
       this.handleMissedIncomingCall();
     }, 30000);
     
-    // Update incoming call info
-    if (this.incomingContactName) {
-      this.incomingContactName.textContent = data.from.name || data.from.username || 'Usuario';
-    }
-    
-    if (this.incomingContactAvatar) {
-      this.incomingContactAvatar.src = data.from.profilePhoto || 'images/user-placeholder-40.svg';
-    }
-    
-    if (this.incomingCallType) {
-      this.incomingCallType.textContent = data.type === 'video' ? 'Videollamada entrante' : 'Llamada entrante';
-    }
-    
-    // Add incoming call message to conversation
-    this.addCallMessageToConversation('incoming', data.type, 'calling');
+    // Agregar mensaje de llamada entrante al chat
+    this.addCallMessageToConversation('incoming', this.currentCallType, 'ringing');
     
     // Record incoming call start in history
     if (window.callHistoryManager) {
@@ -1027,11 +1326,188 @@ class CallManager {
     }
   }
 
+  showIncomingCallInterface() {
+    console.log('📞 ===== SHOWING INCOMING CALL INTERFACE =====');
+    console.log('📞 Looking for incoming-call-interface element...');
+    
+    // Mostrar la interfaz de llamada entrante
+    const incomingInterface = document.getElementById('incoming-call-interface');
+    console.log('📞 Found element:', !!incomingInterface);
+    
+    if (incomingInterface) {
+      console.log('📞 Current classes before:', incomingInterface.className);
+      console.log('📞 Current display style:', window.getComputedStyle(incomingInterface).display);
+      
+      incomingInterface.classList.add('active');
+      document.body.classList.add('call-active');
+      
+      console.log('📞 Classes after adding active:', incomingInterface.className);
+      console.log('📞 Display style after:', window.getComputedStyle(incomingInterface).display);
+      console.log('✅ Incoming call interface shown');
+      
+      // Force visibility check
+      const isVisible = incomingInterface.offsetParent !== null;
+      console.log('📞 Element is visible:', isVisible);
+      
+      // Try alternative showing method if not visible
+      if (!isVisible) {
+        console.log('⚠️ Element not visible, trying inline styles...');
+        incomingInterface.style.display = 'flex';
+        incomingInterface.style.position = 'fixed';
+        incomingInterface.style.top = '0';
+        incomingInterface.style.left = '0';
+        incomingInterface.style.width = '100%';
+        incomingInterface.style.height = '100%';
+        incomingInterface.style.zIndex = '10001';
+        incomingInterface.style.backgroundColor = 'rgba(0,0,0,0.9)';
+        console.log('📞 Forced visibility with inline styles');
+      }
+    } else {
+      console.error('❌ incoming-call-interface element not found in DOM');
+      console.log('📞 Available elements with "call" in ID:');
+      const callElements = document.querySelectorAll('[id*="call"]');
+      callElements.forEach(el => {
+        console.log(`   - ${el.id}: ${el.tagName}`);
+      });
+    }
+  }
+  
+  hideIncomingCallInterface() {
+    const incomingInterface = document.getElementById('incoming-call-interface');
+    if (incomingInterface) {
+      incomingInterface.classList.remove('active');
+      document.body.classList.remove('call-active');
+      console.log('🙈 Incoming call interface hidden');
+    }
+  }
+  
+  updateIncomingCallUI() {
+    console.log('🎨 Updating incoming call UI with contact info:', this.currentContact);
+    
+    // Actualizar nombre del contacto
+    const nameElement = document.getElementById('incoming-contact-name');
+    if (nameElement && this.currentContact) {
+      nameElement.textContent = this.currentContact.name;
+      console.log('✅ Updated contact name:', this.currentContact.name);
+    } else {
+      console.warn('⚠️ Name element or contact info missing');
+    }
+    
+    // Actualizar avatar del contacto
+    const avatarElement = document.getElementById('incoming-contact-avatar');
+    if (avatarElement && this.currentContact) {
+      avatarElement.src = this.currentContact.profilePhoto;
+      avatarElement.alt = this.currentContact.name;
+      console.log('✅ Updated contact avatar:', this.currentContact.profilePhoto);
+    } else {
+      console.warn('⚠️ Avatar element or contact info missing');
+    }
+    
+    // Actualizar tipo de llamada
+    const typeElement = document.getElementById('incoming-call-type');
+    if (typeElement) {
+      const callTypeText = this.currentCallType === 'video' 
+        ? `Videollamada entrante` 
+        : `Llamada de voz entrante`;
+      typeElement.textContent = callTypeText;
+      console.log('✅ Updated call type:', callTypeText);
+    }
+  }
+  
+  showIncomingCallNotification() {
+    try {
+      // Solicitar permiso de notificaciones si no se ha concedido
+      if ('Notification' in window) {
+        if (Notification.permission === 'granted') {
+          const notification = new Notification(`Llamada entrante de ${this.currentContact.name}`, {
+            body: this.currentCallType === 'video' ? 'Videollamada' : 'Llamada de voz',
+            icon: this.currentContact.profilePhoto || 'images/user-placeholder-40.svg',
+            badge: 'images/icon-192.png',
+            requireInteraction: true,
+            actions: [
+              { action: 'accept', title: 'Aceptar' },
+              { action: 'decline', title: 'Rechazar' }
+            ]
+          });
+          
+          notification.onclick = () => {
+            window.focus();
+            this.acceptCall();
+            notification.close();
+          };
+          
+          // Auto-close notification after call timeout
+          setTimeout(() => {
+            notification.close();
+          }, 30000);
+          
+        } else if (Notification.permission !== 'denied') {
+          Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+              this.showIncomingCallNotification();
+            }
+          });
+        }
+      }
+    } catch (error) {
+      console.warn('Error showing notification:', error);
+    }
+  }
+  
+  async setupPeerConnectionForIncoming(offer) {
+    try {
+      // Get user media first
+      const constraints = {
+        audio: {
+          echoCancellation: true,
+          noiseSuppression: true,
+          autoGainControl: true
+        },
+        video: this.currentCallType === 'video' ? {
+          width: { ideal: 1280, min: 640 },
+          height: { ideal: 720, min: 480 },
+          frameRate: { ideal: 30, min: 15 }
+        } : false
+      };
+      
+      this.localStream = await navigator.mediaDevices.getUserMedia(constraints);
+      
+      if (this.localVideo) {
+        this.localVideo.srcObject = this.localStream;
+      }
+      
+      // Setup peer connection
+      await this.setupPeerConnection();
+      
+      // Set remote description (offer)
+      await this.peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+      
+      // Process any queued ICE candidates
+      while (this.candidatesQueue.length > 0) {
+        const candidate = this.candidatesQueue.shift();
+        await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+      }
+      
+      console.log('✅ Incoming call setup completed');
+      
+    } catch (error) {
+      console.error('❌ Error setting up incoming call:', error);
+      this.showNotification('Error al configurar la llamada entrante', 'error');
+      this.declineCall();
+    }
+  }
+
   handleMissedIncomingCall() {
-    console.log('📞 Llamada entrante perdida');
+    console.log('📞 Incoming call missed');
     
     // Stop incoming sound
     this.stopCallSound('incoming');
+    
+    // Send missed call signal
+    this.emitCallSignal('call:missed', {
+      callId: this.callId,
+      to: this.currentContact.userId || this.currentContact.id
+    });
     
     // Record as missed call
     if (this.currentContact) {
@@ -1042,54 +1518,142 @@ class CallManager {
         type: this.currentCallType
       };
       
-      // Dispatch missed call event
       this.dispatchCallEvent('callMissed', callData);
+      this.saveCallToHistory('missed');
       
-      // Record in history manager as missed
       if (window.callHistoryManager) {
         window.callHistoryManager.recordMissedCall(callData, this.currentCallType);
       }
     }
     
-    // Hide call interface
+    // Update call message
+    this.updateCallMessageInConversation('missed');
+    
+    // Clean up
     this.hideCallInterface();
     this.resetState();
   }
 
-  async handleCallAnswer(data) {
-    console.log('📞 Respuesta de llamada recibida:', data);
+  // Enhanced call event handlers
+  async handleCallAccepted(data) {
+    console.log('✅ Call accepted:', data);
     
-    if (this.peerConnection && data.answer) {
-      await this.peerConnection.setRemoteDescription(data.answer);
-      this.updateCallInterface('connected');
+    if (!this.peerConnection) {
+      console.error('No peer connection available');
+      return;
     }
-  }
-
-  async handleCallOffer(data) {
-    console.log('📞 Oferta de llamada recibida:', data);
     
-    if (this.peerConnection && data.offer) {
-      await this.peerConnection.setRemoteDescription(data.offer);
-      const answer = await this.createAnswer();
+    try {
+      // Stop outgoing ringtone
+      this.stopCallSound('outgoing');
       
-      this.emitCallSignal('call_answer', {
-        to: this.getRecipientId(),
-        answer: answer
-      });
+      // Set remote description (answer)
+      if (data.answer) {
+        await this.peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
+        console.log('Remote description (answer) set successfully');
+      }
+      
+      // Process any queued ICE candidates
+      while (this.candidatesQueue.length > 0) {
+        const candidate = this.candidatesQueue.shift();
+        await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
+      }
+      
+      this.updateCallInterface('connecting');
+      this.updateCallMessageInConversation('accepted');
+      
+    } catch (error) {
+      console.error('Error handling call acceptance:', error);
+      this.endCall('connection-error');
     }
   }
 
-  handleIceCandidate(data) {
-    console.log('🧊 ICE candidate recibido:', data);
+  handleCallDeclined(data) {
+    console.log('❌ Call declined:', data);
     
-    if (this.peerConnection && data.candidate) {
-      this.peerConnection.addIceCandidate(data.candidate);
+    // Stop outgoing sound
+    this.stopCallSound('outgoing');
+    
+    // Play declined sound (busy tone)
+    this.playCallSound('ended');
+    
+    // Update UI with more descriptive message
+    this.updateCallStatus(`${this.currentContact?.name || 'El usuario'} rechazó la llamada`);
+    this.updateCallMessageInConversation('declined');
+    
+    // Show notification to user
+    this.showNotification(`${this.currentContact?.name || 'El usuario'} rechazó la llamada`, 'info');
+    
+    // Record in history
+    this.saveCallToHistory('declined');
+    
+    // End call after showing status
+    setTimeout(() => {
+      this.endCall('declined');
+    }, 3000); // Increased time to show message
+  }
+
+  handleCallBusy(data) {
+    console.log('📞 User is busy:', data);
+    
+    // Stop outgoing sound
+    this.stopCallSound('outgoing');
+    
+    // Play busy tone
+    this.playCallSound('ended');
+    
+    // Update UI
+    this.updateCallStatus('Usuario ocupado');
+    this.updateCallMessageInConversation('busy');
+    
+    // End call
+    setTimeout(() => {
+      this.endCall('busy');
+    }, 3000);
+  }
+
+  async handleIceCandidate(data) {
+    console.log('🧊 ICE candidate received:', data);
+    
+    if (!data.candidate) return;
+    
+    try {
+      if (this.peerConnection && this.peerConnection.remoteDescription) {
+        await this.peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
+        console.log('ICE candidate added successfully');
+      } else {
+        // Queue candidate if remote description not set yet
+        this.candidatesQueue.push(data.candidate);
+        console.log('ICE candidate queued (remote description not ready)');
+      }
+    } catch (error) {
+      console.error('Error adding ICE candidate:', error);
     }
   }
 
   handleCallEnded(data) {
-    console.log('📞 Llamada terminada por el otro usuario');
-    this.endCall();
+    console.log('📞 Call ended by remote user:', data);
+    
+    // Update status
+    this.updateCallStatus('Llamada terminada');
+    this.updateCallMessageInConversation('ended');
+    
+    // Save to history
+    this.saveCallToHistory('ended');
+    
+    // End call
+    this.endCall('remote-ended');
+  }
+
+  handleCallMissed(data) {
+    console.log('📞 Call marked as missed:', data);
+    
+    // Update message and history for outgoing missed call
+    this.updateCallMessageInConversation('missed');
+    this.saveCallToHistory('missed');
+    
+    // End call
+    this.endCall('missed');
   }
 
   // Add call message to conversation
@@ -1281,6 +1845,90 @@ class CallManager {
     const userData = window.Utils?.Storage?.get('userData');
     return userData?.avatar || userData?.profilePhoto || null;
   }
+  
+  async checkContactStatus(userId) {
+    try {
+      return new Promise((resolve, reject) => {
+        // Usar el nuevo sistema de verificación en tiempo real
+        const socket = window.SocketManager?.socket || window.socket;
+        
+        if (!socket || !socket.connected) {
+          console.warn('Socket not available for status check');
+          resolve(null);
+          return;
+        }
+        
+        console.log(`🔍 Requesting real-time availability check for user: ${userId}`);
+        
+        // Timeout para la respuesta
+        const timeout = setTimeout(() => {
+          socket.off('call-availability-response', responseHandler);
+          console.warn('Status check timeout');
+          resolve(null);
+        }, 5000);
+        
+        // Handler para la respuesta
+        const responseHandler = (data) => {
+          if (data.userId === userId) {
+            clearTimeout(timeout);
+            socket.off('call-availability-response', responseHandler);
+            
+            console.log(`✅ Availability response received:`, data);
+            
+            resolve({
+              status: data.isAvailable ? 'online' : data.status,
+              isAvailable: data.isAvailable,
+              source: data.source,
+              lastSeen: data.lastActivity || new Date(),
+              connectionCount: data.connectionCount || 0,
+              sessionCount: data.sessionCount || 0
+            });
+          }
+        };
+        
+        socket.on('call-availability-response', responseHandler);
+        
+        // Enviar solicitud
+        socket.emit('check-call-availability', { userId });
+      });
+      
+    } catch (error) {
+      console.warn('Error checking contact status:', error);
+      return null;
+    }
+  }
+
+  // Debug function to test socket listeners
+  testSocketListeners() {
+    console.log('🧪 Testing socket listeners...');
+    const socket = window.SocketManager?.socket || window.socket;
+    
+    if (!socket) {
+      console.error('❌ No socket available for testing');
+      return;
+    }
+    
+    console.log('🔍 Socket info:', {
+      id: socket.id,
+      connected: socket.connected,
+      listeners: Object.keys(socket._callbacks || {})
+    });
+    
+    // Test call:incoming listener manually
+    const testCallData = {
+      callId: 'test-call-' + Date.now(),
+      type: 'audio',
+      offer: { test: true },
+      from: {
+        userId: 'test-user',
+        name: 'Test User',
+        profilePhoto: 'test-avatar.png'
+      }
+    };
+    
+    console.log('🧪 Simulating incoming call with test data:', testCallData);
+    this.handleIncomingCall(testCallData);
+  }
 
   // Dispatch custom events for call history tracking
   dispatchCallEvent(eventName, data) {
@@ -1297,5 +1945,165 @@ class CallManager {
 // Initialize call manager when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
   window.callManager = new CallManager();
-  console.log('📞 Call Manager inicializado');
+  console.log('📞 Call Manager initialized');
+  
+  // Setup header call buttons after a short delay to ensure DOM is ready
+  setTimeout(() => {
+    setupHeaderCallButtons();
+  }, 1000);
 });
+
+// Setup call buttons in chat header
+function setupHeaderCallButtons() {
+  const audioCallBtn = document.getElementById('audio-call-btn');
+  const videoCallBtn = document.getElementById('video-call-btn');
+  
+  if (audioCallBtn) {
+    audioCallBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      console.log('📞 Audio call button clicked');
+      
+      if (window.callManager) {
+        window.callManager.initiateCall('audio');
+      } else {
+        console.error('❌ CallManager not available');
+      }
+    });
+    console.log('✅ Audio call button listener attached');
+  } else {
+    console.warn('⚠️ Audio call button not found');
+  }
+  
+  if (videoCallBtn) {
+    videoCallBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      console.log('📹 Video call button clicked');
+      
+      if (window.callManager) {
+        window.callManager.initiateCall('video');
+      } else {
+        console.error('❌ CallManager not available');
+      }
+    });
+    console.log('✅ Video call button listener attached');
+  } else {
+    console.warn('⚠️ Video call button not found');
+  }
+  
+  // Setup socket event listeners
+  setupCallSocketListeners();
+}
+
+// Setup socket event listeners for call signaling
+function setupCallSocketListeners() {
+  const socket = window.SocketManager?.socket || window.socket;
+  
+  if (!socket) {
+    console.warn('⚠️ Socket not available for call events, retrying in 2 seconds...');
+    setTimeout(setupCallSocketListeners, 2000);
+    return;
+  }
+  
+  // Remove existing listeners to prevent duplicates
+  const callEvents = [
+    'call:incoming', 'call:accepted', 'call:declined', 'call:busy',
+    'call:ended', 'call:missed', 'call:ice-candidate', 'call:failed'
+  ];
+  
+  callEvents.forEach(event => {
+    socket.removeAllListeners(event);
+  });
+  
+  // Add new listeners
+  socket.on('call:incoming', (data) => {
+    console.log('📞 ===== INCOMING CALL EVENT RECEIVED =====');
+    console.log('📞 Incoming call data:', data);
+    console.log('📞 Socket ID that received call:', socket.id);
+    console.log('📞 Current window.callManager exists:', !!window.callManager);
+    console.log('📞 Current call active:', window.callManager?.isCallActive);
+    console.log('📞 ==========================================');
+    
+    if (window.callManager) {
+      console.log('✅ Passing call to callManager.handleIncomingCall');
+      window.callManager.handleIncomingCall(data);
+    } else {
+      console.error('❌ window.callManager not available!');
+    }
+  });
+  
+  socket.on('call:accepted', (data) => {
+    console.log('✅ Call accepted:', data);
+    if (window.callManager) {
+      window.callManager.handleCallAccepted(data);
+    }
+  });
+  
+  socket.on('call:declined', (data) => {
+    console.log('❌ Call declined:', data);
+    if (window.callManager) {
+      window.callManager.handleCallDeclined(data);
+    }
+  });
+  
+  socket.on('call:busy', (data) => {
+    console.log('📞 User busy:', data);
+    if (window.callManager) {
+      window.callManager.handleCallBusy(data);
+    }
+  });
+  
+  socket.on('call:ended', (data) => {
+    console.log('📞 Call ended by remote:', data);
+    if (window.callManager) {
+      window.callManager.handleCallEnded(data);
+    }
+  });
+  
+  socket.on('call:missed', (data) => {
+    console.log('📞 Call missed:', data);
+    if (window.callManager) {
+      window.callManager.handleCallMissed(data);
+    }
+  });
+  
+  socket.on('call:ice-candidate', (data) => {
+    if (window.callManager) {
+      window.callManager.handleIceCandidate(data);
+    }
+  });
+  
+  socket.on('call:failed', (data) => {
+    console.error('❌ Call failed:', data);
+    if (window.callManager) {
+      // Mensajes más específicos según la razón del fallo
+      let message = 'Error en la llamada';
+      switch (data.reason) {
+        case 'user-offline':
+          message = `${window.callManager.currentContact?.name || 'El usuario'} no está disponible en este momento`;
+          break;
+        case 'user-busy':
+          message = `${window.callManager.currentContact?.name || 'El usuario'} está ocupado`;
+          break;
+        case 'server-error':
+          message = 'Error del servidor. Inténtalo de nuevo';
+          break;
+        case 'connection-failed':
+          message = 'No se pudo establecer la conexión';
+          break;
+        default:
+          message = data.message || 'Error en la llamada';
+      }
+      
+      window.callManager.showNotification(message, 'error');
+      window.callManager.endCall('failed');
+    }
+  });
+  
+  console.log('✅ Call socket event listeners configured');
+}
+
+// Export for global access
+if (typeof window !== 'undefined') {
+  window.setupHeaderCallButtons = setupHeaderCallButtons;
+  window.setupCallSocketListeners = setupCallSocketListeners;
+}

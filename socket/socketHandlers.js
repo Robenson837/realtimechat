@@ -979,7 +979,489 @@ const initializeSocketHandlers = (io) => {
                 console.error('Error handling presence heartbeat:', error);
             }
         });
+        
+        // Verificar disponibilidad de usuario para llamadas
+        socket.on('check-call-availability', async (data) => {
+            try {
+                const { userId } = data;
+                console.log(`🔍 Checking call availability for user: ${userId}`);
+                
+                let isAvailable = false;
+                let status = 'offline';
+                let responseInfo = {};
+                
+                // 1. Verificar en activeUsers
+                const activeConnection = activeUsers.get(userId);
+                if (activeConnection) {
+                    isAvailable = true;
+                    status = 'online';
+                    responseInfo.source = 'activeUsers';
+                    responseInfo.connectionCount = activeConnection.connectionCount;
+                    console.log(`✅ User ${userId} found in activeUsers with ${activeConnection.connectionCount} connections`);
+                }
+                
+                // 2. Si no está en activeUsers, buscar en sockets conectados
+                if (!isAvailable) {
+                    for (const [socketId, connectedSocket] of io.sockets.sockets) {
+                        if (connectedSocket.userId === userId) {
+                            isAvailable = true;
+                            status = 'online';
+                            responseInfo.source = 'activeSockets';
+                            responseInfo.socketId = socketId;
+                            console.log(`✅ User ${userId} found in active sockets: ${socketId}`);
+                            break;
+                        }
+                    }
+                }
+                
+                // 3. Si aún no lo encuentra, verificar sesiones recientes en BD
+                if (!isAvailable) {
+                    const activeSessions = await Session.findActiveSessions(userId);
+                    const recentSessions = activeSessions.filter(session => {
+                        const timeDiff = Date.now() - session.lastActivity.getTime();
+                        return timeDiff < 30000; // Menos de 30 segundos
+                    });
+                    
+                    if (recentSessions.length > 0) {
+                        status = 'recently-active';
+                        responseInfo.source = 'recentSessions';
+                        responseInfo.sessionCount = recentSessions.length;
+                        responseInfo.lastActivity = recentSessions[0].lastActivity;
+                        console.log(`⏰ User ${userId} has ${recentSessions.length} recent sessions`);
+                    }
+                }
+                
+                // Responder con el estado
+                socket.emit('call-availability-response', {
+                    userId,
+                    isAvailable,
+                    status,
+                    timestamp: Date.now(),
+                    ...responseInfo
+                });
+                
+            } catch (error) {
+                console.error('Error checking call availability:', error);
+                socket.emit('call-availability-response', {
+                    userId: data.userId,
+                    isAvailable: false,
+                    status: 'error',
+                    error: error.message
+                });
+            }
+        });
 
+        // ============= SISTEMA DE LLAMADAS WEBRTC =============
+        
+        // Iniciar llamada
+        socket.on('call:initiate', async (data) => {
+            try {
+                const { callId, to, type, offer, from } = data;
+                
+                console.log(`📞 Call initiated: ${callId} from ${from?.userId || socket.userId} to ${to}`);
+                
+                // Verificar que el destinatario está en línea
+                const recipientConnection = activeUsers.get(to);
+                
+                if (!recipientConnection) {
+                    console.log(`⚠️ User ${to} not in activeUsers, searching all connected sockets...`);
+                    
+                    // Buscar socket por userId en todas las conexiones activas
+                    let foundSocket = false;
+                    let foundSocketInfo = null;
+                    
+                    for (const [socketId, connectedSocket] of io.sockets.sockets) {
+                        if (connectedSocket.userId === to) {
+                            console.log(`✅ Found active socket for user ${to}: ${socketId}`);
+                            foundSocket = true;
+                            foundSocketInfo = connectedSocket;
+                            
+                            // Enviar llamada inmediatamente
+                            connectedSocket.emit('call:incoming', {
+                                callId,
+                                type,
+                                offer,
+                                from: from || {
+                                    userId: socket.userId,
+                                    name: socket.user?.fullName || socket.user?.username,
+                                    profilePhoto: socket.user?.avatar
+                                }
+                            });
+                            console.log(`📞 Incoming call sent to active socket ${socketId}`);
+                            break;
+                        }
+                    }
+                    
+                    if (!foundSocket) {
+                        // Verificar en la base de datos si hay sesiones activas recientes
+                        console.log(`🔍 No active socket found, checking database sessions for user ${to}...`);
+                        
+                        try {
+                            const activeSessions = await Session.findActiveSessions(to);
+                            const recentSessions = activeSessions.filter(session => {
+                                const timeDiff = Date.now() - session.lastActivity.getTime();
+                                return timeDiff < 60000; // Menos de 1 minuto
+                            });
+                            
+                            if (recentSessions.length > 0) {
+                                console.log(`⏰ User ${to} has ${recentSessions.length} recent sessions, waiting for reconnection...`);
+                                
+                                // Dar 5 segundos para que se reconecte
+                                let attemptCount = 0;
+                                const maxAttempts = 5;
+                                
+                                const retryInterval = setInterval(() => {
+                                    attemptCount++;
+                                    
+                                    // Buscar nuevamente
+                                    for (const [socketId, connectedSocket] of io.sockets.sockets) {
+                                        if (connectedSocket.userId === to) {
+                                            console.log(`🔄 User ${to} reconnected on attempt ${attemptCount}, sending call`);
+                                            
+                                            connectedSocket.emit('call:incoming', {
+                                                callId,
+                                                type,
+                                                offer,
+                                                from: from || {
+                                                    userId: socket.userId,
+                                                    name: socket.user?.fullName || socket.user?.username,
+                                                    profilePhoto: socket.user?.avatar
+                                                }
+                                            });
+                                            
+                                            clearInterval(retryInterval);
+                                            return;
+                                        }
+                                    }
+                                    
+                                    if (attemptCount >= maxAttempts) {
+                                        clearInterval(retryInterval);
+                                        console.log(`❌ Max attempts reached, user ${to} not available`);
+                                        socket.emit('call:failed', {
+                                            callId,
+                                            reason: 'user-offline',
+                                            message: 'El usuario no está disponible'
+                                        });
+                                    }
+                                }, 1000); // Intentar cada segundo
+                                
+                                return; // No enviar falla inmediatamente
+                            }
+                        } catch (error) {
+                            console.error('Error checking database sessions:', error);
+                        }
+                        
+                        // Usuario realmente offline
+                        socket.emit('call:failed', {
+                            callId,
+                            reason: 'user-offline',
+                            message: 'El usuario no está disponible'
+                        });
+                        console.log(`❌ Call failed - recipient ${to} is definitely offline`);
+                        return;
+                    }
+                } else {
+                    // Usuario en línea, proceder normalmente
+                    const targetSocketIds = recipientConnection.socketIds || [recipientConnection.primarySocketId];
+                    
+                    console.log(`📞 Sending call to recipient ${to}:`, {
+                        recipientConnection: {
+                            socketIds: recipientConnection.socketIds,
+                            primarySocketId: recipientConnection.primarySocketId,
+                            connectionCount: recipientConnection.connectionCount
+                        },
+                        targetSocketIds,
+                        callId,
+                        type
+                    });
+                    
+                    let sentCount = 0;
+                    targetSocketIds.forEach(socketId => {
+                        if (socketId && socketId !== socket.id) {
+                            const callData = {
+                                callId,
+                                type,
+                                offer,
+                                from: from || {
+                                    userId: socket.userId,
+                                    name: socket.user?.fullName || socket.user?.username,
+                                    profilePhoto: socket.user?.avatar
+                                }
+                            };
+                            
+                            console.log(`📞 Emitting call:incoming to socket ${socketId}:`, {
+                                callId,
+                                fromUserId: callData.from.userId,
+                                fromName: callData.from.name,
+                                type
+                            });
+                            
+                            io.to(socketId).emit('call:incoming', callData);
+                            sentCount++;
+                            console.log(`✅ Call:incoming emitted to socket ${socketId}`);
+                        } else {
+                            console.log(`⚠️ Skipping socket ${socketId} (same as sender: ${socket.id})`);
+                        }
+                    });
+                    
+                    console.log(`📊 Call sent to ${sentCount} recipient sockets`);
+                }
+                
+                // Confirmar al iniciador que la llamada fue enviada
+                socket.emit('call:initiated', {
+                    callId,
+                    recipientId: to,
+                    timestamp: Date.now()
+                });
+                
+            } catch (error) {
+                console.error('Error handling call initiation:', error);
+                socket.emit('call:failed', {
+                    callId: data.callId,
+                    reason: 'server-error',
+                    message: 'Error del servidor al iniciar la llamada'
+                });
+            }
+        });
+        
+        // Aceptar llamada
+        socket.on('call:accept', async (data) => {
+            try {
+                const { callId, to, answer } = data;
+                
+                console.log(`✅ Call accepted: ${callId} by ${socket.userId}`);
+                
+                // Notificar al iniciador de la llamada
+                const initiatorConnection = activeUsers.get(to);
+                
+                if (initiatorConnection) {
+                    const targetSocketIds = initiatorConnection.socketIds || [initiatorConnection.primarySocketId];
+                    
+                    targetSocketIds.forEach(socketId => {
+                        if (socketId) {
+                            io.to(socketId).emit('call:accepted', {
+                                callId,
+                                answer,
+                                acceptedBy: socket.userId
+                            });
+                        }
+                    });
+                    
+                    console.log(`✅ Call acceptance sent to initiator ${to}`);
+                }
+                
+            } catch (error) {
+                console.error('Error handling call acceptance:', error);
+            }
+        });
+        
+        // Rechazar llamada
+        socket.on('call:decline', async (data) => {
+            try {
+                const { callId, to, reason = 'declined' } = data;
+                
+                console.log(`❌ Call declined: ${callId} by ${socket.userId}, reason: ${reason}`);
+                
+                // Notificar al iniciador
+                const initiatorConnection = activeUsers.get(to);
+                
+                if (initiatorConnection) {
+                    const targetSocketIds = initiatorConnection.socketIds || [initiatorConnection.primarySocketId];
+                    
+                    targetSocketIds.forEach(socketId => {
+                        if (socketId) {
+                            io.to(socketId).emit('call:declined', {
+                                callId,
+                                reason,
+                                declinedBy: socket.userId
+                            });
+                        }
+                    });
+                    
+                    console.log(`❌ Call decline sent to initiator ${to}`);
+                }
+                
+            } catch (error) {
+                console.error('Error handling call decline:', error);
+            }
+        });
+        
+        // Usuario ocupado
+        socket.on('call:busy', async (data) => {
+            try {
+                const { callId, to } = data;
+                
+                console.log(`📞 Call busy signal: ${callId} from ${socket.userId}`);
+                
+                // Notificar al iniciador que el usuario está ocupado
+                const initiatorConnection = activeUsers.get(to);
+                
+                if (initiatorConnection) {
+                    const targetSocketIds = initiatorConnection.socketIds || [initiatorConnection.primarySocketId];
+                    
+                    targetSocketIds.forEach(socketId => {
+                        if (socketId) {
+                            io.to(socketId).emit('call:busy', {
+                                callId,
+                                busyUser: socket.userId
+                            });
+                        }
+                    });
+                }
+                
+            } catch (error) {
+                console.error('Error handling call busy:', error);
+            }
+        });
+        
+        // ICE candidates para conectividad WebRTC
+        socket.on('call:ice-candidate', async (data) => {
+            try {
+                const { callId, to, candidate } = data;
+                
+                if (!candidate || !to) {
+                    console.warn('Invalid ICE candidate data received');
+                    return;
+                }
+                
+                // Reenviar candidato ICE al destinatario
+                const targetConnection = activeUsers.get(to);
+                
+                if (targetConnection) {
+                    const targetSocketIds = targetConnection.socketIds || [targetConnection.primarySocketId];
+                    
+                    targetSocketIds.forEach(socketId => {
+                        if (socketId && socketId !== socket.id) {
+                            io.to(socketId).emit('call:ice-candidate', {
+                                callId,
+                                candidate,
+                                from: socket.userId
+                            });
+                        }
+                    });
+                    
+                    // Solo logear ocasionalmente para evitar spam
+                    if (Math.random() < 0.1) {
+                        console.log(`🧊 ICE candidate relayed for call ${callId}`);
+                    }
+                }
+                
+            } catch (error) {
+                console.error('Error handling ICE candidate:', error);
+            }
+        });
+        
+        // Finalizar llamada
+        socket.on('call:end', async (data) => {
+            try {
+                const { callId, to, reason = 'ended' } = data;
+                
+                console.log(`📞 Call ended: ${callId} by ${socket.userId}, reason: ${reason}`);
+                
+                // Notificar al otro participante
+                const targetConnection = activeUsers.get(to);
+                
+                if (targetConnection) {
+                    const targetSocketIds = targetConnection.socketIds || [targetConnection.primarySocketId];
+                    
+                    targetSocketIds.forEach(socketId => {
+                        if (socketId) {
+                            io.to(socketId).emit('call:ended', {
+                                callId,
+                                reason,
+                                endedBy: socket.userId
+                            });
+                        }
+                    });
+                    
+                    console.log(`📞 Call end notification sent to ${to}`);
+                }
+                
+            } catch (error) {
+                console.error('Error handling call end:', error);
+            }
+        });
+        
+        // Llamada perdida (timeout)
+        socket.on('call:missed', async (data) => {
+            try {
+                const { callId, to } = data;
+                
+                console.log(`📞 Call missed: ${callId} - notifying ${to}`);
+                
+                // Notificar al iniciador que la llamada fue perdida
+                const initiatorConnection = activeUsers.get(to);
+                
+                if (initiatorConnection) {
+                    const targetSocketIds = initiatorConnection.socketIds || [initiatorConnection.primarySocketId];
+                    
+                    targetSocketIds.forEach(socketId => {
+                        if (socketId) {
+                            io.to(socketId).emit('call:missed', {
+                                callId,
+                                missedBy: socket.userId
+                            });
+                        }
+                    });
+                }
+                
+            } catch (error) {
+                console.error('Error handling call missed:', error);
+            }
+        });
+        
+        // Control de audio durante la llamada
+        socket.on('call:audio-toggle', async (data) => {
+            try {
+                const { callId, to, enabled } = data;
+                
+                const targetConnection = activeUsers.get(to);
+                
+                if (targetConnection) {
+                    const targetSocketIds = targetConnection.socketIds || [targetConnection.primarySocketId];
+                    
+                    targetSocketIds.forEach(socketId => {
+                        if (socketId) {
+                            io.to(socketId).emit('call:remote-audio-toggle', {
+                                callId,
+                                enabled,
+                                userId: socket.userId
+                            });
+                        }
+                    });
+                }
+                
+            } catch (error) {
+                console.error('Error handling audio toggle:', error);
+            }
+        });
+        
+        // Control de video durante la llamada
+        socket.on('call:video-toggle', async (data) => {
+            try {
+                const { callId, to, enabled } = data;
+                
+                const targetConnection = activeUsers.get(to);
+                
+                if (targetConnection) {
+                    const targetSocketIds = targetConnection.socketIds || [targetConnection.primarySocketId];
+                    
+                    targetSocketIds.forEach(socketId => {
+                        if (socketId) {
+                            io.to(socketId).emit('call:remote-video-toggle', {
+                                callId,
+                                enabled,
+                                userId: socket.userId
+                            });
+                        }
+                    });
+                }
+                
+            } catch (error) {
+                console.error('Error handling video toggle:', error);
+            }
+        });
+        
         // ============= UBICACIÓN EN TIEMPO REAL =============
         
         // Iniciar compartir ubicación en tiempo real
@@ -1071,6 +1553,34 @@ const initializeSocketHandlers = (io) => {
             }
         });
 
+        // Manejar desconexión durante llamadas
+        socket.on('call:connection-lost', async (data) => {
+            try {
+                const { callId, to } = data;
+                
+                console.log(`📞 Call connection lost: ${callId} for user ${socket.userId}`);
+                
+                // Notificar al otro participante sobre la pérdida de conexión
+                const targetConnection = activeUsers.get(to);
+                
+                if (targetConnection) {
+                    const targetSocketIds = targetConnection.socketIds || [targetConnection.primarySocketId];
+                    
+                    targetSocketIds.forEach(socketId => {
+                        if (socketId) {
+                            io.to(socketId).emit('call:connection-lost', {
+                                callId,
+                                lostUser: socket.userId
+                            });
+                        }
+                    });
+                }
+                
+            } catch (error) {
+                console.error('Error handling call connection lost:', error);
+            }
+        });
+        
         // Handle disconnection (page refresh, network issues, etc.)
         socket.on('disconnect', async (reason) => {
             const sessionId = socket.sessionId;

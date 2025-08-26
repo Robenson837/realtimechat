@@ -1,0 +1,923 @@
+<!-- ===== SISTEMA DE LLAMADAS - COMPONENTES UI ===== -->
+<!-- Este archivo contiene todos los componentes de UI para las llamadas -->
+<!-- Se debe incluir en el index.html principal -->
+
+<!-- Modal principal de llamadas -->
+<div id="call-modal" class="call-modal">
+  <div class="call-modal-overlay"></div>
+  <div class="call-modal-content">
+    
+    <!-- Header de la llamada -->
+    <div class="call-header">
+      <div class="call-contact-info">
+        <img id="call-contact-avatar" src="images/user-placeholder-40.svg" alt="Contact" class="call-avatar">
+        <div class="call-details">
+          <h3 id="call-contact-name">Usuario</h3>
+          <span id="call-status" class="call-status">Conectando...</span>
+          <span id="call-duration" class="call-duration">00:00</span>
+        </div>
+      </div>
+      <button id="call-minimize-btn" class="call-control-btn minimize-btn">
+        <i class="fas fa-minus"></i>
+      </button>
+    </div>
+    
+    <!-- Contenedor de video -->
+    <div id="call-video-container" class="call-video-container">
+      <!-- Video remoto (pantalla principal) -->
+      <video id="remote-video" class="remote-video" autoplay playsinline></video>
+      
+      <!-- Video local (pequeño, esquina) -->
+      <video id="local-video" class="local-video" autoplay playsinline muted></video>
+      
+      <!-- Display para llamadas de audio -->
+      <div id="audio-call-display" class="audio-call-display">
+        <img id="audio-contact-avatar" src="images/user-placeholder-40.svg" alt="Contact" class="audio-avatar">
+        <div class="audio-wave-animation">
+          <div class="wave wave1"></div>
+          <div class="wave wave2"></div>
+          <div class="wave wave3"></div>
+          <div class="wave wave4"></div>
+          <div class="wave wave5"></div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Controles de llamada -->
+    <div class="call-controls">
+      <button id="toggle-audio-btn" class="call-control-btn audio-btn" title="Silenciar micrófono">
+        <i class="fas fa-microphone"></i>
+      </button>
+      
+      <button id="toggle-video-btn" class="call-control-btn video-btn" title="Desactivar video">
+        <i class="fas fa-video"></i>
+      </button>
+      
+      <button id="switch-camera-btn" class="call-control-btn camera-btn" title="Cambiar cámara">
+        <i class="fas fa-sync-alt"></i>
+      </button>
+      
+      <button id="toggle-speaker-btn" class="call-control-btn speaker-btn" title="Altavoz">
+        <i class="fas fa-volume-up"></i>
+      </button>
+      
+      <button id="end-call-btn" class="call-control-btn end-btn" title="Finalizar llamada">
+        <i class="fas fa-phone-slash"></i>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Interfaz de llamada entrante -->
+<div id="incoming-call-interface" class="incoming-call-interface">
+  <div class="incoming-call-overlay"></div>
+  <div class="incoming-call-content">
+    
+    <!-- Avatar y información del contacto -->
+    <div class="incoming-call-info">
+      <img id="incoming-contact-avatar" src="images/user-placeholder-40.svg" alt="Contact" class="incoming-avatar">
+      <h3 id="incoming-contact-name">Usuario desconocido</h3>
+      <p id="incoming-call-type" class="incoming-call-type">Llamada entrante</p>
+    </div>
+    
+    <!-- Animación de llamada entrante -->
+    <div class="incoming-call-animation">
+      <div class="pulse-ring"></div>
+      <div class="pulse-ring pulse-ring-delay-1"></div>
+      <div class="pulse-ring pulse-ring-delay-2"></div>
+    </div>
+    
+    <!-- Botones de acción -->
+    <div class="incoming-call-actions">
+      <button id="decline-call-btn" class="incoming-btn decline-btn">
+        <i class="fas fa-phone-slash"></i>
+        <span>Rechazar</span>
+      </button>
+      
+      <button id="accept-call-btn" class="incoming-btn accept-btn">
+        <i class="fas fa-phone"></i>
+        <span>Aceptar</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Widget minimizado de llamada -->
+<div id="minimized-call-widget" class="minimized-call-widget">
+  <div class="minimized-call-info">
+    <img id="minimized-avatar" src="images/user-placeholder-40.svg" alt="Contact" class="minimized-avatar">
+    <div class="minimized-details">
+      <span id="minimized-name">Usuario</span>
+      <span id="minimized-duration">00:00</span>
+    </div>
+  </div>
+  
+  <div class="minimized-controls">
+    <button id="minimized-toggle-audio" class="minimized-btn">
+      <i class="fas fa-microphone"></i>
+    </button>
+    <button id="minimized-end-call" class="minimized-btn end">
+      <i class="fas fa-phone-slash"></i>
+    </button>
+    <button id="maximize-call" class="minimized-btn">
+      <i class="fas fa-expand"></i>
+    </button>
+  </div>
+</div>
+
+<!-- Notificaciones de llamada -->
+<div id="call-notifications" class="call-notifications">
+  <!-- Las notificaciones se insertarán dinámicamente aquí -->
+</div>
+
+<!-- Overlay de permisos -->
+<div id="permissions-modal" class="permissions-modal">
+  <div class="permissions-content">
+    <div class="permissions-icon">
+      <i class="fas fa-video"></i>
+    </div>
+    <h3>Permisos necesarios</h3>
+    <p>Para realizar llamadas, necesitamos acceso a tu cámara y micrófono.</p>
+    <div class="permissions-buttons">
+      <button id="permissions-cancel" class="btn-secondary">Cancelar</button>
+      <button id="permissions-allow" class="btn-primary">Permitir acceso</button>
+    </div>
+  </div>
+</div>
+
+<!-- Estilos específicos para llamadas -->
+<style>
+/* ===== ESTILOS DEL SISTEMA DE LLAMADAS ===== */
+
+.call-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10000;
+  display: none;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+}
+
+.call-modal.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.call-modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  backdrop-filter: blur(20px);
+}
+
+.call-modal-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  max-width: 1200px;
+  max-height: 800px;
+  margin: 0 auto;
+}
+
+.call-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border-radius: 12px 12px 0 0;
+}
+
+.call-contact-info {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.call-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.call-details h3 {
+  margin: 0;
+  color: white;
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.call-status {
+  display: block;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  margin-top: 2px;
+}
+
+.call-duration {
+  display: block;
+  color: #4ade80;
+  font-size: 14px;
+  font-weight: 500;
+  margin-top: 2px;
+}
+
+.call-video-container {
+  flex: 1;
+  position: relative;
+  background: #000;
+  border-radius: 0;
+  overflow: hidden;
+}
+
+.remote-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  background: #1a1a1a;
+}
+
+.local-video {
+  position: absolute;
+  bottom: 20px;
+  right: 20px;
+  width: 200px;
+  height: 150px;
+  border-radius: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  object-fit: cover;
+  background: #2a2a2a;
+}
+
+/* Audio call display */
+.audio-call-display {
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.call-video-container.audio-only .audio-call-display {
+  display: flex;
+}
+
+.call-video-container.audio-only .remote-video,
+.call-video-container.audio-only .local-video {
+  display: none;
+}
+
+.audio-avatar {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+  margin-bottom: 30px;
+}
+
+.audio-wave-animation {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.wave {
+  width: 4px;
+  height: 20px;
+  background: rgba(255, 255, 255, 0.6);
+  border-radius: 2px;
+  animation: wave-pulse 1.5s ease-in-out infinite;
+}
+
+.wave:nth-child(2) { animation-delay: 0.1s; }
+.wave:nth-child(3) { animation-delay: 0.2s; }
+.wave:nth-child(4) { animation-delay: 0.3s; }
+.wave:nth-child(5) { animation-delay: 0.4s; }
+
+@keyframes wave-pulse {
+  0%, 40%, 100% { transform: scaleY(0.4); }
+  20% { transform: scaleY(1); }
+}
+
+/* Call controls */
+.call-controls {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 30px 20px;
+  background: rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(10px);
+  border-radius: 0 0 12px 12px;
+}
+
+.call-control-btn {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.call-control-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: scale(1.05);
+}
+
+.call-control-btn.muted,
+.call-control-btn.disabled {
+  background: rgba(239, 68, 68, 0.8);
+  color: white;
+}
+
+.call-control-btn.active {
+  background: rgba(34, 197, 94, 0.8);
+  color: white;
+}
+
+.end-btn {
+  background: rgba(239, 68, 68, 0.8);
+  color: white;
+}
+
+.end-btn:hover {
+  background: rgba(220, 38, 38, 0.9);
+  transform: scale(1.05);
+}
+
+/* Incoming call interface */
+.incoming-call-interface {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 10001;
+  display: none;
+}
+
+.incoming-call-interface.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.incoming-call-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(135deg, #1e3a8a 0%, #3730a3 100%);
+  backdrop-filter: blur(20px);
+}
+
+.incoming-call-content {
+  position: relative;
+  text-align: center;
+  color: white;
+  z-index: 1;
+}
+
+.incoming-call-info h3 {
+  font-size: 28px;
+  font-weight: 600;
+  margin: 20px 0 10px;
+}
+
+.incoming-call-type {
+  font-size: 16px;
+  opacity: 0.8;
+  margin: 0 0 40px;
+}
+
+.incoming-avatar {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 4px solid rgba(255, 255, 255, 0.3);
+}
+
+.incoming-call-animation {
+  position: relative;
+  display: inline-block;
+  margin: 30px 0;
+}
+
+.pulse-ring {
+  content: '';
+  width: 200px;
+  height: 200px;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 50%;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  animation: pulse-ring-animation 3s cubic-bezier(0.455, 0.03, 0.515, 0.955) infinite;
+}
+
+.pulse-ring-delay-1 {
+  animation-delay: 1s;
+}
+
+.pulse-ring-delay-2 {
+  animation-delay: 2s;
+}
+
+@keyframes pulse-ring-animation {
+  0% {
+    transform: translate(-50%, -50%) scale(0.33);
+    opacity: 1;
+  }
+  80%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 0;
+  }
+}
+
+.incoming-call-actions {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 40px;
+  margin-top: 50px;
+}
+
+.incoming-btn {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  border: none;
+  color: white;
+  font-size: 28px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+
+.incoming-btn span {
+  font-size: 12px;
+  margin-top: 8px;
+  position: absolute;
+  bottom: -25px;
+  white-space: nowrap;
+}
+
+.decline-btn {
+  background: rgba(239, 68, 68, 0.8);
+}
+
+.decline-btn:hover {
+  background: rgba(220, 38, 38, 0.9);
+  transform: scale(1.1);
+}
+
+.accept-btn {
+  background: rgba(34, 197, 94, 0.8);
+}
+
+.accept-btn:hover {
+  background: rgba(22, 163, 74, 0.9);
+  transform: scale(1.1);
+}
+
+/* Minimized widget */
+.minimized-call-widget {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.9);
+  backdrop-filter: blur(10px);
+  border-radius: 12px;
+  padding: 15px;
+  color: white;
+  display: none;
+  align-items: center;
+  gap: 15px;
+  z-index: 9999;
+  min-width: 280px;
+}
+
+.minimized-call-widget.active {
+  display: flex;
+}
+
+.minimized-call-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex: 1;
+}
+
+.minimized-avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+}
+
+.minimized-details span {
+  display: block;
+  font-size: 14px;
+}
+
+.minimized-controls {
+  display: flex;
+  gap: 8px;
+}
+
+.minimized-btn {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.minimized-btn:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.minimized-btn.end {
+  background: rgba(239, 68, 68, 0.8);
+}
+
+/* Call notifications */
+.call-notifications {
+  position: fixed;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10002;
+}
+
+.call-notification {
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 15px 25px;
+  border-radius: 25px;
+  margin-bottom: 10px;
+  backdrop-filter: blur(10px);
+  animation: slide-down 0.3s ease-out;
+}
+
+@keyframes slide-down {
+  from {
+    transform: translateY(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Permissions modal */
+.permissions-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10003;
+}
+
+.permissions-modal.active {
+  display: flex;
+}
+
+.permissions-content {
+  background: white;
+  border-radius: 16px;
+  padding: 30px;
+  text-align: center;
+  max-width: 400px;
+  width: 90%;
+}
+
+.permissions-icon {
+  width: 60px;
+  height: 60px;
+  background: #4f46e5;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 20px;
+  font-size: 24px;
+  color: white;
+}
+
+.permissions-content h3 {
+  margin: 0 0 15px;
+  font-size: 20px;
+  font-weight: 600;
+}
+
+.permissions-content p {
+  color: #666;
+  margin: 0 0 25px;
+  line-height: 1.5;
+}
+
+.permissions-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.btn-primary, .btn-secondary {
+  padding: 12px 24px;
+  border-radius: 8px;
+  border: none;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary {
+  background: #4f46e5;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #4338ca;
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+}
+
+.btn-secondary:hover {
+  background: #e5e7eb;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .call-modal-content {
+    max-width: 100%;
+    max-height: 100%;
+    border-radius: 0;
+  }
+  
+  .call-header {
+    border-radius: 0;
+    padding: 15px;
+  }
+  
+  .call-controls {
+    border-radius: 0;
+    padding: 20px 15px;
+    gap: 15px;
+  }
+  
+  .call-control-btn {
+    width: 50px;
+    height: 50px;
+    font-size: 20px;
+  }
+  
+  .local-video {
+    width: 120px;
+    height: 90px;
+    bottom: 15px;
+    right: 15px;
+  }
+  
+  .minimized-call-widget {
+    top: 15px;
+    right: 15px;
+    min-width: 250px;
+  }
+  
+  .incoming-call-actions {
+    gap: 30px;
+  }
+  
+  .incoming-btn {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+  }
+}
+
+/* Hide scrollbars during calls */
+body.call-active {
+  overflow: hidden;
+}
+</style>
+
+<script>
+// ===== INICIALIZACIÓN DE COMPONENTES DE LLAMADA =====
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('🔧 Call UI components loaded');
+  
+  // Configurar event listeners para los componentes
+  setupCallUIEventListeners();
+});
+
+function setupCallUIEventListeners() {
+  // Minimizar llamada
+  const minimizeBtn = document.getElementById('call-minimize-btn');
+  if (minimizeBtn) {
+    minimizeBtn.addEventListener('click', function() {
+      const callModal = document.getElementById('call-modal');
+      const minimizedWidget = document.getElementById('minimized-call-widget');
+      
+      if (callModal && minimizedWidget) {
+        callModal.classList.remove('active');
+        minimizedWidget.classList.add('active');
+      }
+    });
+  }
+  
+  // Maximizar llamada
+  const maximizeBtn = document.getElementById('maximize-call');
+  if (maximizeBtn) {
+    maximizeBtn.addEventListener('click', function() {
+      const callModal = document.getElementById('call-modal');
+      const minimizedWidget = document.getElementById('minimized-call-widget');
+      
+      if (callModal && minimizedWidget) {
+        minimizedWidget.classList.remove('active');
+        callModal.classList.add('active');
+      }
+    });
+  }
+  
+  // Controles del widget minimizado
+  const minimizedEndCall = document.getElementById('minimized-end-call');
+  if (minimizedEndCall) {
+    minimizedEndCall.addEventListener('click', function() {
+      if (window.callManager) {
+        window.callManager.endCall();
+      }
+    });
+  }
+  
+  const minimizedToggleAudio = document.getElementById('minimized-toggle-audio');
+  if (minimizedToggleAudio) {
+    minimizedToggleAudio.addEventListener('click', function() {
+      if (window.callManager) {
+        window.callManager.toggleAudio();
+      }
+    });
+  }
+  
+  // Permisos modal
+  const permissionsAllow = document.getElementById('permissions-allow');
+  const permissionsCancel = document.getElementById('permissions-cancel');
+  
+  if (permissionsAllow) {
+    permissionsAllow.addEventListener('click', function() {
+      requestMediaPermissions();
+    });
+  }
+  
+  if (permissionsCancel) {
+    permissionsCancel.addEventListener('click', function() {
+      hidePermissionsModal();
+    });
+  }
+  
+  console.log('✅ Call UI event listeners configured');
+}
+
+// Funciones de utilidad para el UI
+function showCallModal() {
+  const modal = document.getElementById('call-modal');
+  if (modal) {
+    modal.classList.add('active');
+    document.body.classList.add('call-active');
+  }
+}
+
+function hideCallModal() {
+  const modal = document.getElementById('call-modal');
+  if (modal) {
+    modal.classList.remove('active');
+    document.body.classList.remove('call-active');
+  }
+}
+
+function showIncomingCallInterface() {
+  const interface = document.getElementById('incoming-call-interface');
+  if (interface) {
+    interface.classList.add('active');
+    document.body.classList.add('call-active');
+  }
+}
+
+function hideIncomingCallInterface() {
+  const interface = document.getElementById('incoming-call-interface');
+  if (interface) {
+    interface.classList.remove('active');
+    document.body.classList.remove('call-active');
+  }
+}
+
+function showPermissionsModal() {
+  const modal = document.getElementById('permissions-modal');
+  if (modal) {
+    modal.classList.add('active');
+  }
+}
+
+function hidePermissionsModal() {
+  const modal = document.getElementById('permissions-modal');
+  if (modal) {
+    modal.classList.remove('active');
+  }
+}
+
+async function requestMediaPermissions() {
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ 
+      video: true, 
+      audio: true 
+    });
+    
+    // Detener el stream de prueba
+    stream.getTracks().forEach(track => track.stop());
+    
+    hidePermissionsModal();
+    
+    // Notificar que los permisos fueron concedidos
+    if (window.callManager) {
+      window.callManager.onPermissionsGranted();
+    }
+    
+  } catch (error) {
+    console.error('Error requesting permissions:', error);
+    showCallNotification('No se pudieron obtener los permisos necesarios', 'error');
+    hidePermissionsModal();
+  }
+}
+
+function showCallNotification(message, type = 'info') {
+  const container = document.getElementById('call-notifications');
+  if (!container) return;
+  
+  const notification = document.createElement('div');
+  notification.className = 'call-notification';
+  notification.textContent = message;
+  
+  if (type === 'error') {
+    notification.style.background = 'rgba(239, 68, 68, 0.9)';
+  } else if (type === 'success') {
+    notification.style.background = 'rgba(34, 197, 94, 0.9)';
+  }
+  
+  container.appendChild(notification);
+  
+  // Auto-remove after 3 seconds
+  setTimeout(() => {
+    if (notification.parentNode) {
+      notification.parentNode.removeChild(notification);
+    }
+  }, 3000);
+}
+
+// Export functions for global access
+window.CallUI = {
+  showCallModal,
+  hideCallModal,
+  showIncomingCallInterface,
+  hideIncomingCallInterface,
+  showPermissionsModal,
+  hidePermissionsModal,
+  showCallNotification
+};
+</script>

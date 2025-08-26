@@ -1,0 +1,90 @@
+{
+  "app_name": "VigiChat",
+  "main_menu.profile_settings": "Paramètres du profil",
+  "main_menu.add_contact": "Ajouter un contact",
+  "main_menu.blocked_contacts": "Contacts bloqués",
+  "main_menu.language": "Langue", 
+  "main_menu.help": "Aide",
+  "main_menu.logout": "Se déconnecter",
+  "main_menu": {
+    "profile_settings": "Paramètres du profil",
+    "add_contact": "Ajouter un contact",
+    "blocked_contacts": "Contacts bloqués",
+    "language": "Langue", 
+    "help": "Aide",
+    "logout": "Se déconnecter"
+  },
+  "chat": {
+    "online": "En ligne",
+    "offline": "Hors ligne",
+    "away": "Absent",
+    "typing": "En train d'écrire...",
+    "last_seen": "Vu pour la dernière fois",
+    "last_seen_today": "aujourd'hui à",
+    "last_seen_yesterday": "hier à",
+    "search_placeholder": "Rechercher des conversations...",
+    "no_messages": "Aucun message pour le moment",
+    "message_placeholder": "Tapez un message..."
+  },
+  "buttons": {
+    "send": "Envoyer",
+    "cancel": "Annuler",
+    "save": "Sauvegarder", 
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "copy": "Copier",
+    "reply": "Répondre",
+    "forward": "Transférer",
+    "select": "Sélectionner",
+    "close": "Fermer"
+  },
+  "calls": {
+    "incoming": "Appel entrant",
+    "outgoing": "Appel en cours...",
+    "connected": "Connecté",
+    "accept": "Accepter",
+    "decline": "Refuser",
+    "end": "Raccrocher",
+    "mute": "Couper le son",
+    "unmute": "Activer le son",
+    "video_on": "Activer la vidéo",
+    "video_off": "Désactiver la vidéo",
+    "speaker": "Haut-parleur",
+    "missed_call": "Appel manqué",
+    "call_ended": "Appel terminé",
+    "call_duration": "Durée de l'appel"
+  },
+  "notifications": {
+    "new_message": "Nouveau message",
+    "call_declined": "Appel refusé",
+    "user_online": "est en ligne",
+    "user_offline": "s'est déconnecté",
+    "contact_added": "Contact ajouté", 
+    "contact_blocked": "Contact bloqué"
+  },
+  "profile": {
+    "edit_profile": "Modifier le profil",
+    "full_name": "Nom complet",
+    "username": "Nom d'utilisateur",
+    "email": "E-mail",
+    "phone": "Téléphone",
+    "bio": "Biographie",
+    "change_avatar": "Changer l'avatar",
+    "privacy_settings": "Paramètres de confidentialité"
+  },
+  "settings": {
+    "general": "Général",
+    "notifications": "Notifications",
+    "privacy": "Confidentialité",
+    "security": "Sécurité",
+    "about": "À propos"
+  },
+  "errors": {
+    "connection_error": "Erreur de connexion",
+    "invalid_credentials": "Identifiants invalides", 
+    "user_not_found": "Utilisateur introuvable",
+    "permission_denied": "Permission refusée",
+    "file_too_large": "Fichier trop volumineux",
+    "unsupported_format": "Format non supporté"
+  }
+}

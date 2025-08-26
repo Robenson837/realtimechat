@@ -1,0 +1,90 @@
+{
+  "app_name": "VigiChat",
+  "main_menu.profile_settings": "Paramèt pwofil yo",
+  "main_menu.add_contact": "Ajoute kontak",
+  "main_menu.blocked_contacts": "Kontak yo bloke",
+  "main_menu.language": "Lang",
+  "main_menu.help": "Èd", 
+  "main_menu.logout": "Soti",
+  "main_menu": {
+    "profile_settings": "Paramèt pwofil yo",
+    "add_contact": "Ajoute kontak",
+    "blocked_contacts": "Kontak yo bloke",
+    "language": "Lang",
+    "help": "Èd", 
+    "logout": "Soti"
+  },
+  "chat": {
+    "online": "Sou entènèt",
+    "offline": "Pa konekte",
+    "away": "Ale",
+    "typing": "Y ap ekri...",
+    "last_seen": "Te wè dènye fwa",
+    "last_seen_today": "jodi a nan",
+    "last_seen_yesterday": "yè nan",
+    "search_placeholder": "Chèche konvèsasyon yo...",
+    "no_messages": "Pa gen mesaj ankò",
+    "message_placeholder": "Ekri yon mesaj..."
+  },
+  "buttons": {
+    "send": "Voye",
+    "cancel": "Anile",
+    "save": "Sovgade",
+    "delete": "Efase",
+    "edit": "Modifye",
+    "copy": "Kopye",
+    "reply": "Reponn",
+    "forward": "Transfere",
+    "select": "Chwazi", 
+    "close": "Fèmen"
+  },
+  "calls": {
+    "incoming": "Appèl k ap antre",
+    "outgoing": "Y ap rele...",
+    "connected": "Konekte",
+    "accept": "Aksepte",
+    "decline": "Refize",
+    "end": "Fini appèl la",
+    "mute": "Fèmen mikwo a",
+    "unmute": "Ouvri mikwo a", 
+    "video_on": "Ouvri videyo a",
+    "video_off": "Fèmen videyo a",
+    "speaker": "Otopalan",
+    "missed_call": "Appèl yo rate",
+    "call_ended": "Appèl la fini",
+    "call_duration": "Kantite tan appèl la"
+  },
+  "notifications": {
+    "new_message": "Nouvo mesaj",
+    "call_declined": "Yo refize appèl la",
+    "user_online": "vin konekte",
+    "user_offline": "soti",
+    "contact_added": "Yo ajoute kontak la",
+    "contact_blocked": "Yo bloke kontak la"
+  },
+  "profile": {
+    "edit_profile": "Modifye pwofil la",
+    "full_name": "Non konplè",
+    "username": "Non itilizatè",
+    "email": "Imèl",
+    "phone": "Telefòn",
+    "bio": "Byografi",
+    "change_avatar": "Chanje foto a", 
+    "privacy_settings": "Paramèt vi prive yo"
+  },
+  "settings": {
+    "general": "Jeneral",
+    "notifications": "Notifikasyon yo",
+    "privacy": "Vi prive",
+    "security": "Sekirite",
+    "about": "Konsènan"
+  },
+  "errors": {
+    "connection_error": "Erè koneksyon",
+    "invalid_credentials": "Enfòmasyon yo pa bon",
+    "user_not_found": "Pa jwenn itilizatè a",
+    "permission_denied": "Yo refize otorizasyon an",
+    "file_too_large": "Fichye a twò gwo",
+    "unsupported_format": "Fòma yo pa aksepte"
+  }
+}

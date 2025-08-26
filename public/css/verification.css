@@ -1,0 +1,280 @@
+/**
+ * Estilos para Sistema de Verificación de Cuentas Oficiales
+ */
+
+/* Badge de verificación estilo Facebook */
+.verification-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    margin-left: 4px;
+    color: var(--primary-dark, #3730a3);
+    font-size: 14px;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+}
+
+.verification-badge-small {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    margin-left: 3px;
+    color: var(--primary-dark, #3730a3);
+    font-size: 12px;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+}
+
+/* Etiqueta "Oficial" */
+.official-label {
+    display: inline-block;
+    background-color: var(--primary-dark, #3730a3);
+    color: white;
+    font-size: 10px;
+    font-weight: 600;
+    padding: 1px 6px;
+    border-radius: 10px;
+    margin-left: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+}
+
+/* Contenedor de usuario verificado */
+.user-display-name.verified-user {
+    color: inherit;
+    font-weight: inherit;
+}
+
+/* Estilos para diferentes contextos */
+
+/* En sidebar de contactos */
+.contact-item .contact-name.verified-user {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.contact-item .contact-name .verification-badge {
+    margin-left: 4px;
+    flex-shrink: 0;
+}
+
+.contact-item .contact-name .official-label {
+    margin-left: 4px;
+    font-size: 9px;
+    flex-shrink: 0;
+}
+
+/* En header de chat */
+.chat-header-name.verified-user {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.chat-header-name .verification-badge {
+    margin-left: 4px;
+    flex-shrink: 0;
+}
+
+.chat-header-name .official-label {
+    margin-left: 4px;
+    font-size: 9px;
+    flex-shrink: 0;
+}
+
+/* En chat móvil */
+.mobile-chat-name.verified-user {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.mobile-chat-name .verification-badge {
+    margin-left: 4px;
+    flex-shrink: 0;
+}
+
+.mobile-chat-name .official-label {
+    margin-left: 4px;
+    font-size: 9px;
+    flex-shrink: 0;
+}
+
+/* En mensajes */
+.message-sender.verified-user {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.message-sender .verification-badge {
+    margin-left: 3px;
+    width: 12px;
+    height: 12px;
+    font-size: 10px;
+    flex-shrink: 0;
+}
+
+.message-sender .official-label {
+    margin-left: 3px;
+    font-size: 8px;
+    padding: 0px 4px;
+    flex-shrink: 0;
+}
+
+/* En modales de perfil */
+.profile-modal .profile-name.verified-user,
+.user-profile-modal .user-fullname-display.verified-user {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+}
+
+.profile-modal .verification-badge,
+.user-profile-modal .verification-badge {
+    width: 18px;
+    height: 18px;
+    font-size: 16px;
+    margin-left: 4px;
+    flex-shrink: 0;
+}
+
+.profile-modal .official-label,
+.user-profile-modal .official-label {
+    font-size: 11px;
+    margin-left: 4px;
+    flex-shrink: 0;
+}
+
+/* En el usuario actual del sidebar */
+#current-user-name.verified-user {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+#current-user-name .verification-badge {
+    margin-left: 4px;
+    flex-shrink: 0;
+}
+
+#current-user-name .official-label {
+    margin-left: 4px;
+    font-size: 9px;
+    flex-shrink: 0;
+}
+
+/* Animación del badge */
+.verification-badge i,
+.verification-badge-small i {
+    transition: transform 0.2s ease;
+}
+
+.verification-badge:hover i,
+.verification-badge-small:hover i {
+    transform: scale(1.1);
+}
+
+/* Tooltip mejorado */
+.verification-badge[title]:hover::after,
+.verification-badge-small[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    white-space: nowrap;
+    z-index: 1000;
+    margin-bottom: 4px;
+}
+
+/* Responsive - dispositivos móviles */
+@media (max-width: 768px) {
+    .verification-badge {
+        width: 14px;
+        height: 14px;
+        font-size: 12px;
+    }
+    
+    .official-label {
+        font-size: 9px;
+        padding: 1px 4px;
+        margin-left: 4px;
+    }
+    
+    /* En contactos móviles */
+    .mobile-contact-name.verified-user {
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+    
+    .mobile-contact-name .verification-badge {
+        margin-left: 3px;
+        width: 12px;
+        height: 12px;
+        font-size: 10px;
+    }
+    
+    .mobile-contact-name .official-label {
+        font-size: 8px;
+        margin-left: 3px;
+    }
+}
+
+/* Estados especiales */
+.verified-user.online .verification-badge {
+    color: var(--primary-dark, #3730a3);
+}
+
+.verified-user.away .verification-badge {
+    color: #f59e0b;
+}
+
+.verified-user.busy .verification-badge {
+    color: #ef4444;
+}
+
+.verified-user.offline .verification-badge {
+    color: #6b7280;
+    opacity: 0.7;
+}
+
+/* Efecto de glow sutil para cuentas verificadas */
+.verified-user {
+    position: relative;
+}
+
+.verified-user::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, var(--primary-dark, #3730a3), transparent);
+    border-radius: inherit;
+    opacity: 0;
+    z-index: -1;
+    transition: opacity 0.3s ease;
+}
+
+.verified-user:hover::before {
+    opacity: 0.1;
+}

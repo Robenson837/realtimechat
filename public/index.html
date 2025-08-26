@@ -16,6 +16,8 @@
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="mobile-styles.css">
     <link rel="stylesheet" href="css/touch-scroll.css">
+    <link rel="stylesheet" href="css/language-selector.css">
+    <link rel="stylesheet" href="css/menu-language.css">
     <meta name="theme-color" content="#4f46e5">
     <meta name="description" content="VigiChat - Aplicación de mensajería avanzada con funciones de vigilancia y tiempo real">
     <meta name="keywords" content="chat, mensajería, vigilancia, tiempo real, seguridad">
@@ -236,24 +238,31 @@
                         <div class="mobile-main-menu-dropdown hidden" id="mobile-menu-dropdown">
                             <div class="menu-item" id="mobile-profile-settings">
                                 <i class="fas fa-user-cog"></i>
-                                <span>Ajustes de perfil</span>
+                                <span data-i18n="main_menu.profile_settings">Ajustes de perfil</span>
                             </div>
                             <div class="menu-item" id="mobile-add-contact-menu">
                                 <i class="fas fa-user-plus"></i>
-                                <span>Agregar contacto</span>
+                                <span data-i18n="main_menu.add_contact">Agregar contacto</span>
                             </div>
                             <div class="menu-item" id="mobile-blocked-contacts-menu">
                                 <i class="fas fa-ban"></i>
-                                <span>Contactos bloqueados</span>
+                                <span data-i18n="main_menu.blocked_contacts">Contactos bloqueados</span>
+                            </div>
+                            <div class="menu-item" id="mobile-language-menu">
+                                <i class="fas fa-globe"></i>
+                                <span data-i18n="main_menu.language">Idioma</span>
+                                <div class="current-language-indicator">
+                                    <img id="mobile-current-language-flag" src="https://flagcdn.com/16x12/es.png" alt="ES" class="current-flag">
+                                </div>
                             </div>
                             <div class="menu-item" id="mobile-help-menu">
                                 <i class="fas fa-question-circle"></i>
-                                <span>Ayuda</span>
+                                <span data-i18n="main_menu.help">Ayuda</span>
                             </div>
                             <div class="menu-divider"></div>
                             <div class="menu-item" id="mobile-logout-menu">
                                 <i class="fas fa-sign-out-alt"></i>
-                                <span>Cerrar sesión</span>
+                                <span data-i18n="main_menu.logout">Cerrar sesión</span>
                             </div>
                         </div>
                     </div>
@@ -295,24 +304,31 @@
                         <div class="main-menu-dropdown hidden" id="main-menu-dropdown">
                             <div class="menu-item" id="profile-settings">
                                 <i class="fas fa-user-cog"></i>
-                                <span>Ajustes de perfil</span>
+                                <span data-i18n="main_menu.profile_settings">Ajustes de perfil</span>
                             </div>
                             <div class="menu-item" id="add-contact-menu">
                                 <i class="fas fa-user-plus"></i>
-                                <span>Agregar contacto</span>
+                                <span data-i18n="main_menu.add_contact">Agregar contacto</span>
                             </div>
                             <div class="menu-item" id="blocked-contacts-menu">
                                 <i class="fas fa-ban"></i>
-                                <span>Contactos bloqueados</span>
+                                <span data-i18n="main_menu.blocked_contacts">Contactos bloqueados</span>
+                            </div>
+                            <div class="menu-item" id="language-menu">
+                                <i class="fas fa-globe"></i>
+                                <span data-i18n="main_menu.language">Idioma</span>
+                                <div class="current-language-indicator">
+                                    <img id="current-language-flag" src="https://flagcdn.com/16x12/es.png" alt="ES" class="current-flag">
+                                </div>
                             </div>
                             <div class="menu-item" id="help-menu">
                                 <i class="fas fa-question-circle"></i>
-                                <span>Ayuda</span>
+                                <span data-i18n="main_menu.help">Ayuda</span>
                             </div>
                             <div class="menu-divider"></div>
                             <div class="menu-item" id="logout-menu">
                                 <i class="fas fa-sign-out-alt"></i>
-                                <span>Cerrar sesión</span>
+                                <span data-i18n="main_menu.logout">Cerrar sesión</span>
                             </div>
                         </div>
                     </div>
@@ -928,7 +944,7 @@
                 <i class="fas fa-bullseye"></i>
                 Auto-enfocar
             </button>
-            <button class="btn-simple btn-save" id="save-photo-btn-old">
+            <button class="btn-simple btn-save" id="save-cropped-photo-btn">
                 <i class="fas fa-check"></i>
                 Guardar
             </button>
@@ -1517,6 +1533,9 @@
     <script src="js/blockedContacts.js"></script>
     <script src="js/mainMenu.js"></script>
     <script src="js/userProfileSettings.js"></script>
+    <script src="js/i18n.js"></script>
+    <script src="js/languageSelector.js"></script>
+    <script src="js/i18n-init.js"></script>
     <script src="js/intelligentPhotoCrop.js"></script>
     <script src="js/mobileNavigation.js"></script>
     <script src="js/app.js"></script>

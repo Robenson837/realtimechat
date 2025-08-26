@@ -1,0 +1,90 @@
+{
+  "app_name": "VigiChat",
+  "main_menu.profile_settings": "Ajustes de perfil",
+  "main_menu.add_contact": "Agregar contacto", 
+  "main_menu.blocked_contacts": "Contactos bloqueados",
+  "main_menu.language": "Idioma",
+  "main_menu.help": "Ayuda",
+  "main_menu.logout": "Cerrar sesión",
+  "main_menu": {
+    "profile_settings": "Ajustes de perfil",
+    "add_contact": "Agregar contacto", 
+    "blocked_contacts": "Contactos bloqueados",
+    "language": "Idioma",
+    "help": "Ayuda",
+    "logout": "Cerrar sesión"
+  },
+  "chat": {
+    "online": "En línea",
+    "offline": "Desconectado",
+    "away": "Ausente",
+    "typing": "Escribiendo...",
+    "last_seen": "Visto por última vez",
+    "last_seen_today": "hoy a las",
+    "last_seen_yesterday": "ayer a las",
+    "search_placeholder": "Buscar chats...",
+    "no_messages": "No hay mensajes aún",
+    "message_placeholder": "Escribe un mensaje..."
+  },
+  "buttons": {
+    "send": "Enviar",
+    "cancel": "Cancelar",
+    "save": "Guardar",
+    "delete": "Eliminar",
+    "edit": "Editar",
+    "copy": "Copiar",
+    "reply": "Responder",
+    "forward": "Reenviar",
+    "select": "Seleccionar",
+    "close": "Cerrar"
+  },
+  "calls": {
+    "incoming": "Llamada entrante",
+    "outgoing": "Llamando...",
+    "connected": "Conectado",
+    "accept": "Aceptar",
+    "decline": "Rechazar",
+    "end": "Finalizar",
+    "mute": "Silenciar",
+    "unmute": "Activar sonido",
+    "video_on": "Activar video",
+    "video_off": "Desactivar video",
+    "speaker": "Altavoz",
+    "missed_call": "Llamada perdida",
+    "call_ended": "Llamada finalizada",
+    "call_duration": "Duración de la llamada"
+  },
+  "notifications": {
+    "new_message": "Nuevo mensaje",
+    "call_declined": "Llamada rechazada",
+    "user_online": "se conectó",
+    "user_offline": "se desconectó",
+    "contact_added": "Contacto agregado",
+    "contact_blocked": "Contacto bloqueado"
+  },
+  "profile": {
+    "edit_profile": "Editar perfil",
+    "full_name": "Nombre completo",
+    "username": "Nombre de usuario",
+    "email": "Correo electrónico",
+    "phone": "Teléfono",
+    "bio": "Biografía",
+    "change_avatar": "Cambiar avatar",
+    "privacy_settings": "Configuración de privacidad"
+  },
+  "settings": {
+    "general": "General",
+    "notifications": "Notificaciones",
+    "privacy": "Privacidad",
+    "security": "Seguridad",
+    "about": "Acerca de"
+  },
+  "errors": {
+    "connection_error": "Error de conexión",
+    "invalid_credentials": "Credenciales inválidas",
+    "user_not_found": "Usuario no encontrado",
+    "permission_denied": "Permiso denegado",
+    "file_too_large": "Archivo demasiado grande",
+    "unsupported_format": "Formato no soportado"
+  }
+}
