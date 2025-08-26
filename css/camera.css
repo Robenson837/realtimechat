@@ -1,0 +1,401 @@
+/* 
+ * Estilos para CameraHandler - Sistema robusto de cámara 
+ * Prefijos vigichat para evitar conflictos
+ */
+
+.vigichat-camera-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 10001;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.vigichat-camera-modal.vigichat-show {
+    opacity: 1;
+    visibility: visible;
+}
+
+.vigichat-camera-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.95);
+    cursor: pointer;
+}
+
+.vigichat-camera-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #1f2937;
+    border-radius: 16px;
+    max-width: 600px;
+    width: 95%;
+    max-height: 90vh;
+    overflow: hidden;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+.vigichat-camera-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    background: #374151;
+    color: white;
+    border-bottom: 1px solid #4b5563;
+}
+
+.vigichat-camera-header h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.vigichat-camera-close {
+    background: none;
+    border: none;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+}
+
+.vigichat-camera-close:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: #fca5a5;
+}
+
+.vigichat-camera-body {
+    position: relative;
+    background: #000;
+    min-height: 300px;
+    max-height: 400px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+#vigichat-camera-video {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    object-fit: cover;
+    display: none; /* Inicialmente oculto */
+}
+
+.vigichat-camera-preview {
+    width: 100%;
+    height: 100%;
+    display: none; /* Inicialmente oculto */
+    align-items: center;
+    justify-content: center;
+}
+
+#vigichat-preview-image {
+    width: 100%;
+    height: auto;
+    max-height: 400px;
+    object-fit: cover;
+}
+
+.vigichat-camera-loading {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    padding: 40px;
+    text-align: center;
+}
+
+.vigichat-loading-spinner {
+    width: 40px;
+    height: 40px;
+    border: 4px solid #374151;
+    border-top: 4px solid #4f46e5;
+    border-radius: 50%;
+    animation: vigichat-spin 1s linear infinite;
+    margin-bottom: 16px;
+}
+
+@keyframes vigichat-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.vigichat-camera-loading p {
+    margin: 0;
+    font-size: 16px;
+    color: #9ca3af;
+}
+
+.vigichat-camera-controls {
+    display: flex;
+    justify-content: center;
+    gap: 16px;
+    padding: 20px;
+    background: #374151;
+    border-top: 1px solid #4b5563;
+}
+
+.vigichat-camera-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 12px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 100px;
+    justify-content: center;
+    text-decoration: none;
+}
+
+.vigichat-camera-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.3);
+}
+
+.vigichat-camera-btn.primary {
+    background: #4f46e5;
+    color: white;
+}
+
+.vigichat-camera-btn.primary:hover {
+    background: #4338ca;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.vigichat-camera-btn.secondary {
+    background: #6b7280;
+    color: white;
+}
+
+.vigichat-camera-btn.secondary:hover {
+    background: #5b6170;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(107, 114, 128, 0.3);
+}
+
+.vigichat-camera-btn.success {
+    background: #10b981;
+    color: white;
+}
+
+.vigichat-camera-btn.success:hover {
+    background: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.vigichat-camera-btn:active {
+    transform: translateY(0);
+}
+
+.vigichat-camera-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.vigichat-camera-btn i {
+    font-size: 16px;
+}
+
+/* Estilos para mensajes con imagen en el chat */
+.vigichat-message-image {
+    margin: 4px 0;
+    border-radius: 12px;
+    overflow: hidden;
+    max-width: 300px;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.vigichat-message-image img {
+    width: 100%;
+    height: auto;
+    display: block;
+    transition: transform 0.2s ease;
+}
+
+.vigichat-message-image img:hover {
+    transform: scale(1.02);
+}
+
+.vigichat-message-image img.fullscreen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    object-fit: contain;
+    background: rgba(0, 0, 0, 0.9);
+    z-index: 10000;
+    cursor: zoom-out;
+    transform: none;
+    border-radius: 0;
+    box-shadow: none;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .vigichat-camera-content {
+        width: 98%;
+        max-height: 95vh;
+        border-radius: 12px;
+    }
+    
+    .vigichat-camera-header {
+        padding: 16px;
+    }
+    
+    .vigichat-camera-header h3 {
+        font-size: 18px;
+    }
+    
+    .vigichat-camera-close {
+        width: 36px;
+        height: 36px;
+        font-size: 18px;
+    }
+    
+    .vigichat-camera-controls {
+        gap: 12px;
+        padding: 16px;
+        flex-wrap: wrap;
+    }
+    
+    .vigichat-camera-btn {
+        min-width: 80px;
+        padding: 10px 16px;
+        font-size: 12px;
+    }
+    
+    .vigichat-camera-btn span {
+        display: none;
+    }
+    
+    .vigichat-camera-btn i {
+        font-size: 16px;
+    }
+    
+    .vigichat-message-image {
+        max-width: 250px;
+    }
+    
+    .vigichat-camera-body {
+        min-height: 250px;
+        max-height: 300px;
+    }
+    
+    #vigichat-camera-video,
+    #vigichat-preview-image {
+        max-height: 300px;
+    }
+    
+    .vigichat-camera-loading {
+        padding: 30px 20px;
+    }
+    
+    .vigichat-loading-spinner {
+        width: 32px;
+        height: 32px;
+        margin-bottom: 12px;
+    }
+    
+    .vigichat-camera-loading p {
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .vigichat-camera-content {
+        width: 100%;
+        height: 100vh;
+        max-height: 100vh;
+        border-radius: 0;
+        top: 0;
+        left: 0;
+        transform: none;
+    }
+    
+    .vigichat-camera-body {
+        min-height: 200px;
+        max-height: 250px;
+    }
+    
+    #vigichat-camera-video,
+    #vigichat-preview-image {
+        max-height: 250px;
+    }
+    
+    .vigichat-camera-controls {
+        padding: 12px;
+        gap: 8px;
+    }
+    
+    .vigichat-camera-btn {
+        min-width: 70px;
+        padding: 8px 12px;
+        font-size: 11px;
+    }
+}
+
+/* Animaciones adicionales */
+@keyframes vigichat-fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.vigichat-camera-content {
+    animation: vigichat-fadeIn 0.3s ease-out;
+}
+
+/* Estados de error */
+.vigichat-camera-error {
+    background: #fef2f2;
+    border: 1px solid #fca5a5;
+    color: #b91c1c;
+    padding: 12px;
+    border-radius: 8px;
+    margin: 16px;
+    text-align: center;
+}
+
+.vigichat-camera-success {
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+    color: #15803d;
+    padding: 12px;
+    border-radius: 8px;
+    margin: 16px;
+    text-align: center;
+}

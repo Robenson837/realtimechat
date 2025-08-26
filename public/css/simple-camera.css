@@ -1,0 +1,25 @@
+/* CSS para animación de blink */
+@keyframes blink {
+    0% { opacity: 1; }
+    100% { opacity: 0.3; }
+}
+
+/* Efectos hover para botones de cámara simple */
+.simple-close-btn:hover,
+.simple-expand-btn:hover,
+.simple-flip-btn:hover {
+    background: rgba(255, 255, 255, 0.2) !important;
+}
+
+.simple-gallery-btn:hover {
+    background: rgba(255, 255, 255, 0.3) !important;
+    transform: scale(1.05);
+}
+
+.simple-capture-btn:hover {
+    transform: scale(1.05);
+}
+
+.simple-capture-btn:active {
+    transform: scale(0.95);
+}

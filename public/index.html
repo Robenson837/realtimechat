@@ -1,0 +1,1525 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, interactive-widget=resizes-content, user-scalable=no, maximum-scale=1.0, minimum-scale=1.0">
+    <title>VigiChat - Mensajería Avanzada</title>
+    <!-- FontAwesome with local fallback -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
+          onerror="this.onerror=null;this.href='icons-fallback.css';">
+    <noscript><link rel="stylesheet" href="icons-fallback.css"></noscript>
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="mobile-styles.css">
+    <link rel="stylesheet" href="css/touch-scroll.css">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="description" content="VigiChat - Aplicación de mensajería avanzada con funciones de vigilancia y tiempo real">
+    <meta name="keywords" content="chat, mensajería, vigilancia, tiempo real, seguridad">
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+    <link rel="apple-touch-icon" href="icons/icon.svg">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-content">
+            <div class="loading-logo">
+                <i class="fas fa-comments pulse-icon"></i>
+                <span class="fade-in-text">VigiChat</span>
+            </div>
+            <div class="loading-spinner enhanced-spinner"></div>
+            <p class="loading-text fade-in-delayed">Conectando...</p>
+            <div class="loading-dots">
+                <span></span><span></span><span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Auth Container -->
+    <div id="auth-container" class="auth-container hidden">
+        <!-- Login Form -->
+        <div id="login-form" class="auth-form slide-in">
+            <div class="auth-header">
+                <div class="logo hover-lift">
+                    <i class="fas fa-comments icon-bounce"></i>
+                    <span>VigiChat</span>
+                </div>
+                <h2 class="title-animate">Bienvenido de vuelta</h2>
+                <p class="subtitle-animate">Inicia sesión para continuar con tus conversaciones</p>
+            </div>
+            <form id="login-form-element">
+                <div class="form-group">
+                    <input type="email" id="login-email" placeholder="Correo electrónico" required>
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="login-password" placeholder="Contraseña" required>
+                    <i class="fas fa-lock"></i>
+                    <button type="button" class="password-toggle" data-target="login-password" title="Mostrar contraseña">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                </div>
+                <button type="submit" class="auth-button btn-enhanced">
+                    <span>Iniciar Sesión</span>
+                    <i class="fas fa-arrow-right icon-slide"></i>
+                </button>
+            </form>
+            <div class="auth-footer">
+                <p>¿No tienes cuenta? <a href="#" id="show-register">Regístrate aquí</a></p>
+                <p><a href="#" id="show-forgot-password">¿Olvidaste tu contraseña?</a></p>
+            </div>
+        </div>
+
+        <!-- Register Form -->
+        <div id="register-form" class="auth-form slide-in hidden">
+            <div class="auth-header">
+                <div class="logo hover-lift">
+                    <i class="fas fa-comments icon-bounce"></i>
+                    <span>VigiChat</span>
+                </div>
+                <h2 class="title-animate">Crear cuenta</h2>
+                <p class="subtitle-animate">Únete a la mejor plataforma de mensajería</p>
+            </div>
+            <form id="register-form-element">
+                <div class="form-group">
+                    <input type="text" id="register-fullname" placeholder="Nombre completo" required>
+                    <i class="fas fa-user"></i>
+                </div>
+                <div class="form-group">
+                    <input type="email" id="register-email" placeholder="Correo electrónico" required>
+                    <i class="fas fa-envelope"></i>
+                    <div class="validation-indicator" id="email-validation"></div>
+                    <div class="field-error" id="email-error"></div>
+                </div>
+                <div class="form-group">
+                    <input type="password" id="register-password" placeholder="Contraseña (mín. 6 caracteres)" required>
+                    <i class="fas fa-lock"></i>
+                    <button type="button" class="password-toggle" data-target="register-password" title="Mostrar contraseña">
+                        <i class="fas fa-eye"></i>
+                    </button>
+                    <div class="password-strength" id="password-strength">
+                        <div class="strength-bar"></div>
+                        <span class="strength-text"></span>
+                    </div>
+                </div>
+                <button type="submit" class="auth-button btn-enhanced">
+                    <span>Crear Cuenta</span>
+                    <i class="fas fa-user-plus icon-pulse"></i>
+                </button>
+            </form>
+            <div class="auth-footer">
+                <p>¿Ya tienes cuenta? <a href="#" id="show-login">Inicia sesión</a></p>
+            </div>
+        </div>
+
+        <!-- Forgot Password Form -->
+        <div id="forgot-password-form" class="auth-form hidden">
+            <div class="auth-header">
+                <div class="logo">
+                    <i class="fas fa-comments"></i>
+                    <span>VigiChat</span>
+                </div>
+                <h2>Recuperar contraseña</h2>
+                <p>Ingresa tu email y te enviaremos un enlace para restablecer tu contraseña</p>
+            </div>
+            <form id="forgot-password-form-element">
+                <div class="form-group">
+                    <input type="email" id="forgot-email" placeholder="Correo electrónico" required>
+                    <i class="fas fa-envelope"></i>
+                </div>
+                <button type="submit" class="auth-button">
+                    <span>Enviar enlace</span>
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </form>
+            <div class="auth-footer">
+                <p><a href="#" id="back-to-login">← Volver al inicio de sesión</a></p>
+            </div>
+        </div>
+
+        <!-- Reset Password Form -->
+        <div id="reset-password-form" class="auth-form hidden">
+            <div class="auth-header">
+                <div class="logo">
+                    <i class="fas fa-comments"></i>
+                    <span>VigiChat</span>
+                </div>
+                <h2>Nueva contraseña</h2>
+                <p>Ingresa tu nueva contraseña</p>
+            </div>
+            <form id="reset-password-form-element">
+                                <div class="form-group">
+                                    <div class="password-flex-group">
+                                        <div class="input-row">
+                                            <i class="fas fa-lock"></i>
+                                            <input type="password" id="new-password" placeholder="Nueva contraseña (mín. 6 caracteres)" required>
+                                            <button type="button" class="password-toggle" data-target="new-password" title="Mostrar contraseña">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                        <div class="password-strength" id="new-password-strength">
+                                            <div class="strength-bar"></div>
+                                            <span class="strength-text"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <div class="password-flex-group">
+                                        <div class="input-row">
+                                            <i class="fas fa-lock"></i>
+                                            <input type="password" id="confirm-password" placeholder="Confirmar nueva contraseña" required>
+                                            <button type="button" class="password-toggle" data-target="confirm-password" title="Mostrar contraseña">
+                                                <i class="fas fa-eye"></i>
+                                            </button>
+                                        </div>
+                                        <div class="password-match" id="password-match">
+                                            <i class="fas fa-check-circle"></i>
+                                            <span>Las contraseñas coinciden</span>
+                                        </div>
+                                    </div>
+                                </div>
+                <button type="submit" class="auth-button">
+                    <span>Restablecer contraseña</span>
+                    <i class="fas fa-check"></i>
+                </button>
+            </form>
+        </div>
+
+        <!-- Password Reset Success -->
+        <div id="password-reset-success" class="auth-form hidden">
+            <div class="auth-header">
+                <div class="logo">
+                    <i class="fas fa-comments"></i>
+                    <span>VigiChat</span>
+                </div>
+                <div class="success-icon">
+                    <i class="fas fa-check-circle"></i>
+                </div>
+                <h2>¡Contraseña actualizada!</h2>
+                <p>Tu contraseña ha sido restablecida exitosamente</p>
+            </div>
+            <button class="auth-button" id="return-to-login">
+                <span>Iniciar sesión</span>
+                <i class="fas fa-arrow-right"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Main App Container -->
+    <div id="app-container" class="app-container hidden fade-in-app">
+        <!-- Mobile Header -->
+        <header class="mobile-header" id="mobile-header">
+            <div class="mobile-header-left">
+                <div class="mobile-logo">
+                    <div class="logo-container">
+                        <i class="fas fa-comments"></i>
+                        <span class="logo-text">VigiChat</span>
+                    </div>
+                </div>
+            </div>
+            <div class="mobile-header-right">
+                <div class="mobile-user-profile" id="mobile-current-user-profile">
+                    <div class="mobile-profile-img-container">
+                        <img src="images/user-placeholder-40.svg" alt="Tu perfil" class="mobile-profile-img" id="mobile-current-user-profile-img">
+                        <div class="mobile-online-indicator" id="mobile-current-user-online-indicator"></div>
+                    </div>
+                </div>
+                <div class="mobile-sidebar-actions">
+                    <div class="mobile-main-menu-container">
+                        <button class="mobile-icon-btn mobile-main-menu-btn" id="mobile-menu-btn" title="Menú principal">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <div class="mobile-main-menu-dropdown hidden" id="mobile-menu-dropdown">
+                            <div class="menu-item" id="mobile-profile-settings">
+                                <i class="fas fa-user-cog"></i>
+                                <span>Ajustes de perfil</span>
+                            </div>
+                            <div class="menu-item" id="mobile-add-contact-menu">
+                                <i class="fas fa-user-plus"></i>
+                                <span>Agregar contacto</span>
+                            </div>
+                            <div class="menu-item" id="mobile-blocked-contacts-menu">
+                                <i class="fas fa-ban"></i>
+                                <span>Contactos bloqueados</span>
+                            </div>
+                            <div class="menu-item" id="mobile-help-menu">
+                                <i class="fas fa-question-circle"></i>
+                                <span>Ayuda</span>
+                            </div>
+                            <div class="menu-divider"></div>
+                            <div class="menu-item" id="mobile-logout-menu">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Cerrar sesión</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Sidebar -->
+        <aside class="sidebar" id="sidebar">
+            <!-- Sidebar Header -->
+            <div class="sidebar-header">
+                <div class="sidebar-logo">
+                    <div class="logo-container">
+                        <i class="fas fa-comments"></i>
+                        <span class="logo-text">VigiChat</span>
+                    </div>
+                </div>
+                <div class="user-profile" id="current-user-profile">
+                    <!-- Ícono de notificación a la izquierda del perfil -->
+                    <div class="notification-icon-container" id="notification-container">
+                        <button class="icon-btn notification-btn" id="notification-btn" title="Notificaciones">
+                            <i class="fas fa-bell"></i>
+                            <div class="global-unread-badge hidden" id="global-unread-badge">
+                                <span class="global-unread-count" id="global-unread-count">0</span>
+                            </div>
+                        </button>
+                    </div>
+                    
+                    <div class="profile-img-container">
+                        <img src="images/user-placeholder-40.svg" alt="Tu perfil" class="profile-img" id="current-user-profile-img">
+                        <div class="online-indicator" id="current-user-online-indicator"></div>
+                    </div>
+                </div>
+                <div class="sidebar-actions">
+                    <div class="main-menu-container">
+                        <button class="icon-btn main-menu-btn" id="main-menu-btn" title="Menú principal">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </button>
+                        <div class="main-menu-dropdown hidden" id="main-menu-dropdown">
+                            <div class="menu-item" id="profile-settings">
+                                <i class="fas fa-user-cog"></i>
+                                <span>Ajustes de perfil</span>
+                            </div>
+                            <div class="menu-item" id="add-contact-menu">
+                                <i class="fas fa-user-plus"></i>
+                                <span>Agregar contacto</span>
+                            </div>
+                            <div class="menu-item" id="blocked-contacts-menu">
+                                <i class="fas fa-ban"></i>
+                                <span>Contactos bloqueados</span>
+                            </div>
+                            <div class="menu-item" id="help-menu">
+                                <i class="fas fa-question-circle"></i>
+                                <span>Ayuda</span>
+                            </div>
+                            <div class="menu-divider"></div>
+                            <div class="menu-item" id="logout-menu">
+                                <i class="fas fa-sign-out-alt"></i>
+                                <span>Cerrar sesión</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Tabs -->
+            <div class="chat-tabs">
+                <button class="tab-button active" data-tab="chats">
+                    <span>Chats</span>
+                    <div class="unread-badge hidden" id="chats-unread"></div>
+                </button>
+                <button class="tab-button" data-tab="contacts">
+                    <span>Contactos</span>
+                </button>
+                <button class="tab-button" data-tab="requests">
+                    <span>Solicitudes</span>
+                    <div class="unread-badge hidden" id="requests-unread"></div>
+                </button>
+                <button class="tab-button" data-tab="calls">
+                    <span>Llamadas</span>
+                </button>
+            </div>
+
+            <!-- Search -->
+            <div class="search-container" id="search-container">
+                <i class="fas fa-search"></i>
+                <input type="text" id="chat-search" placeholder="Buscar chats..." autocomplete="off">
+                <button class="clear-search hidden" id="clear-search">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Chat Lists -->
+            <div class="chat-content">
+                <!-- Chats List -->
+                <div class="tab-content active" id="chats-tab">
+                    <div class="chat-list scrollable-area" id="chat-list">
+                        <!-- Chat items will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Contacts List -->
+                <div class="tab-content" id="contacts-tab">
+                    <div class="contacts-header">
+                        <div class="contacts-search-row">
+                            <div class="contacts-search-container">
+                                <i class="fas fa-search"></i>
+                                <input type="text" id="contacts-search" placeholder="Buscar contactos..." autocomplete="off">
+                            </div>
+                            <button class="add-contact-btn-small" id="add-contact-btn">
+                                <i class="fas fa-user-plus"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="contacts-list scrollable-area" id="contacts-list">
+                        <!-- Contacts will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Requests List -->
+                <div class="tab-content" id="requests-tab">
+                    <div class="requests-list scrollable-area" id="requests-list">
+                        <!-- Contact requests will be populated here -->
+                    </div>
+                </div>
+
+                <!-- Calls List -->
+                <div class="tab-content" id="calls-tab">
+                    <div class="calls-header">
+                        <div class="calls-stats">
+                            <div class="stat-item">
+                                <i class="fas fa-phone-alt"></i>
+                                <span>Llamadas recientes</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="calls-list scrollable-area" id="calls-list">
+                        <!-- Recent calls will be populated here -->
+                        <div class="empty-calls-state">
+                            <i class="fas fa-phone-slash"></i>
+                            <h4>No hay llamadas recientes</h4>
+                            <p>Las llamadas que realices o recibas aparecerán aquí</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Chat Area -->
+        <main class="chat-area" id="chat-area">
+            <!-- Welcome Screen -->
+            <div class="welcome-screen" id="welcome-screen">
+                <div class="welcome-content">
+                    <div class="welcome-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <h2>Bienvenido a VigiChat</h2>
+                    <p>Selecciona un chat para comenzar a conversar</p>
+                    <div class="feature-list">
+                        <div class="feature-item">
+                            <i class="fas fa-shield-alt"></i>
+                            <span>Mensajes cifrados</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-bolt"></i>
+                            <span>Tiempo real</span>
+                        </div>
+                        <div class="feature-item">
+                            <i class="fas fa-heart"></i>
+                            <span>Reacciones</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Chat Header -->
+            <header class="chat-header hidden" id="chat-header">
+                <button class="back-btn" id="back-btn">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <div class="contact-info" id="contact-info">
+                    <div class="contact-avatar-container">
+                        <img src="images/user-placeholder-40.svg" alt="Contact" class="contact-avatar">
+                    </div>
+                    <div class="contact-details">
+                        <h3 class="contact-name">Contacto</h3>
+                        <div class="contact-status">
+                            <div class="typing-indicator hidden" id="typing-indicator">
+                                <span>escribiendo...</span>
+                                <div class="typing-dots">
+                                    <span></span><span></span><span></span>
+                                </div>
+                            </div>
+                            <span class="last-seen" id="last-seen">Última vez hace 5 min</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="chat-actions">
+                    <!-- Search input container for conversation search -->
+                    <div class="conversation-search-container" id="conversation-search-container">
+                        <div class="conversation-search-input-wrapper">
+                            <input type="text" id="conversation-search-input" placeholder="Buscar mensajes..." autocomplete="off">
+                            <div class="conversation-search-results-info" id="conversation-search-results-info"></div>
+                            <div class="conversation-search-navigation">
+                                <button class="conversation-search-nav-btn" id="conversation-search-prev-btn" title="Resultado anterior">
+                                    <i class="fas fa-chevron-up"></i>
+                                </button>
+                                <button class="conversation-search-nav-btn" id="conversation-search-next-btn" title="Siguiente resultado">
+                                    <i class="fas fa-chevron-down"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <button class="conversation-search-close-btn" id="conversation-search-close-btn" title="Cerrar búsqueda">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                    <button class="icon-btn" id="search-btn" title="Buscar en chat">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <button class="icon-btn" id="call-btn" title="Llamar">
+                        <i class="fas fa-phone"></i>
+                    </button>
+                    <button class="icon-btn" id="video-btn" title="Videollamada">
+                        <i class="fas fa-video"></i>
+                    </button>
+                </div>
+                <!-- Botones de acción solo para móvil -->
+                <div class="mobile-chat-actions">
+                    <button class="icon-btn mobile-search-btn" id="search-messages-mobile-btn" title="Buscar en mensajes">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <button class="icon-btn mobile-call-btn" id="call-mobile-btn" title="Llamar">
+                        <i class="fas fa-phone"></i>
+                    </button>
+                    <button class="icon-btn mobile-video-btn" id="video-mobile-btn" title="Videollamada">
+                        <i class="fas fa-video"></i>
+                    </button>
+                </div>
+            </header>
+
+            <!-- Conversation Search Bar (Mobile) -->
+            <div class="conversation-search-mobile" id="conversation-search-mobile">
+                <div class="conversation-search-input-wrapper">
+                    <input type="text" id="conversation-search-input-mobile" placeholder="Buscar mensajes..." autocomplete="off">
+                    <div class="conversation-search-results-info" id="conversation-search-results-info-mobile"></div>
+                    <div class="conversation-search-navigation">
+                        <button class="conversation-search-nav-btn" id="conversation-search-prev-btn-mobile" title="Resultado anterior">
+                            <i class="fas fa-chevron-up"></i>
+                        </button>
+                        <button class="conversation-search-nav-btn" id="conversation-search-next-btn-mobile" title="Siguiente resultado">
+                            <i class="fas fa-chevron-down"></i>
+                        </button>
+                    </div>
+                </div>
+                <button class="conversation-search-close-btn" id="conversation-search-close-btn-mobile" title="Cerrar búsqueda">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <!-- Messages Container -->
+            <div class="messages-container scrollable-area hidden" id="messages-container">
+                <div class="messages-wrapper">
+                    <div class="messages-scroll scrollable-area" id="messages-scroll">
+                        <!-- Messages will be populated here -->
+                    </div>
+                </div>
+                <div class="scroll-to-bottom hidden" id="scroll-to-bottom">
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </div>
+
+            <!-- Message Input -->
+            <div class="message-input-container hidden" id="message-input-container">
+                <div class="reply-preview hidden" id="reply-preview">
+                    <div class="reply-content">
+                        <div class="reply-header">
+                            <span>Respondiendo a</span>
+                            <button class="close-reply" id="close-reply">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="reply-message"></div>
+                    </div>
+                </div>
+
+                <div class="input-area">
+                    <button class="attach-btn" id="attach-btn" title="Adjuntos">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <div class="message-input-wrapper">
+                        <div class="input-field" id="message-input" contenteditable="true" data-placeholder="Escribe un mensaje..."></div>
+                    </div>
+                    <button class="send-btn" id="send-btn" disabled>
+                        <i class="fas fa-paper-plane"></i>
+                    </button>
+                    <button class="record-btn hidden" id="record-btn" title="Grabar mensaje de voz">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                </div>
+
+                <!-- Emoji Picker -->
+                <div class="emoji-picker hidden" id="emoji-picker">
+                    <div class="emoji-categories">
+                        <button class="emoji-category active" data-category="smileys">😀</button>
+                        <button class="emoji-category" data-category="people">👥</button>
+                        <button class="emoji-category" data-category="nature">🌸</button>
+                        <button class="emoji-category" data-category="food">🍎</button>
+                        <button class="emoji-category" data-category="activities">⚽</button>
+                        <button class="emoji-category" data-category="travel">✈️</button>
+                        <button class="emoji-category" data-category="objects">💎</button>
+                        <button class="emoji-category" data-category="symbols">❤️</button>
+                    </div>
+                    <div class="emoji-grid" id="emoji-grid">
+                        <!-- Emojis will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- Mobile Bottom Navigation -->
+        <nav class="mobile-bottom-nav" id="mobile-bottom-nav">
+            <button class="nav-tab active" data-tab="chats" id="mobile-nav-chats">
+                <i class="fas fa-comment-dots"></i>
+                <span>Chat</span>
+                <div class="nav-badge hidden" id="mobile-chats-badge"></div>
+            </button>
+            <button class="nav-tab" data-tab="contacts" id="mobile-nav-contacts">
+                <i class="fas fa-address-book"></i>
+                <span>Contactos</span>
+            </button>
+            <button class="nav-tab" data-tab="requests" id="mobile-nav-requests">
+                <i class="fas fa-user-plus"></i>
+                <span>Solicitudes</span>
+                <div class="nav-badge hidden" id="mobile-requests-badge"></div>
+            </button>
+            <button class="nav-tab" data-tab="calls" id="mobile-nav-calls">
+                <i class="fas fa-phone"></i>
+                <span>Llamadas</span>
+            </button>
+        </nav>
+    </div>
+
+    <!-- Modals -->
+    <!-- Add Contact Modal -->
+    <div id="add-contact-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Agregar contacto</h3>
+                <button class="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="add-contact-form">
+                    <div class="form-group">
+                        <label>Buscar usuario:</label>
+                        <input type="text" id="contact-search" placeholder="Nombre de usuario o correo">
+                    </div>
+                    <div class="search-results" id="contact-search-results">
+                        <!-- Search results will appear here -->
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" data-close-modal>Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h3>Configuración</h3>
+                <button class="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-tabs">
+                    <button class="settings-tab active" data-tab="profile">
+                        <i class="fas fa-user"></i>
+                        <span>Perfil</span>
+                    </button>
+                    <button class="settings-tab" data-tab="privacy">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>Privacidad</span>
+                    </button>
+                    <button class="settings-tab" data-tab="notifications">
+                        <i class="fas fa-bell"></i>
+                        <span>Notificaciones</span>
+                    </button>
+                    <button class="settings-tab" data-tab="appearance">
+                        <i class="fas fa-palette"></i>
+                        <span>Apariencia</span>
+                    </button>
+                </div>
+                <div class="settings-content">
+                    <!-- Settings tabs content will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container" class="notification-container">
+        <!-- Notifications will be added here -->
+    </div>
+
+    <!-- Context Menu -->
+    <div id="context-menu" class="context-menu hidden">
+        <!-- Context menu items will be populated dynamically -->
+    </div>
+
+    <!-- Profile Photo Viewer Modal -->
+    <div id="profile-photo-modal" class="modal photo-modal hidden">
+        <div class="modal-overlay" id="photo-modal-overlay"></div>
+        <div class="photo-modal-content">
+            <div class="photo-modal-header">
+                <div class="photo-user-info">
+                    <h3 id="photo-modal-name">Nombre del Usuario</h3>
+                    <span id="photo-modal-status">En línea</span>
+                </div>
+                <button class="close-photo-modal" id="close-photo-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="photo-modal-body">
+                <img id="photo-modal-image" src="" alt="Foto de perfil">
+                <div class="photo-modal-actions-enhanced" id="photo-modal-actions" style="display: none;">
+                    <button class="photo-action-btn-enhanced" id="photo-modal-change-btn" title="Actualizar foto de perfil">
+                        <i class="fas fa-camera"></i>
+                        <span>Actualizar</span>
+                    </button>
+                    <button class="photo-action-btn-enhanced delete-action" id="photo-modal-delete-btn" title="Eliminar foto de perfil">
+                        <i class="fas fa-trash-alt"></i>
+                        <span>Eliminar</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Blocked Contacts Modal -->
+    <div id="blocked-contacts-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h3>Contactos bloqueados</h3>
+                <button class="close-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="blocked-contacts-list" id="blocked-contacts-list">
+                    <div class="loading-state hidden" id="blocked-loading">
+                        <i class="fas fa-spinner fa-spin"></i>
+                        <span>Cargando contactos bloqueados...</span>
+                    </div>
+                    <div class="empty-blocked-state" id="empty-blocked-state">
+                        <i class="fas fa-ban"></i>
+                        <h4>No has bloqueado a ningún contacto</h4>
+                        <p>Los contactos que bloquees aparecerán aquí</p>
+                    </div>
+                    <!-- Blocked contacts will be populated here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Full Profile Viewer Modal -->
+    <div id="full-profile-modal" class="modal profile-modal hidden">
+        <div class="modal-overlay" id="profile-modal-overlay"></div>
+        <div class="profile-modal-content">
+            <div class="profile-modal-header">
+                <h3>Perfil de Usuario</h3>
+                <button class="close-profile-modal" id="close-profile-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="profile-modal-body">
+                <!-- Profile Photo Section -->
+                <div class="profile-photo-section">
+                    <div class="profile-photo-container">
+                        <img id="profile-modal-image" src="" alt="Foto de perfil" class="profile-large-image">
+                        <button class="expand-photo-btn" id="expand-photo-from-profile" title="Ver foto completa">
+                            <i class="fas fa-expand"></i>
+                        </button>
+                    </div>
+                    <div class="profile-photo-actions" id="profile-photo-actions" style="display: none;">
+                        <button class="photo-action-link" id="change-photo-btn" title="Cambiar foto de perfil">
+                            <i class="fas fa-camera"></i>
+                            Cambiar
+                        </button>
+                        <button class="photo-action-link delete-action" id="delete-photo-btn" title="Eliminar foto de perfil">
+                            <i class="fas fa-trash-alt"></i>
+                            Eliminar
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Profile Info Section -->
+                <div class="profile-info-section">
+                    <div class="profile-basic-info">
+                        <div class="profile-name-section">
+                            <h2 id="profile-modal-name">Nombre del Usuario</h2>
+                            <div class="profile-quick-actions">
+                                <button class="quick-action-btn" id="quick-message-btn" title="Enviar mensaje">
+                                    <i class="fas fa-comment"></i>
+                                </button>
+                                <button class="quick-action-btn" id="quick-call-btn" title="Llamar">
+                                    <i class="fas fa-phone"></i>
+                                </button>
+                                <button class="quick-action-btn" id="quick-video-btn" title="Videollamada">
+                                    <i class="fas fa-video"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <p id="profile-modal-username">@username</p>
+                        <div class="profile-status-info">
+                            <div class="status-indicator" id="profile-modal-status-indicator"></div>
+                            <span id="profile-modal-status">En línea</span>
+                            <span class="status-separator">•</span>
+                            <span id="profile-modal-last-seen">Última vez hace 5 min</span>
+                        </div>
+                    </div>
+
+                    <div class="profile-details">
+                        <div class="profile-field-readonly">
+                            <div class="field-label">
+                                <i class="fas fa-user"></i>
+                                <span>Nombre completo</span>
+                            </div>
+                            <div class="field-content">
+                                <span class="field-value" id="profile-modal-full-name">Nombre Completo</span>
+                            </div>
+                        </div>
+
+                        <div class="profile-field-readonly">
+                            <div class="field-label">
+                                <i class="fas fa-at"></i>
+                                <span>Usuario</span>
+                            </div>
+                            <div class="field-content">
+                                <span class="field-value" id="profile-modal-username-detail">@username</span>
+                            </div>
+                        </div>
+                        
+                        <div class="profile-field-readonly">
+                            <div class="field-label">
+                                <i class="fas fa-envelope"></i>
+                                <span>Correo electrónico</span>
+                            </div>
+                            <div class="field-content">
+                                <span class="field-value" id="profile-modal-email">email@example.com</span>
+                            </div>
+                        </div>
+                        
+                        <div class="profile-field-readonly">
+                            <div class="field-label">
+                                <i class="fas fa-info-circle"></i>
+                                <span>Bio</span>
+                            </div>
+                            <div class="field-content">
+                                <span class="field-value" id="profile-modal-bio">Sin biografía disponible</span>
+                            </div>
+                        </div>
+
+                        <div class="profile-field-readonly">
+                            <div class="field-label">
+                                <i class="fas fa-clock"></i>
+                                <span>Última conexión</span>
+                            </div>
+                            <div class="field-content">
+                                <span class="field-value" id="profile-modal-last-connection">Hace 5 minutos</span>
+                            </div>
+                        </div>
+
+                        <div class="profile-field-readonly">
+                            <div class="field-label">
+                                <i class="fas fa-calendar-alt"></i>
+                                <span>Miembro desde</span>
+                            </div>
+                            <div class="field-content">
+                                <span class="field-value" id="profile-modal-member-since">Enero 2024</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Shared Files Section -->
+                    <div class="shared-content">
+                        <div class="shared-section">
+                            <div class="section-header">
+                                <h4><i class="fas fa-file"></i> Archivos compartidos</h4>
+                                <button class="view-all-btn" id="view-all-files">Ver todo</button>
+                            </div>
+                            <div class="shared-files-list" id="shared-files-list">
+                                <!-- Shared files will be populated here from real data -->
+                                <div class="file-placeholder">
+                                    <i class="fas fa-folder-open"></i>
+                                    <span>No hay archivos compartidos</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- Contact Actions -->
+                    <div class="contact-actions">
+                        <button class="contact-action-btn" id="block-user-btn">
+                            <i class="fas fa-ban"></i>
+                            <span>Bloquear</span>
+                        </button>
+                        <button class="contact-action-btn" id="remove-contact-btn">
+                            <i class="fas fa-user-minus"></i>
+                            <span>Eliminar contacto</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Simple Photo Crop Container -->
+    <div id="photo-crop-modal" class="photo-crop-container hidden">
+        <div class="crop-header">
+            <h3>Editar foto</h3>
+            <button class="close-crop" id="close-crop-modal">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="crop-content">
+            <!-- Preview and crop area -->
+            <div class="crop-preview">
+                <canvas id="crop-canvas" class="crop-canvas-simple"></canvas>
+                <div class="crop-overlay">
+                    <div class="crop-area" id="crop-area">
+                        <div class="crop-handle top-left"></div>
+                        <div class="crop-handle top-right"></div>
+                        <div class="crop-handle bottom-left"></div>
+                        <div class="crop-handle bottom-right"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Simple preview -->
+            <div class="simple-preview">
+                <canvas id="preview-canvas" class="preview-canvas-simple"></canvas>
+                <p class="preview-label">Vista previa</p>
+            </div>
+            
+            <!-- Basic controls -->
+            <div class="basic-controls">
+                <div class="control-row">
+                    <label>Brillo</label>
+                    <input type="range" id="brightness-slider" class="simple-slider" min="0.5" max="2" step="0.1" value="1">
+                    <span id="brightness-value">100%</span>
+                </div>
+                <div class="control-row">
+                    <label>Zoom</label>
+                    <input type="range" id="zoom-slider" class="simple-slider" min="1" max="3" step="0.1" value="1">
+                    <span id="zoom-value">1.0x</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="crop-actions">
+            <button class="btn-simple btn-auto" id="auto-center-btn">
+                <i class="fas fa-bullseye"></i>
+                Auto-enfocar
+            </button>
+            <button class="btn-simple btn-save" id="save-photo-btn-old">
+                <i class="fas fa-check"></i>
+                Guardar
+            </button>
+        </div>
+    </div>
+
+    <!-- File Input Hidden -->
+    <input type="file" id="photo-input" accept="image/*" style="display: none;">
+
+    <!-- Delete Photo Confirmation Modal -->
+    <div id="delete-photo-confirmation-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content confirmation-modal-content">
+            <div class="confirmation-header">
+                <div class="confirmation-icon delete-icon">
+                    <i class="fas fa-trash-alt"></i>
+                </div>
+                <h3>Eliminar foto de perfil</h3>
+            </div>
+            
+            <div class="confirmation-body">
+                <p>¿Estás seguro de que quieres eliminar tu foto de perfil?</p>
+                <p class="confirmation-details">Esta acción no se puede deshacer. Tu foto actual será eliminada permanentemente.</p>
+            </div>
+            
+            <div class="confirmation-footer">
+                <button class="btn-secondary" id="cancel-delete-photo">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </button>
+                <button class="btn-danger" id="confirm-delete-photo">
+                    <i class="fas fa-trash-alt"></i>
+                    Eliminar foto
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Confirmation Modal -->
+    <div id="confirmation-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content confirmation-modal-content">
+            <div class="confirmation-header">
+                <div class="confirmation-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3 id="confirmation-title">Confirmar acción</h3>
+            </div>
+            
+            <div class="confirmation-body">
+                <p id="confirmation-message">¿Estás seguro de que quieres realizar esta acción?</p>
+                <p id="confirmation-details" class="confirmation-details hidden"></p>
+            </div>
+            
+            <div class="confirmation-actions">
+                <button id="confirmation-cancel" class="btn btn-secondary">Cancelar</button>
+                <button id="confirmation-confirm" class="btn btn-danger">Confirmar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Device Verification Modal -->
+    <div id="device-verification-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content device-verification-content">
+            <div class="verification-header">
+                <div class="verification-icon">
+                    <i class="fas fa-shield-alt"></i>
+                </div>
+                <h3>Verificación de dispositivo</h3>
+            </div>
+            
+            <div class="verification-body">
+                <p class="verification-message">
+                    Estás accediendo desde un dispositivo no reconocido. 
+                    Por seguridad, confirma tu identidad para continuar.
+                </p>
+                
+                <form id="device-verification-form">
+                    <div class="form-group">
+                        <label for="verify-email">Correo electrónico</label>
+                        <input type="email" id="verify-email" placeholder="Ingresa tu correo" required>
+                        <i class="fas fa-envelope"></i>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="verify-password">Contraseña</label>
+                        <div class="input-wrapper">
+                            <input type="password" id="verify-password" placeholder="Confirma tu contraseña" required>
+                            <i class="fas fa-lock"></i>
+                            <button type="button" class="password-toggle" data-target="verify-password" title="Mostrar contraseña">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="verification-actions">
+                <button type="button" class="btn-secondary" id="cancel-verification">
+                    <i class="fas fa-times"></i>
+                    Cancelar
+                </button>
+                <button type="button" class="btn-primary" id="confirm-verification">
+                    <i class="fas fa-check-shield"></i>
+                    Verificar dispositivo
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- User Profile Settings Modal -->
+    <div id="user-profile-settings-modal" class="modal user-profile-modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="user-profile-modal-content">
+            <div class="user-profile-modal-header">
+                <div class="profile-header-icon">
+                    <i class="fas fa-user-cog"></i>
+                </div>
+                <h3>Mi Perfil</h3>
+                <button class="close-user-profile-modal" id="close-user-profile-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            
+            <div class="user-profile-modal-body">
+                <!-- Profile Photo Section -->
+                <div class="profile-photo-section">
+                    <div class="profile-photo-display">
+                        <img id="user-profile-avatar" src="" alt="Tu foto de perfil" class="profile-avatar">
+                        <div class="avatar-overlay">
+                            <i class="fas fa-pencil-alt"></i>
+                        </div>
+                        <button class="expand-photo-btn" id="user-profile-avatar" title="Ver foto completa">
+                            <i class="fas fa-pencil-alt"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Profile Information -->
+                <div class="profile-information">
+                    <!-- Full Name -->
+                    <div class="profile-field-editable">
+                        <div class="field-label">
+                            <i class="fas fa-user"></i>
+                            <span>Nombre completo</span>
+                        </div>
+                        <div class="field-content">
+                            <span class="field-value" id="user-fullname-display">Cargando...</span>
+                            <button class="edit-field-btn" data-field="fullName">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </div>
+                        <div class="field-edit hidden" id="edit-fullName">
+                            <input type="text" class="field-input" id="input-fullName" placeholder="Nombre completo">
+                            <div class="field-actions">
+                                <button class="save-field-btn" data-field="fullName">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button class="cancel-field-btn" data-field="fullName">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Email -->
+                    <div class="profile-field-editable">
+                        <div class="field-label">
+                            <i class="fas fa-envelope"></i>
+                            <span>Correo electrónico</span>
+                        </div>
+                        <div class="field-content">
+                            <span class="field-value" id="user-email-display">Cargando...</span>
+                            <button class="edit-field-btn" data-field="email">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </div>
+                        <div class="field-edit hidden" id="edit-email">
+                            <input type="email" class="field-input" id="input-email" placeholder="correo@ejemplo.com">
+                            <div class="field-actions">
+                                <button class="save-field-btn" data-field="email">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button class="cancel-field-btn" data-field="email">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Username -->
+                    <div class="profile-field-editable">
+                        <div class="field-label">
+                            <i class="fas fa-at"></i>
+                            <span>Nombre de usuario</span>
+                        </div>
+                        <div class="field-content">
+                            <span class="field-value" id="user-username-display">Cargando...</span>
+                            <button class="edit-field-btn" data-field="username">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </div>
+                        <div class="field-edit hidden" id="edit-username">
+                            <input type="text" class="field-input" id="input-username" placeholder="usuario123">
+                            <div class="field-actions">
+                                <button class="save-field-btn" data-field="username">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button class="cancel-field-btn" data-field="username">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Status Message -->
+                    <div class="profile-field-editable">
+                        <div class="field-label">
+                            <i class="fas fa-comment-dots"></i>
+                            <span>Mensaje de estado</span>
+                        </div>
+                        <div class="field-content">
+                            <span class="field-value" id="user-statusmessage-display">Sin mensaje de estado</span>
+                            <button class="edit-field-btn" data-field="statusMessage">
+                                <i class="fas fa-pencil-alt"></i>
+                            </button>
+                        </div>
+                        <div class="field-edit hidden" id="edit-statusMessage">
+                            <input type="text" class="field-input" id="input-statusMessage" placeholder="¿Cómo te sientes hoy?" maxlength="100">
+                            <div class="field-actions">
+                                <button class="save-field-btn" data-field="statusMessage">
+                                    <i class="fas fa-check"></i>
+                                </button>
+                                <button class="cancel-field-btn" data-field="statusMessage">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Non-editable fields -->
+                    <div class="profile-field-readonly">
+                        <div class="field-label">
+                            <i class="fas fa-calendar-alt"></i>
+                            <span>Miembro desde</span>
+                        </div>
+                        <div class="field-content">
+                            <span class="field-value" id="user-joined-display">Cargando...</span>
+                        </div>
+                    </div>
+
+                    <div class="profile-field-readonly">
+                        <div class="field-label">
+                            <i class="fas fa-clock"></i>
+                            <span>Última actividad</span>
+                        </div>
+                        <div class="field-content">
+                            <span class="field-value" id="user-lastactivity-display">En línea ahora</span>
+                        </div>
+                    </div>
+
+                    <div class="profile-field-readonly">
+                        <div class="field-label">
+                            <i class="fas fa-circle-dot"></i>
+                            <span>Estado actual</span>
+                        </div>
+                        <div class="field-content">
+                            <span class="field-value" id="user-currentstatus-display">
+                                <div class="status-indicator online"></div>
+                                En línea
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Modal Footer -->
+                <div class="user-profile-modal-footer">
+                    <button class="btn-secondary" id="close-profile-modal-btn">
+                        <i class="fas fa-times"></i>
+                        Cerrar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forward Message Modal -->
+    <div id="forward-message-modal" class="modal hidden">
+        <div class="modal-overlay"></div>
+        <div class="modal-content forward-modal">
+            <div class="modal-header">
+                <h3><i class="fas fa-share"></i> Reenviar mensaje</h3>
+                <button class="close-modal" id="close-forward-modal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <!-- Message Preview -->
+                <div class="forward-message-preview">
+                    <div class="preview-header">
+                        <i class="fas fa-comment"></i>
+                        <span>Mensaje a reenviar:</span>
+                    </div>
+                    <div class="preview-content" id="forward-message-content">
+                        <!-- Message content will be inserted here -->
+                    </div>
+                </div>
+
+                <!-- Contact Search -->
+                <div class="contact-search-section">
+                    <div class="search-header">
+                        <i class="fas fa-users"></i>
+                        <span>Seleccionar contactos:</span>
+                        <div class="select-all-section">
+                            <label class="select-all-checkbox">
+                                <input type="checkbox" id="select-all-contacts">
+                                <span class="checkmark"></span>
+                                <span class="select-all-text">Seleccionar todos</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="search-input-container">
+                        <input type="text" id="forward-contact-search" placeholder="Buscar contactos..." autocomplete="off">
+                        <i class="fas fa-search search-icon"></i>
+                    </div>
+                </div>
+
+                <!-- Contacts List -->
+                <div class="forward-contacts-container">
+                    <div class="forward-contacts-list" id="forward-contacts-list">
+                        <!-- Contacts will be loaded here -->
+                    </div>
+                </div>
+
+                <!-- Selected Contacts -->
+                <div class="selected-contacts-section hidden" id="selected-contacts-section">
+                    <div class="selected-header">
+                        <span>Contactos seleccionados:</span>
+                        <button class="clear-selection" id="clear-selection">
+                            <i class="fas fa-times"></i> Limpiar
+                        </button>
+                    </div>
+                    <div class="selected-contacts-list" id="selected-contacts-list">
+                        <!-- Selected contacts will appear here -->
+                    </div>
+                </div>
+                
+                <!-- Additional Message -->
+                <div class="forward-additional-message">
+                    <div class="additional-message-header">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>Agregar mensaje (opcional):</span>
+                    </div>
+                    <div class="additional-message-input-container">
+                        <textarea 
+                            id="forward-additional-text" 
+                            class="additional-message-input" 
+                            placeholder="Escribe un mensaje adicional..."
+                            maxlength="500"
+                            rows="3"></textarea>
+                        <div class="character-count">
+                            <span id="char-count">0</span>/500
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" id="cancel-forward">
+                    <i class="fas fa-times"></i> Cancelar
+                </button>
+                <button class="btn-primary" id="confirm-forward" disabled>
+                    <i class="fas fa-paper-plane"></i> Reenviar <span class="forward-count">0</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <!-- ULTRA-FAST MESSAGING SYSTEM SCRIPTS -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/utils.js"></script>
+    <script src="js/directClickFix.js"></script> <!-- Direct fix for non-working clicks -->
+    <script src="js/touch-scroll-handler.js"></script>
+    <script src="js/welcomeScreenManager.js"></script>
+    <script src="js/autoResizeInput.js"></script>
+    <script src="js/messageCache.js"></script> <!-- ULTRA-FAST MESSAGE CACHE -->
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <!-- Attachment Modal for Mobile -->
+    <div class="attachment-modal-overlay" id="attachment-modal-overlay"></div>
+    <div class="attachment-modal" id="attachment-modal">
+
+    <!-- Camera Modal - WhatsApp Style -->
+    <div class="whatsapp-camera-overlay" id="camera-modal-overlay">
+        <!-- Top Controls -->
+        <div class="whatsapp-camera-top">
+            <div class="left-controls">
+                <button class="whatsapp-close-btn" id="close-camera-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+                <button class="whatsapp-fullscreen-btn" id="fullscreen-camera-btn" title="Pantalla completa">
+                    <i class="fas fa-expand"></i>
+                </button>
+                <button class="whatsapp-flip-btn" id="switch-camera-btn-top" title="Cambiar cámara">
+                    <i class="fas fa-sync-alt"></i>
+                </button>
+            </div>
+            <div class="whatsapp-recording-indicator" id="recording-indicator" style="display: none;">
+                <div class="recording-dot"></div>
+                <span class="recording-time" id="recording-time">0:00</span>
+            </div>
+        </div>
+
+        <!-- Camera Video -->
+        <video id="camera-video" autoplay playsinline muted class="whatsapp-camera-video"></video>
+        <canvas id="camera-canvas" style="display: none;"></canvas>
+
+        <!-- Preview de foto/video capturado -->
+        <div class="whatsapp-capture-preview" id="capture-preview" style="display: none;">
+            <img id="captured-image" alt="Captura" style="display: none;">
+            <video id="captured-video" controls style="display: none; max-width: 100%; max-height: 100%; object-fit: contain;"></video>
+            
+            <!-- Controles de preview -->
+            <div class="whatsapp-preview-controls">
+                <button class="whatsapp-preview-btn cancel" id="retake-photo-btn">
+                    <i class="fas fa-times"></i>
+                </button>
+                <button class="whatsapp-preview-btn send" id="save-photo-btn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </div>
+
+        <!-- Bottom Controls -->
+        <div class="whatsapp-camera-bottom">
+            <!-- Gallery Button -->
+            <button class="whatsapp-gallery-btn" id="gallery-access-btn">
+                <div class="gallery-icon">
+                    <i class="fas fa-images"></i>
+                </div>
+            </button>
+
+            <!-- Capture Button -->
+            <div class="whatsapp-capture-container">
+                <button class="whatsapp-capture-btn" id="camera-capture-btn">
+                    <div class="capture-outer-ring">
+                        <div class="capture-inner-circle"></div>
+                    </div>
+                </button>
+            </div>
+
+        </div>
+    </div>
+        <div class="attachment-options">
+            <button class="attachment-option emoji" data-type="emoji">
+                <i class="fas fa-smile"></i>
+                <span>Emojis</span>
+            </button>
+            <button class="attachment-option camera" data-type="camera">
+                <i class="fas fa-camera"></i>
+                <span>Cámara</span>
+            </button>
+            <button class="attachment-option gallery" data-type="gallery">
+                <i class="fas fa-images"></i>
+                <span>Galería</span>
+            </button>
+            <button class="attachment-option location" data-type="location">
+                <i class="fas fa-map-marker-alt"></i>
+                <span>Ubicación</span>
+            </button>
+            <button class="attachment-option attach-doc-btn mobile-only" id="attach-doc-modal-btn" data-type="document">
+                <i class="fas fa-file"></i>
+                <span>Documento</span>
+            </button>
+        </div>
+    </div>
+
+    <!-- Call Interface -->
+    <div class="call-modal" id="call-modal">
+        <div class="call-container">
+            <!-- Call Header -->
+            <div class="call-header">
+                <div class="call-contact-info">
+                    <div class="call-avatar">
+                        <img src="images/user-placeholder-40.svg" alt="Contact" id="call-contact-avatar">
+                        <div class="call-status-indicator"></div>
+                    </div>
+                    <div class="call-details">
+                        <h3 class="call-contact-name" id="call-contact-name">Contacto</h3>
+                        <p class="call-status" id="call-status">Llamando...</p>
+                    </div>
+                </div>
+                <div class="call-duration" id="call-duration">00:00</div>
+            </div>
+
+            <!-- Video Container -->
+            <div class="call-video-container" id="call-video-container">
+                <!-- Remote Video -->
+                <video class="remote-video" id="remote-video" autoplay playsinline></video>
+                <!-- Local Video (Picture in Picture) -->
+                <video class="local-video" id="local-video" autoplay playsinline muted></video>
+                
+                <!-- Audio Only Display -->
+                <div class="audio-call-display" id="audio-call-display">
+                    <div class="audio-avatar">
+                        <img src="images/user-placeholder-40.svg" alt="Contact" id="audio-contact-avatar">
+                        <div class="audio-wave-animation">
+                            <div class="wave"></div>
+                            <div class="wave"></div>
+                            <div class="wave"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Call Controls -->
+            <div class="call-controls">
+                <div class="call-controls-row">
+                    <!-- Mute Audio -->
+                    <button class="call-control-btn audio-btn" id="toggle-audio-btn" title="Silenciar micrófono">
+                        <i class="fas fa-microphone"></i>
+                    </button>
+                    
+                    <!-- Toggle Video -->
+                    <button class="call-control-btn video-btn" id="toggle-video-btn" title="Activar/Desactivar video">
+                        <i class="fas fa-video"></i>
+                    </button>
+                    
+                    <!-- Switch Camera -->
+                    <button class="call-control-btn switch-btn" id="switch-camera-btn" title="Cambiar cámara">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                    
+                    <!-- Speaker -->
+                    <button class="call-control-btn speaker-btn" id="toggle-speaker-btn" title="Altavoz">
+                        <i class="fas fa-volume-up"></i>
+                    </button>
+                </div>
+                
+                <div class="call-action-row">
+                    <!-- End Call -->
+                    <button class="call-control-btn end-call-btn" id="end-call-btn" title="Colgar">
+                        <i class="fas fa-phone-slash"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Incoming Call Interface -->
+            <div class="incoming-call-interface" id="incoming-call-interface">
+                <div class="incoming-call-info">
+                    <div class="incoming-call-avatar">
+                        <img src="images/user-placeholder-40.svg" alt="Contact" id="incoming-contact-avatar">
+                    </div>
+                    <h3 class="incoming-contact-name" id="incoming-contact-name">Contacto</h3>
+                    <p class="incoming-call-type" id="incoming-call-type">Llamada entrante</p>
+                </div>
+                
+                <div class="incoming-call-actions">
+                    <button class="incoming-call-btn decline-btn" id="decline-call-btn">
+                        <i class="fas fa-phone-slash"></i>
+                    </button>
+                    <button class="incoming-call-btn accept-btn" id="accept-call-btn">
+                        <i class="fas fa-phone"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <link rel="stylesheet" href="css/camera-animations.css">
+    <link rel="stylesheet" href="css/camera-recording.css">
+    <link rel="stylesheet" href="css/simple-camera.css">
+    <link rel="stylesheet" href="css/document-preview.css">
+    
+    <script src="js/contacts.js"></script>
+    <script src="js/emojiPicker.js"></script>
+    <script src="js/chat.js"></script>
+    <script src="js/callManager.js"></script>
+    <script src="js/callHistory.js"></script>
+    <script src="js/callMessagesRenderer.js"></script>
+    <script src="js/ui.js"></script>
+    <script src="js/socket.js"></script>
+    <script src="js/profilePhoto.js"></script>
+    <script src="js/profileViewer.js"></script>
+    <script src="js/blockedContacts.js"></script>
+    <script src="js/mainMenu.js"></script>
+    <script src="js/userProfileSettings.js"></script>
+    <script src="js/intelligentPhotoCrop.js"></script>
+    <script src="js/mobileNavigation.js"></script>
+    <script src="js/app.js"></script>
+    
+</body>
+</html>

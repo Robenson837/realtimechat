@@ -1,0 +1,442 @@
+/* Estilos para preview de documentos */
+.document-preview-container {
+    margin: 10px 0;
+    padding: 12px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    position: relative;
+    animation: slideInUp 0.2s ease-out;
+}
+
+.document-preview-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.document-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.document-icon i {
+    font-size: 24px;
+}
+
+.document-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.document-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #2c3e50;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 2px;
+}
+
+.document-size {
+    font-size: 12px;
+    color: #7f8c8d;
+}
+
+.remove-document-btn {
+    background: #e74c3c;
+    color: white;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.remove-document-btn:hover {
+    background: #c0392b;
+    transform: scale(1.05);
+}
+
+.remove-document-btn:active {
+    transform: scale(0.95);
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Estilos para documentos en conversación */
+.message-document {
+    margin: 8px 0;
+    max-width: 300px;
+}
+
+.document-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 12px;
+    padding: 12px;
+    transition: all 0.2s ease;
+}
+
+.document-container:hover {
+    background: #f1f3f4;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.document-icon-wrapper {
+    width: 48px;
+    height: 48px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    transition: all 0.2s ease;
+}
+
+/* Estilos para conversación con thumbnails optimizados */
+.message-document .document-icon-wrapper {
+    width: 280px;
+    height: 140px;
+}
+
+.message-document .document-container {
+    max-width: 300px;
+}
+
+.document-icon-wrapper i {
+    font-size: 24px;
+}
+
+.document-details {
+    flex: 1;
+    min-width: 0;
+}
+
+.document-name {
+    font-size: 14px;
+    font-weight: 500;
+    color: #2c3e50;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    margin-bottom: 4px;
+}
+
+.document-size {
+    font-size: 12px;
+    color: #7f8c8d;
+}
+
+.document-download {
+    background: #3498db;
+    color: white;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    flex-shrink: 0;
+}
+
+.document-download:hover {
+    background: #2980b9;
+    transform: scale(1.05);
+    color: white;
+    text-decoration: none;
+}
+
+.document-download:active {
+    transform: scale(0.95);
+}
+
+.document-download i {
+    font-size: 16px;
+}
+
+/* Estilos para acciones de documentos */
+.document-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    align-items: center;
+}
+
+.document-view-btn {
+    background: #17a2b8;
+    color: white;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    flex-shrink: 0;
+    font-size: 14px;
+}
+
+.document-view-btn:hover {
+    background: #138496;
+    transform: scale(1.05);
+    color: white;
+    text-decoration: none;
+}
+
+.document-view-btn:active {
+    transform: scale(0.95);
+}
+
+.document-actions .document-download {
+    width: 32px;
+    height: 32px;
+    font-size: 14px;
+}
+
+/* Estilos para documentos mostrados como imagen (estilo WhatsApp) */
+.message-document-as-image {
+    margin: 8px 0;
+    position: relative;
+    display: inline-block;
+}
+
+.document-image-container {
+    position: relative;
+    display: inline-block;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: all 0.2s ease;
+}
+
+.document-image-container:hover {
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+.document-image-container:hover .document-overlay {
+    opacity: 1;
+}
+
+.document-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(
+        to bottom,
+        rgba(0,0,0,0.7) 0%,
+        rgba(0,0,0,0.1) 30%,
+        rgba(0,0,0,0.1) 70%,
+        rgba(0,0,0,0.7) 100%
+    );
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    padding: 12px;
+    pointer-events: none;
+}
+
+.document-info-overlay {
+    color: white;
+    pointer-events: none;
+}
+
+.document-name-overlay {
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.document-size-overlay {
+    font-size: 11px;
+    opacity: 0.9;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+.document-actions-overlay {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    align-items: center;
+    pointer-events: auto;
+}
+
+.document-view-btn-overlay,
+.document-download-overlay {
+    background: rgba(0,0,0,0.6);
+    color: white;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    text-decoration: none;
+    font-size: 12px;
+    backdrop-filter: blur(4px);
+}
+
+.document-view-btn-overlay {
+    background: rgba(23, 162, 184, 0.8);
+}
+
+.document-view-btn-overlay:hover {
+    background: rgba(19, 132, 150, 0.9);
+    transform: scale(1.1);
+    color: white;
+}
+
+.document-download-overlay:hover {
+    background: rgba(0,0,0,0.8);
+    transform: scale(1.1);
+    color: white;
+    text-decoration: none;
+}
+
+.document-preview-image:hover {
+    transform: scale(1.02);
+    transition: transform 0.2s ease;
+}
+
+/* Responsive para documentos como imagen */
+@media (max-width: 768px) {
+    .message-document-as-image {
+        max-width: 100%;
+    }
+    
+    .document-image-container img {
+        max-width: 200px;
+        max-height: 250px;
+    }
+    
+    .document-overlay {
+        padding: 8px;
+    }
+    
+    .document-actions-overlay {
+        gap: 6px;
+    }
+    
+    .document-view-btn-overlay,
+    .document-download-overlay {
+        width: 28px;
+        height: 28px;
+        font-size: 11px;
+    }
+    
+    .document-name-overlay {
+        font-size: 12px;
+    }
+    
+    .document-size-overlay {
+        font-size: 10px;
+    }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .document-preview-container {
+        margin: 8px 0;
+        padding: 10px;
+    }
+    
+    .document-icon {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .document-icon i {
+        font-size: 20px;
+    }
+    
+    .document-name {
+        font-size: 13px;
+    }
+    
+    .document-size {
+        font-size: 11px;
+    }
+    
+    .remove-document-btn {
+        width: 28px;
+        height: 28px;
+    }
+    
+    .message-document {
+        max-width: 250px;
+    }
+    
+    .document-container {
+        padding: 10px;
+        gap: 10px;
+    }
+    
+    .document-icon-wrapper {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .document-icon-wrapper i {
+        font-size: 20px;
+    }
+    
+    .document-details .document-name {
+        font-size: 13px;
+    }
+    
+    .document-details .document-size {
+        font-size: 11px;
+    }
+    
+    .document-download {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .document-download i {
+        font-size: 14px;
+    }
+}

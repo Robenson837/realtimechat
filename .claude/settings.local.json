@@ -1,0 +1,26 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(grep:*)",
+      "Bash(node:*)",
+      "Bash(npm start)",
+      "Bash(del clickFix.js directClickFix.js debugClicks.js)",
+      "Bash(rm:*)",
+      "WebSearch",
+      "WebFetch(domain:www.messenger.com)",
+      "Bash(npm update:*)",
+      "Bash(npm install:*)",
+      "Bash(npm audit:*)",
+      "WebFetch(domain:www.figma.com)",
+      "WebFetch(domain:web.whatsapp.com)",
+      "Bash(sed:*)",
+      "Bash(start http://localhost:3000)",
+      "Bash(taskkill:*)",
+      "Bash(npm run dev:*)",
+      "Bash(npm uninstall:*)",
+      "Bash(tasklist:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

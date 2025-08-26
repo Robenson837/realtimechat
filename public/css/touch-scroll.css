@@ -1,0 +1,302 @@
+/* Touch Scroll Optimization for Mobile and Tablet Devices */
+
+/* Universal touch scroll improvements for all scrollable areas */
+.scrollable-area,
+.messages-container,
+.messages-scroll,
+.chat-list,
+.contacts-list,
+.requests-list,
+.calls-list,
+.sidebar .tab-content,
+.modal-body,
+.emoji-grid,
+.shared-files-list {
+    /* Modern CSS scroll properties */
+    scroll-behavior: smooth;
+    overscroll-behavior: contain;
+    
+    /* Touch action optimizations */
+    touch-action: pan-y;
+    -ms-touch-action: pan-y;
+    
+    /* WebKit touch scrolling (iOS/Safari) */
+    -webkit-overflow-scrolling: touch;
+    
+    /* Performance optimizations */
+    will-change: scroll-position;
+    transform: translateZ(0);
+    
+    /* Momentum scrolling */
+    -webkit-transform: translate3d(0, 0, 0);
+    transform: translate3d(0, 0, 0);
+    
+    /* Prevent bounce on iOS when reaching scroll limits */
+    overscroll-behavior-y: contain;
+    
+    /* Better scrollbar styling for touch devices */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+/* WebKit scrollbar styling for touch-friendly experience */
+.scrollable-area::-webkit-scrollbar,
+.messages-container::-webkit-scrollbar,
+.messages-scroll::-webkit-scrollbar,
+.chat-list::-webkit-scrollbar,
+.contacts-list::-webkit-scrollbar,
+.requests-list::-webkit-scrollbar,
+.calls-list::-webkit-scrollbar,
+.sidebar .tab-content::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+
+.scrollable-area::-webkit-scrollbar-track,
+.messages-container::-webkit-scrollbar-track,
+.messages-scroll::-webkit-scrollbar-track,
+.chat-list::-webkit-scrollbar-track,
+.contacts-list::-webkit-scrollbar-track,
+.requests-list::-webkit-scrollbar-track,
+.calls-list::-webkit-scrollbar-track,
+.sidebar .tab-content::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.scrollable-area::-webkit-scrollbar-thumb,
+.messages-container::-webkit-scrollbar-thumb,
+.messages-scroll::-webkit-scrollbar-thumb,
+.chat-list::-webkit-scrollbar-thumb,
+.contacts-list::-webkit-scrollbar-thumb,
+.requests-list::-webkit-scrollbar-thumb,
+.calls-list::-webkit-scrollbar-thumb,
+.sidebar .tab-content::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 3px;
+    border: none;
+}
+
+.scrollable-area::-webkit-scrollbar-thumb:hover,
+.messages-container::-webkit-scrollbar-thumb:hover,
+.messages-scroll::-webkit-scrollbar-thumb:hover,
+.chat-list::-webkit-scrollbar-thumb:hover,
+.contacts-list::-webkit-scrollbar-thumb:hover,
+.requests-list::-webkit-scrollbar-thumb:hover,
+.calls-list::-webkit-scrollbar-thumb:hover,
+.sidebar .tab-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(0, 0, 0, 0.3);
+}
+
+/* Specific optimizations for chat messages container */
+.messages-container {
+    /* Prevent content from jumping during scroll */
+    position: relative;
+    
+    /* Improve performance on mobile */
+    contain: layout style paint;
+    
+    /* Optimize for frequent updates */
+    will-change: scroll-position, contents;
+}
+
+/* Optimize message items for touch scrolling */
+.message {
+    /* Prevent repaints during scroll */
+    contain: layout style paint;
+    
+    /* Optimize text rendering during scroll */
+    text-rendering: optimizeSpeed;
+    
+    /* GPU acceleration for smooth scrolling */
+    transform: translateZ(0);
+}
+
+/* Chat list optimizations */
+.chat-list,
+.contacts-list,
+.requests-list {
+    /* Improve scrolling performance */
+    contain: layout style paint;
+    
+    /* Better touch response */
+    pointer-events: auto;
+    
+    /* Prevent scroll bounce beyond content */
+    overscroll-behavior: contain;
+}
+
+/* Chat item optimization for smooth scrolling */
+.chat-item,
+.contact-item,
+.request-item {
+    /* Prevent layout shifts during scroll */
+    contain: layout style paint;
+    
+    /* GPU acceleration */
+    will-change: transform;
+    transform: translateZ(0);
+}
+
+/* Mobile-specific optimizations */
+@media (max-width: 768px) {
+    /* Enhanced touch scrolling for mobile */
+    .messages-container,
+    .messages-scroll,
+    .chat-list,
+    .contacts-list,
+    .requests-list,
+    .sidebar .tab-content {
+        /* More aggressive momentum scrolling on mobile */
+        -webkit-overflow-scrolling: touch;
+        
+        /* Better touch response */
+        touch-action: pan-y;
+        
+        /* Prevent rubber band effect */
+        overscroll-behavior: contain;
+        
+        /* Optimize for mobile performance */
+        will-change: scroll-position;
+        transform: translate3d(0, 0, 0);
+    }
+    
+    /* Hide scrollbars on mobile for cleaner look */
+    .messages-container::-webkit-scrollbar,
+    .messages-scroll::-webkit-scrollbar,
+    .chat-list::-webkit-scrollbar,
+    .contacts-list::-webkit-scrollbar,
+    .requests-list::-webkit-scrollbar,
+    .sidebar .tab-content::-webkit-scrollbar {
+        display: none;
+        width: 0;
+    }
+    
+    /* Ensure scrollable content doesn't interfere with touch */
+    .scrollable-area,
+    .messages-container,
+    .chat-list,
+    .contacts-list {
+        /* Prevent touch conflicts */
+        -webkit-touch-callout: none;
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+    
+    /* Allow text selection within messages */
+    .message-content,
+    .chat-name,
+    .contact-name {
+        -webkit-user-select: text;
+        -moz-user-select: text;
+        -ms-user-select: text;
+        user-select: text;
+    }
+}
+
+/* Tablet optimizations */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .scrollable-area,
+    .messages-container,
+    .messages-scroll,
+    .chat-list,
+    .contacts-list,
+    .requests-list {
+        /* Balanced scrolling for tablet */
+        -webkit-overflow-scrolling: touch;
+        scroll-behavior: smooth;
+        
+        /* Show thin scrollbars on tablet */
+        scrollbar-width: thin;
+    }
+}
+
+/* Enhanced performance for all devices */
+@media (prefers-reduced-motion: no-preference) {
+    .scrollable-area,
+    .messages-container,
+    .messages-scroll,
+    .chat-list,
+    .contacts-list,
+    .requests-list {
+        scroll-behavior: smooth;
+    }
+}
+
+/* Disable smooth scrolling for users who prefer reduced motion */
+@media (prefers-reduced-motion: reduce) {
+    .scrollable-area,
+    .messages-container,
+    .messages-scroll,
+    .chat-list,
+    .contacts-list,
+    .requests-list {
+        scroll-behavior: auto;
+    }
+}
+
+/* Fix for Safari momentum scrolling issues */
+@supports (-webkit-overflow-scrolling: touch) {
+    .messages-container,
+    .messages-scroll,
+    .chat-list,
+    .contacts-list,
+    .requests-list,
+    .sidebar .tab-content {
+        /* Force hardware acceleration */
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+        
+        /* Improve scrolling performance */
+        -webkit-overflow-scrolling: touch;
+        
+        /* Prevent scroll jumping */
+        position: relative;
+    }
+}
+
+/* Fix for Android Chrome scroll issues */
+@media screen and (max-width: 768px) {
+    .messages-container,
+    .chat-list,
+    .contacts-list {
+        /* Android Chrome optimization */
+        transform: translate3d(0, 0, 0);
+        -webkit-transform: translate3d(0, 0, 0);
+        
+        /* Better touch handling */
+        touch-action: pan-y;
+        -ms-touch-action: pan-y;
+        
+        /* Prevent overscroll */
+        overscroll-behavior: contain;
+        overscroll-behavior-y: contain;
+    }
+}
+
+/* Performance optimization for list items */
+.chat-item,
+.contact-item,
+.request-item,
+.message {
+    /* Optimize for frequent scroll repaints */
+    contain: layout style paint;
+    
+    /* Use GPU acceleration */
+    will-change: transform;
+    
+    /* Prevent layout thrashing */
+    transform: translateZ(0);
+}
+
+/* Intersection observer optimization for lazy loading */
+.message-container,
+.chat-item-container {
+    /* Optimize visibility calculations */
+    contain: layout style paint;
+    
+    /* Better intersection observer performance */
+    position: relative;
+}

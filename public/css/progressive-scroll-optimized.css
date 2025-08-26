@@ -1,0 +1,437 @@
+/* Progressive Scroll Optimized Styles - WhatsApp/Messenger Style */
+
+/* Progressive Scroll Container */
+.progressive-scroll-container {
+    position: relative;
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+    will-change: scroll-position;
+}
+
+/* Messages Scroll Area - Fixed for Progressive Scroll */
+.messages-scroll {
+    height: 100%;
+    width: 100%;
+    overflow-y: auto;
+    overflow-x: hidden;
+    scroll-behavior: auto !important;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Ensure chat items maintain their click functionality */
+.chat-item {
+    cursor: pointer;
+    pointer-events: auto;
+}
+
+.chat-item:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Override any smooth scroll behavior when progressive scroll is active */
+.progressive-scroll-active .messages-scroll {
+    scroll-behavior: auto !important;
+}
+
+/* Smooth scroll only when explicitly requested */
+.messages-scroll.smooth-scroll-enabled {
+    scroll-behavior: smooth;
+}
+
+/* Progressive Scroll Triggers */
+.scroll-trigger {
+    height: 1px;
+    width: 100%;
+    position: relative;
+    pointer-events: none;
+    opacity: 0;
+    margin: 0;
+    padding: 0;
+    contain: layout;
+}
+
+.scroll-trigger-top {
+    top: 0;
+    z-index: 1;
+}
+
+.scroll-trigger-bottom {
+    bottom: 0;
+    z-index: 1;
+}
+
+/* Progressive Loading Indicators */
+.progressive-loader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 20px;
+    background: transparent;
+    position: relative;
+    z-index: 10;
+    opacity: 1;
+    transform: translateY(0);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    contain: layout style paint;
+    will-change: opacity, transform;
+}
+
+.progressive-loader.hidden {
+    opacity: 0;
+    transform: translateY(-20px);
+    pointer-events: none;
+}
+
+.progressive-loader-top {
+    border-bottom: 1px solid rgba(var(--border-color-rgb), 0.1);
+    background: linear-gradient(180deg, 
+        rgba(var(--bg-primary-rgb), 0.95) 0%, 
+        rgba(var(--bg-primary-rgb), 0.8) 100%);
+}
+
+.progressive-loader-bottom {
+    border-top: 1px solid rgba(var(--border-color-rgb), 0.1);
+    background: linear-gradient(0deg, 
+        rgba(var(--bg-primary-rgb), 0.95) 0%, 
+        rgba(var(--bg-primary-rgb), 0.8) 100%);
+}
+
+.loader-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: var(--text-secondary);
+    font-size: 13px;
+    font-weight: 400;
+}
+
+/* Enhanced Loading Spinner */
+.loader-spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid rgba(var(--primary-color-rgb), 0.2);
+    border-top: 2px solid var(--primary-color);
+    border-radius: 50%;
+    animation: progressiveSpinFast 0.8s linear infinite;
+    will-change: transform;
+}
+
+@keyframes progressiveSpinFast {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Loader Text Animation */
+.loader-text {
+    animation: progressiveLoadingPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes progressiveLoadingPulse {
+    0%, 100% { opacity: 0.7; }
+    50% { opacity: 1; }
+}
+
+/* Message Highlight Effect */
+.message-highlighted {
+    background: rgba(var(--primary-color-rgb), 0.1) !important;
+    animation: messageHighlightFade 2s ease-out;
+    border-radius: 8px;
+    transition: background 0.3s ease;
+}
+
+@keyframes messageHighlightFade {
+    0% {
+        background: rgba(var(--primary-color-rgb), 0.2);
+        transform: scale(1.02);
+    }
+    50% {
+        background: rgba(var(--primary-color-rgb), 0.15);
+    }
+    100% {
+        background: rgba(var(--primary-color-rgb), 0.05);
+        transform: scale(1);
+    }
+}
+
+/* Scroll Position Indicators */
+.scroll-position-indicator {
+    position: fixed;
+    top: 50%;
+    right: 20px;
+    transform: translateY(-50%);
+    background: rgba(var(--bg-primary-rgb), 0.9);
+    border: 1px solid rgba(var(--border-color-rgb), 0.3);
+    border-radius: 20px;
+    padding: 8px 12px;
+    font-size: 12px;
+    color: var(--text-secondary);
+    backdrop-filter: blur(10px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    z-index: 1000;
+    pointer-events: none;
+}
+
+.scroll-position-indicator.visible {
+    opacity: 1;
+}
+
+/* Scroll to Bottom Button - Enhanced */
+.scroll-to-bottom {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 44px;
+    height: 44px;
+    background: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(var(--primary-color-rgb), 0.3);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 1000;
+    transform: translateY(60px);
+    opacity: 0;
+    will-change: transform, opacity;
+}
+
+.scroll-to-bottom:not(.hidden) {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.scroll-to-bottom:hover {
+    background: var(--primary-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(var(--primary-color-rgb), 0.4);
+}
+
+.scroll-to-bottom:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 8px rgba(var(--primary-color-rgb), 0.3);
+}
+
+.scroll-to-bottom i {
+    font-size: 18px;
+    transition: transform 0.2s ease;
+}
+
+.scroll-to-bottom:hover i {
+    transform: translateY(-1px);
+}
+
+/* Message Badge on Scroll Button */
+.scroll-to-bottom::after {
+    content: attr(data-unread-count);
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: var(--error-color);
+    color: white;
+    border-radius: 12px;
+    min-width: 18px;
+    height: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    font-weight: 600;
+    border: 2px solid var(--bg-primary);
+    opacity: 0;
+    transform: scale(0);
+    transition: all 0.2s ease;
+}
+
+.scroll-to-bottom[data-unread-count]:not([data-unread-count="0"])::after {
+    opacity: 1;
+    transform: scale(1);
+}
+
+/* Performance Optimizations */
+.messages-wrapper {
+    contain: layout style paint;
+    will-change: height;
+}
+
+.message-item {
+    contain: layout style paint;
+    will-change: opacity, transform;
+}
+
+/* Virtual Scrolling Support */
+.virtual-scroll-container {
+    height: 100%;
+    overflow: auto;
+    position: relative;
+}
+
+.virtual-scroll-content {
+    position: relative;
+    will-change: height;
+}
+
+.virtual-scroll-item {
+    position: absolute;
+    left: 0;
+    right: 0;
+    will-change: top, height;
+}
+
+/* Progressive Scroll States */
+.progressive-scroll-loading .messages-scroll {
+    pointer-events: none;
+    user-select: none;
+}
+
+.progressive-scroll-error {
+    padding: 20px;
+    text-align: center;
+    color: var(--error-color);
+    background: rgba(var(--error-color-rgb), 0.05);
+    border: 1px solid rgba(var(--error-color-rgb), 0.2);
+    border-radius: 8px;
+    margin: 10px 0;
+}
+
+.progressive-scroll-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 20px;
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.progressive-scroll-empty i {
+    font-size: 48px;
+    color: var(--text-muted);
+    margin-bottom: 16px;
+    opacity: 0.5;
+}
+
+.progressive-scroll-empty h3 {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    font-weight: 500;
+}
+
+.progressive-scroll-empty p {
+    margin: 0;
+    font-size: 14px;
+    color: var(--text-muted);
+}
+
+/* Mobile Optimizations */
+@media (max-width: 768px) {
+    .progressive-loader {
+        padding: 10px 16px;
+    }
+    
+    .loader-content {
+        font-size: 12px;
+        gap: 8px;
+    }
+    
+    .loader-spinner {
+        width: 14px;
+        height: 14px;
+    }
+    
+    .scroll-to-bottom {
+        bottom: 90px;
+        right: 16px;
+        width: 40px;
+        height: 40px;
+    }
+    
+    .scroll-to-bottom i {
+        font-size: 16px;
+    }
+    
+    .scroll-position-indicator {
+        right: 16px;
+        font-size: 11px;
+        padding: 6px 10px;
+    }
+}
+
+/* High DPI Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .progressive-loader {
+        border-width: 0.5px;
+    }
+    
+    .loader-spinner {
+        border-width: 1.5px;
+    }
+}
+
+/* Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+    .messages-scroll {
+        scroll-behavior: auto;
+    }
+    
+    .progressive-loader,
+    .loader-spinner,
+    .scroll-to-bottom,
+    .message-highlighted {
+        animation: none;
+        transition: none;
+    }
+    
+    .scroll-to-bottom {
+        transform: none;
+    }
+    
+    .scroll-to-bottom:hover {
+        transform: none;
+    }
+}
+
+/* Dark Mode Support */
+@media (prefers-color-scheme: dark) {
+    .progressive-loader-top {
+        background: linear-gradient(180deg, 
+            rgba(18, 18, 18, 0.95) 0%, 
+            rgba(18, 18, 18, 0.8) 100%);
+    }
+    
+    .progressive-loader-bottom {
+        background: linear-gradient(0deg, 
+            rgba(18, 18, 18, 0.95) 0%, 
+            rgba(18, 18, 18, 0.8) 100%);
+    }
+    
+    .scroll-position-indicator {
+        background: rgba(18, 18, 18, 0.9);
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+}
+
+/* Focus Management */
+.progressive-scroll-container:focus-within .scroll-to-bottom {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Print Styles */
+@media print {
+    .progressive-loader,
+    .scroll-trigger,
+    .scroll-to-bottom,
+    .scroll-position-indicator {
+        display: none !important;
+    }
+    
+    .messages-scroll {
+        overflow: visible !important;
+        height: auto !important;
+    }
+}

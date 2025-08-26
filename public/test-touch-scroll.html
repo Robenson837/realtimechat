@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>Test Touch Scroll</title>
+    <link rel="stylesheet" href="css/touchscreen-scroll.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: #f0f0f0;
+        }
+
+        .test-container {
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            background: white;
+            position: relative;
+        }
+
+        .header {
+            background: #4f46e5;
+            color: white;
+            padding: 15px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+
+        .messages-area {
+            flex: 1;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .messages-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            padding: 20px;
+        }
+
+        .message {
+            background: #e5e7eb;
+            margin: 10px 0;
+            padding: 15px;
+            border-radius: 10px;
+            max-width: 80%;
+        }
+
+        .message:nth-child(odd) {
+            background: #ddd6fe;
+            margin-left: auto;
+        }
+
+        .footer {
+            background: #f9fafb;
+            padding: 15px;
+            border-top: 1px solid #e5e7eb;
+            flex-shrink: 0;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        input {
+            flex: 1;
+            padding: 10px;
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #4f46e5;
+            color: white;
+            border: none;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="header">
+            <h3>Touch Scroll Test</h3>
+            <p>Prueba el scroll en pantalla táctil</p>
+        </div>
+
+        <div class="messages-area">
+            <div class="messages-container" id="messages-container">
+                <div class="message">Mensaje 1: Este es un mensaje de prueba para verificar el scroll en pantalla táctil.</div>
+                <div class="message">Mensaje 2: Debes poder hacer scroll sin que salte automáticamente.</div>
+                <div class="message">Mensaje 3: El scroll debe ser progresivo y suave.</div>
+                <div class="message">Mensaje 4: No debe saltar al inicio o final automáticamente.</div>
+                <div class="message">Mensaje 5: Puedes parar donde quieras para leer.</div>
+                <div class="message">Mensaje 6: Este comportamiento debe funcionar en móvil.</div>
+                <div class="message">Mensaje 7: La configuración está optimizada para touch.</div>
+                <div class="message">Mensaje 8: Usa -webkit-overflow-scrolling: touch.</div>
+                <div class="message">Mensaje 9: Touch-action está configurado correctamente.</div>
+                <div class="message">Mensaje 10: Transform está aplicado para rendimiento.</div>
+                <div class="message">Mensaje 11: Mensaje adicional para scroll.</div>
+                <div class="message">Mensaje 12: Más contenido para probar.</div>
+                <div class="message">Mensaje 13: Sigue scrolleando para probar.</div>
+                <div class="message">Mensaje 14: El scroll debe ser natural.</div>
+                <div class="message">Mensaje 15: Sin comportamientos automáticos.</div>
+                <div class="message">Mensaje 16: Solo scroll manual del usuario.</div>
+                <div class="message">Mensaje 17: Progresivo y controlado.</div>
+                <div class="message">Mensaje 18: Funciona en iOS y Android.</div>
+                <div class="message">Mensaje 19: Configuración específica para táctil.</div>
+                <div class="message">Mensaje 20: Último mensaje de prueba.</div>
+            </div>
+        </div>
+
+        <div class="footer">
+            <div class="input-container">
+                <input type="text" placeholder="Escribe un mensaje..." />
+                <button>Enviar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/mobile-scroll-fix.js"></script>
+    <script>
+        // Test debug functions
+        setTimeout(() => {
+            console.log('🔍 Testing touch scroll configuration...');
+            
+            if (window.debugMobileScroll) {
+                window.debugMobileScroll();
+            }
+            
+            if (window.validateMessengerScroll) {
+                window.validateMessengerScroll();
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Clear Cache - VigiChat</title>
+</head>
+<body>
+    <h1>Limpiando Cache...</h1>
+    <p id="status">Eliminando Service Workers y Cache...</p>
+    
+    <script>
+        async function clearAll() {
+            const status = document.getElementById('status');
+            
+            try {
+                // Unregister all service workers
+                if ('serviceWorker' in navigator) {
+                    const registrations = await navigator.serviceWorker.getRegistrations();
+                    for (let registration of registrations) {
+                        await registration.unregister();
+                        console.log('Unregistered:', registration.scope);
+                    }
+                }
+                
+                // Clear all caches
+                const cacheNames = await caches.keys();
+                for (let cacheName of cacheNames) {
+                    await caches.delete(cacheName);
+                    console.log('Deleted cache:', cacheName);
+                }
+                
+                status.innerHTML = '✅ Cache limpiado completamente!<br><a href="/">Ir a VigiChat</a>';
+                
+                // Auto redirect after 2 seconds
+                setTimeout(() => {
+                    window.location.href = '/';
+                }, 2000);
+                
+            } catch (error) {
+                status.innerHTML = '❌ Error limpiando cache: ' + error.message;
+            }
+        }
+        
+        clearAll();
+    </script>
+</body>
+</html>

@@ -1,0 +1,239 @@
+/**
+ * STANDARD MOBILE TOUCH SCROLLING - Cross-Browser Compatible
+ * Based on 2024 Web Standards and Best Practices
+ * Compatible with iOS Safari, Chrome Mobile, Android browsers
+ */
+
+/* FOUNDATION: Enable basic scrolling for all touch devices */
+.messages-container,
+.messages-scroll,
+#messages-scroll,
+.chat-list,
+.contacts-list {
+    /* CRITICAL: Must have overflow set for scrolling to work */
+    overflow-y: scroll;
+    overflow-x: hidden;
+    
+    /* STANDARD: Modern touch-action property (2024 standard) */
+    touch-action: pan-y;
+    
+    /* WEBKIT: Legacy support for iOS Safari (still needed) */
+    -webkit-overflow-scrolling: touch;
+    
+    /* MODERN: Prevent page bounce on mobile */
+    overscroll-behavior-y: contain;
+    overscroll-behavior-x: auto;
+    
+    /* PERFORMANCE: Minimal GPU acceleration */
+    transform: translateZ(0);
+    
+    /* ACCESSIBILITY: Smooth scrolling for user-initiated scroll */
+    scroll-behavior: auto;
+    
+    /* NO SNAP: User controls scroll position */
+    scroll-snap-type: none;
+    
+    /* DIMENSIONS: Ensure scrollable area has proper height */
+    height: 100%;
+    max-height: 100%;
+}
+
+/* MOBILE SPECIFIC: Apply enhanced touch scrolling on mobile devices */
+@media screen and (max-width: 768px), (hover: none) and (pointer: coarse) {
+    .messages-container,
+    .messages-scroll,
+    #messages-scroll {
+        /* CRITICAL: Force touch scrolling for mobile */
+        -webkit-overflow-scrolling: touch !important;
+        
+        /* STANDARD: Allow vertical panning only */
+        touch-action: pan-y !important;
+        
+        /* PREVENT: Text selection during scroll */
+        -webkit-user-select: none;
+        user-select: none;
+        
+        /* WEBKIT: Disable tap highlights */
+        -webkit-tap-highlight-color: transparent;
+        
+        /* PERFORMANCE: Enable hardware acceleration */
+        -webkit-transform: translate3d(0, 0, 0);
+        transform: translate3d(0, 0, 0);
+        
+        /* SMOOTH: Optimize rendering */
+        -webkit-backface-visibility: hidden;
+        backface-visibility: hidden;
+        
+        /* CONTAINER: Prevent overflow issues */
+        contain: layout style paint;
+        
+        /* NO ZOOM: Prevent accidental zoom */
+        touch-action: pan-y !important;
+        
+        /* RUBBER BAND: Contain overscroll */
+        overscroll-behavior: contain;
+    }
+}
+
+/* IOS SAFARI SPECIFIC: Enhanced compatibility */
+@supports (-webkit-overflow-scrolling: touch) {
+    .messages-container,
+    .messages-scroll,
+    #messages-scroll {
+        /* WEBKIT: Enable momentum scrolling */
+        -webkit-overflow-scrolling: touch;
+        
+        /* FIX: Prevent iOS scroll jumping */
+        -webkit-transform: translateZ(0);
+        
+        /* SMOOTH: Better rendering on iOS */
+        -webkit-font-smoothing: antialiased;
+    }
+}
+
+/* ANDROID CHROME SPECIFIC: Modern approach */
+@supports (overscroll-behavior: contain) {
+    .messages-container,
+    .messages-scroll,
+    #messages-scroll {
+        /* MODERN: Use standard overscroll behavior */
+        overscroll-behavior-y: contain;
+        
+        /* PERFORMANCE: Optimize for Android Chrome */
+        will-change: scroll-position;
+    }
+}
+
+/* FIREFOX MOBILE SPECIFIC: Compatibility fixes */
+@-moz-document url-prefix() {
+    .messages-container,
+    .messages-scroll,
+    #messages-scroll {
+        /* FIREFOX: Ensure proper scrolling */
+        overflow: -moz-scrollbars-vertical;
+        
+        /* PERFORMANCE: Basic acceleration */
+        transform: translateZ(0);
+    }
+}
+
+/* SCROLLBAR STYLING: Hide on mobile, show on desktop */
+@media (hover: hover) and (pointer: fine) {
+    /* DESKTOP: Show styled scrollbars */
+    .messages-container::-webkit-scrollbar,
+    .messages-scroll::-webkit-scrollbar,
+    #messages-scroll::-webkit-scrollbar {
+        width: 6px;
+    }
+    
+    .messages-container::-webkit-scrollbar-track,
+    .messages-scroll::-webkit-scrollbar-track,
+    #messages-scroll::-webkit-scrollbar-track {
+        background: transparent;
+    }
+    
+    .messages-container::-webkit-scrollbar-thumb,
+    .messages-scroll::-webkit-scrollbar-thumb,
+    #messages-scroll::-webkit-scrollbar-thumb {
+        background: rgba(0, 0, 0, 0.2);
+        border-radius: 3px;
+    }
+}
+
+@media (hover: none) and (pointer: coarse) {
+    /* MOBILE: Hide scrollbars completely */
+    .messages-container::-webkit-scrollbar,
+    .messages-scroll::-webkit-scrollbar,
+    #messages-scroll::-webkit-scrollbar {
+        display: none;
+        width: 0;
+    }
+    
+    .messages-container,
+    .messages-scroll,
+    #messages-scroll {
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+}
+
+/* MESSAGE ITEMS: Optimize for touch scrolling */
+.message {
+    /* PERFORMANCE: Contain repaints */
+    contain: layout style;
+    
+    /* NO SNAP: Allow free scrolling */
+    scroll-snap-align: none;
+    
+    /* TOUCH: Prevent interference with scrolling */
+    pointer-events: auto;
+}
+
+/* CONTAINER PARENT: Ensure proper layout */
+.chat-container,
+.main-content {
+    /* HEIGHT: Full viewport for mobile */
+    height: 100vh;
+    height: 100dvh; /* Dynamic viewport height */
+    
+    /* LAYOUT: Flex for proper sizing */
+    display: flex;
+    flex-direction: column;
+    
+    /* OVERFLOW: Prevent parent scroll conflicts */
+    overflow: hidden;
+}
+
+/* INPUT AREA: Prevent layout shifts during typing */
+.message-input-container {
+    /* FIXED: Stay at bottom */
+    position: sticky;
+    bottom: 0;
+    
+    /* LAYER: Above scrollable content */
+    z-index: 10;
+    
+    /* NO SHRINK: Maintain height */
+    flex-shrink: 0;
+}
+
+/* PROGRESSIVE ENHANCEMENT: For very old mobile browsers */
+@media screen and (max-width: 480px) {
+    .messages-container,
+    .messages-scroll,
+    #messages-scroll {
+        /* FALLBACK: Basic mobile scrolling */
+        overflow-y: auto;
+        
+        /* WEBKIT: Force touch scrolling */
+        -webkit-overflow-scrolling: touch;
+        
+        /* BASIC: Minimal transform */
+        -webkit-transform: translateZ(0);
+        transform: translateZ(0);
+    }
+}
+
+/* HIGH DPI DISPLAYS: Retina and high-density screens */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+    .messages-container,
+    .messages-scroll,
+    #messages-scroll {
+        /* SMOOTH: Better rendering on high-DPI */
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
+}
+
+/* ACCESSIBILITY: Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+    .messages-container,
+    .messages-scroll,
+    #messages-scroll {
+        /* DISABLE: Smooth scrolling for accessibility */
+        scroll-behavior: auto;
+        
+        /* MINIMAL: Reduce animations */
+        -webkit-overflow-scrolling: auto;
+    }
+}

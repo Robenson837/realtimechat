@@ -1,0 +1,243 @@
+/**
+ * TOUCHSCREEN SCROLL CONFIGURATION
+ * Configuración específica para pantallas táctiles
+ * Sobrescribe todas las demás configuraciones
+ */
+
+/* SCROLL BÁSICO PARA TODOS LOS DISPOSITIVOS */
+.messages-container,
+.messages-scroll,
+#messages-scroll,
+.chat-container .messages-container {
+    /* FUNDAMENTAL: Propiedades básicas de scroll */
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    height: 100% !important;
+    scroll-behavior: auto !important;
+}
+
+/* DETECTAR PANTALLAS TÁCTILES */
+@media (pointer: coarse) and (hover: none) {
+    /* CONTENEDORES DE SCROLL PRINCIPALES */
+    .messages-container,
+    .messages-scroll,
+    #messages-scroll,
+    .chat-container .messages-container {
+        /* FUNDAMENTAL: Propiedades básicas para pantalla táctil */
+        overflow-y: scroll !important;
+        overflow-x: hidden !important;
+        
+        /* CRÍTICO: Habilitar scroll táctil en iOS/Safari */
+        -webkit-overflow-scrolling: touch !important;
+        
+        /* TÁCTIL: Permitir desplazamiento vertical */
+        touch-action: pan-y !important;
+        -ms-touch-action: pan-y !important;
+        
+        /* ALTURA: Debe tener altura definida */
+        height: 100% !important;
+        min-height: 200px !important;
+        max-height: 100vh !important;
+        max-height: 100svh !important;
+        
+        /* RENDIMIENTO: Aceleración mínima necesaria */
+        transform: translateZ(0) !important;
+        -webkit-transform: translateZ(0) !important;
+        will-change: scroll-position !important;
+        
+        /* COMPORTAMIENTO: Control manual */
+        scroll-behavior: auto !important;
+        scroll-snap-type: none !important;
+        
+        /* CONTENCIÓN: Para mejor rendimiento */
+        contain: layout style paint !important;
+        
+        /* OVERSCROLL: Evitar efectos no deseados */
+        overscroll-behavior: auto !important;
+        overscroll-behavior-y: auto !important;
+    }
+    
+    /* OCULTAR SCROLLBAR EN PANTALLAS TÁCTILES */
+    .messages-container::-webkit-scrollbar,
+    .messages-scroll::-webkit-scrollbar,
+    #messages-scroll::-webkit-scrollbar {
+        display: none !important;
+        width: 0 !important;
+        height: 0 !important;
+    }
+    
+    .messages-container,
+    .messages-scroll,
+    #messages-scroll {
+        scrollbar-width: none !important;
+        -ms-overflow-style: none !important;
+    }
+    
+    /* CONTENEDOR PADRE: Configuración para pantalla táctil */
+    .chat-container,
+    .main-content,
+    .app-container {
+        /* ALTURA: Pantalla completa */
+        height: 100vh !important;
+        height: 100svh !important;
+        
+        /* LAYOUT: Flexbox para distribución */
+        display: flex !important;
+        flex-direction: column !important;
+        
+        /* OVERFLOW: Solo el container interno debe hacer scroll */
+        overflow: hidden !important;
+        
+        /* POSICIÓN: Relativa para contexto */
+        position: relative !important;
+    }
+    
+    /* ÁREA DE MENSAJES: Flexible */
+    .messages-area,
+    .chat-messages-area {
+        /* FLEX: Tomar espacio disponible */
+        flex: 1 !important;
+        flex-grow: 1 !important;
+        flex-shrink: 1 !important;
+        
+        /* ALTURA: Mínima para permitir flexibilidad */
+        min-height: 0 !important;
+        
+        /* POSICIÓN: Relativa */
+        position: relative !important;
+        
+        /* OVERFLOW: El contenedor interno maneja el scroll */
+        overflow: hidden !important;
+    }
+    
+    /* INPUT DE MENSAJE: Fijo en la parte inferior */
+    .message-input-container,
+    .chat-input,
+    .input-container {
+        /* FLEX: No encogerse */
+        flex-shrink: 0 !important;
+        
+        /* POSICIÓN: Pegado al fondo */
+        position: sticky !important;
+        bottom: 0 !important;
+        
+        /* CAPA: Encima del contenido */
+        z-index: 100 !important;
+        
+        /* FONDO: Para cubrir contenido */
+        background: var(--bg-color, #ffffff) !important;
+    }
+    
+    /* BODY Y HTML: Configuración de página */
+    body {
+        /* ALTURA: Pantalla completa */
+        height: 100vh !important;
+        height: 100svh !important;
+        
+        /* OVERFLOW: Sin scroll horizontal */
+        overflow-x: hidden !important;
+        
+        /* OVERSCROLL: Prevenir pull-to-refresh */
+        overscroll-behavior-y: contain !important;
+        
+        /* POSICIÓN: Fija */
+        position: relative !important;
+    }
+    
+    html {
+        /* ALTURA: Completa */
+        height: 100% !important;
+        
+        /* OVERFLOW: Sin scroll no deseado */
+        overflow-x: hidden !important;
+        
+        /* OVERSCROLL: Control */
+        overscroll-behavior: contain !important;
+    }
+    
+    /* MENSAJES INDIVIDUALES: Optimización */
+    .message {
+        /* CONTENCIÓN: Layout */
+        contain: layout style !important;
+        
+        /* SELECCIÓN: Permitir selección de texto */
+        -webkit-user-select: text !important;
+        user-select: text !important;
+        
+        /* EVENTOS: Permitir interacción */
+        pointer-events: auto !important;
+    }
+    
+    /* DURING SCROLL: Prevenir selección */
+    .messages-container.scrolling,
+    .messages-scroll.scrolling,
+    #messages-scroll.scrolling {
+        -webkit-user-select: none !important;
+        user-select: none !important;
+    }
+}
+
+/* MÓVIL Y PANTALLAS PEQUEÑAS */
+@media (max-width: 768px) {
+    /* CONTENEDORES: Scroll en móvil */
+    .messages-container,
+    .messages-scroll,
+    #messages-scroll {
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        touch-action: pan-y !important;
+        height: 100% !important;
+    }
+}
+
+/* ANDROID ESPECÍFICO */
+@media (max-width: 768px) and (-webkit-min-device-pixel-ratio: 1) {
+    .messages-container,
+    .messages-scroll,
+    #messages-scroll {
+        /* ANDROID: Propiedades específicas */
+        transform: translate3d(0, 0, 0) !important;
+        -webkit-transform: translate3d(0, 0, 0) !important;
+    }
+}
+
+/* iOS ESPECÍFICO */
+@supports (-webkit-overflow-scrolling: touch) {
+    .messages-container,
+    .messages-scroll,
+    #messages-scroll {
+        /* iOS: Momentum scrolling */
+        -webkit-overflow-scrolling: touch !important;
+        
+        /* iOS: Mejor rendering */
+        -webkit-backface-visibility: hidden !important;
+        backface-visibility: hidden !important;
+        
+        /* iOS: Perspective para 3D */
+        -webkit-perspective: 1000px !important;
+        perspective: 1000px !important;
+    }
+}
+
+/* DEBUG: Para verificar configuración (remover en producción) */
+.touchscreen-debug .messages-container,
+.touchscreen-debug .messages-scroll,
+.touchscreen-debug #messages-scroll {
+    border: 3px dashed lime !important;
+    background: rgba(0, 255, 0, 0.1) !important;
+}
+
+.touchscreen-debug .messages-container::before,
+.touchscreen-debug .messages-scroll::before,
+.touchscreen-debug #messages-scroll::before {
+    content: "TOUCHSCREEN SCROLL ACTIVE" !important;
+    position: absolute !important;
+    top: 0 !important;
+    left: 0 !important;
+    background: lime !important;
+    color: black !important;
+    padding: 2px 5px !important;
+    font-size: 10px !important;
+    font-weight: bold !important;
+    z-index: 9999 !important;
+}

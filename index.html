@@ -1,0 +1,3722 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VigiChat - Chat en Tiempo Real</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="icons-fallback.css">
+    <link rel="stylesheet" href="css/camera.css">
+    <meta name="theme-color" content="#4f46e5">
+    <meta name="description" content="VigiChat - Aplicación de mensajería avanzada con funciones de vigilancia y tiempo real">
+    <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <div class="app-container">
+        <!-- Barra lateral - Lista de contactos -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <div class="user-profile">
+                    <img src="images/avatar-placeholder.svg" alt="Tu Perfil" class="profile-img">
+                    <div class="online-indicator"></div>
+                </div>
+                <h2>VigiChat</h2>
+                <div class="sidebar-actions">
+                    <!-- Contador global de mensajes no leídos -->
+                    <div class="global-unread-counter" id="global-unread-counter" style="display: none;">
+                        <i class="fas fa-bell"></i>
+                        <span class="global-unread-count" id="global-unread-count">0</span>
+                    </div>
+                    <button class="icon-btn" id="new-chat-btn">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                    <button class="icon-btn" id="settings-btn">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                </div>
+            </div>
+            
+            <div class="search-container">
+                <i class="fas fa-search"></i>
+                <input type="text" placeholder="Buscar chats...">
+            </div>
+            
+            <div class="chat-list">
+                <!-- Chat activo -->
+                <div class="chat-item active">
+                    <img src="images/avatar-placeholder.svg" alt="Ana García" class="chat-img">
+                    <div class="chat-info">
+                        <div class="chat-top-row">
+                            <h3 class="chat-name">Ana García</h3>
+                            <span class="chat-time">12:45</span>
+                        </div>
+                        <div class="chat-bottom-row">
+                            <p class="chat-last-msg">¿Cómo va el proyecto?</p>
+                            <div class="chat-indicators">
+                                <span class="unread-count">2</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Otros chats -->
+                <div class="chat-item">
+                    <img src="images/avatar-placeholder.svg" alt="Juan Pérez" class="chat-img">
+                    <div class="chat-info">
+                        <div class="chat-top-row">
+                            <h3 class="chat-name">Juan Pérez</h3>
+                            <span class="chat-time">Ayer</span>
+                        </div>
+                        <div class="chat-bottom-row">
+                            <p class="chat-last-msg">Ok, te veo mañana</p>
+                            <div class="chat-indicators">
+                                <i class="fas fa-check-double message-read"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chat-item">
+                    <img src="images/avatar-placeholder.svg" alt="Laura Martínez" class="chat-img">
+                    <div class="chat-info">
+                        <div class="chat-top-row">
+                            <h3 class="chat-name">Laura Martínez</h3>
+                            <span class="chat-time">20/04</span>
+                        </div>
+                        <div class="chat-bottom-row">
+                            <p class="chat-last-msg">La presentación quedó genial</p>
+                            <div class="chat-indicators">
+                                <i class="fas fa-check-double message-read"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="chat-item">
+                    <img src="images/avatar-placeholder.svg" alt="Grupo de Trabajo" class="chat-img">
+                    <div class="chat-info">
+                        <div class="chat-top-row">
+                            <h3 class="chat-name">Grupo de Trabajo</h3>
+                            <span class="chat-time">18/04</span>
+                        </div>
+                        <div class="chat-bottom-row">
+                            <p class="chat-last-msg">Carlos: Ya terminé mi parte</p>
+                            <div class="chat-indicators">
+                                <i class="fas fa-check message-sent"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </aside>
+        
+        <!-- Área principal del chat -->
+        <main class="chat-area">
+            <!-- Encabezado del chat -->
+            <header class="chat-header">
+                <div class="contact-info">
+                    <img src="images/avatar-placeholder.svg" alt="Ana García" class="chat-img">
+                    <div>
+                        <h3>Ana García</h3>
+                        <p class="status">En línea</p>
+                    </div>
+                </div>
+                <div class="chat-actions">
+                    <button class="icon-btn">
+                        <i class="fas fa-search"></i>
+                    </button>
+                    <button class="icon-btn">
+                        <i class="fas fa-phone"></i>
+                    </button>
+                    <button class="icon-btn">
+                        <i class="fas fa-video"></i>
+                    </button>
+                    <button class="icon-btn">
+                        <i class="fas fa-info-circle"></i>
+                    </button>
+                </div>
+            </header>
+            
+            <!-- Mensajes -->
+            <div class="messages-container">
+                <div class="date-divider">
+                    <span>Hoy</span>
+                </div>
+                
+                <!-- Mensajes recibidos -->
+                <div class="message received">
+                    <img src="images/avatar-placeholder.svg" alt="Ana García" class="message-avatar">
+                    <div class="message-content">
+                        <div class="message-text">¡Hola! ¿Cómo estás?</div>
+                        <span class="message-time">10:32</span>
+                    </div>
+                </div>
+                
+                <div class="message received">
+                    <img src="images/avatar-placeholder.svg" alt="Ana García" class="message-avatar">
+                    <div class="message-content">
+                        <div class="message-text">¿Pudiste revisar los cambios que hice en el documento?</div>
+                        <span class="message-time">10:33</span>
+                    </div>
+                </div>
+                
+                <!-- Mensajes enviados -->
+                <div class="message sent">
+                    <div class="message-content">
+                        <div class="message-text">¡Hola Ana! Todo bien, gracias. ¿Y tú?</div>
+                        <span class="message-time">10:35</span>
+                        <span class="message-status">
+                            <i class="fas fa-check-double message-read"></i>
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="message sent">
+                    <div class="message-content">
+                        <div class="message-text">Sí, ya los revisé. Me gusta mucho cómo quedó la sección de resultados. Solo tengo un par de comentarios menores.</div>
+                        <span class="message-time">10:36</span>
+                        <span class="message-status">
+                            <i class="fas fa-check-double message-read"></i>
+                        </span>
+                    </div>
+                </div>
+                
+                <div class="message received">
+                    <img src="images/avatar-placeholder.svg" alt="Ana García" class="message-avatar">
+                    <div class="message-content">
+                        <div class="message-text">¡Genial! ¿Cómo va el proyecto en general? ¿Estamos a tiempo para la entrega?</div>
+                        <span class="message-time">10:40</span>
+                    </div>
+                </div>
+                
+                <div class="message received typing">
+                    <img src="images/avatar-placeholder.svg" alt="Ana García" class="message-avatar">
+                    <div class="message-content">
+                        <div class="typing-indicator">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Área de entrada de mensaje -->
+            <div class="message-input-container">
+                <button class="icon-btn">
+                    <i class="fas fa-paperclip"></i>
+                </button>
+                <button class="icon-btn robocam-trigger-btn" id="robocam-instant-trigger" title="RoboCam Instantánea">
+                    <i class="fas fa-camera"></i>
+                </button>
+                <div class="message-input-wrapper">
+                    <input type="text" id="message-input" placeholder="Escribe un mensaje...">
+                    <button class="icon-btn emoji-btn">
+                        <i class="fas fa-smile"></i>
+                    </button>
+                </div>
+                <button class="send-btn" id="send-message-btn">
+                    <i class="fas fa-paper-plane"></i>
+                </button>
+            </div>
+        </main>
+    </div>
+
+    <!-- Real-time VigiChat with full functionality -->
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="js/emojiPicker.js"></script>
+    <script src="js/cameraHandler.js"></script>
+    <script src="js/locationRealtime.js"></script>
+    <script>
+        // VigiChat Real-time Integration
+        console.log('🚀 VigiChat Real-time Chat Initialized');
+        
+        // SISTEMA DE CÁMARA COMPLETAMENTE INDEPENDIENTE - ÚLTIMA ESTRATEGIA
+        setTimeout(() => {
+            console.log('Iniciando sistema de cámara independiente...');
+            
+            // Crear botón flotante independiente
+            const superCameraBtn = document.createElement('button');
+            superCameraBtn.id = 'super-camera-btn';
+            superCameraBtn.innerHTML = '📸';
+            superCameraBtn.style.cssText = `
+                position: fixed;
+                bottom: 20px;
+                right: 20px;
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+                color: white;
+                border: none;
+                font-size: 24px;
+                cursor: pointer;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                z-index: 999999;
+                transition: all 0.3s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            `;
+            
+            // Hover effect
+            superCameraBtn.onmouseenter = () => {
+                superCameraBtn.style.transform = 'scale(1.1)';
+                superCameraBtn.style.boxShadow = '0 6px 25px rgba(255,107,107,0.4)';
+            };
+            superCameraBtn.onmouseleave = () => {
+                superCameraBtn.style.transform = 'scale(1)';
+                superCameraBtn.style.boxShadow = '0 4px 20px rgba(0,0,0,0.3)';
+            };
+            
+            // Función exacta del Test 2: Cámara que funciona
+            superCameraBtn.onclick = async function() {
+                console.log('Test cámara iniciado...');
+                
+                try {
+                    const modal = document.createElement('div');
+                    modal.className = 'camera-modal';
+                    modal.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0,0,0,0.9);
+                        z-index: 1000;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    `;
+                    
+                    const cameraContent = document.createElement('div');
+                    cameraContent.className = 'camera-content';
+                    cameraContent.style.cssText = `
+                        background: white;
+                        padding: 20px;
+                        border-radius: 10px;
+                        text-align: center;
+                        max-width: 500px;
+                    `;
+                    
+                    cameraContent.innerHTML = `
+                        <h3>Cámara Activa</h3>
+                        <video id="camera-video" autoplay playsinline style="width: 100%; max-width: 400px; border-radius: 10px;"></video>
+                        <br>
+                        <button id="close-btn" style="background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 10px;">Cerrar</button>
+                    `;
+                    
+                    modal.appendChild(cameraContent);
+                    document.body.appendChild(modal);
+                    
+                    const video = modal.querySelector('#camera-video');
+                    
+                    console.log('Solicitando acceso a cámara...');
+                    
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        video: true
+                    });
+                    
+                    video.srcObject = stream;
+                    modal.style.display = 'flex';
+                    
+                    console.log('Cámara activada exitosamente!');
+                    
+                    // Configurar botón cerrar
+                    modal.querySelector('#close-btn').onclick = function() {
+                        stream.getTracks().forEach(track => track.stop());
+                        modal.style.display = 'none';
+                        document.body.removeChild(modal);
+                        console.log('Cámara cerrada');
+                    };
+                    
+                } catch (error) {
+                    console.error('Error: ' + error.message);
+                    alert('Error accediendo a cámara: ' + error.message);
+                }
+            };
+            
+            // Añadir botón al DOM
+            document.body.appendChild(superCameraBtn);
+            console.log('✅ SuperCam button añadido exitosamente');
+            
+            // Mostrar notificación de que está listo
+            setTimeout(() => {
+                const notification = document.createElement('div');
+                notification.textContent = '📸 SuperCam listo! (botón rojo abajo-derecha)';
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: #4CAF50;
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 8px;
+                    z-index: 999998;
+                    font-weight: bold;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                `;
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.remove();
+                }, 3000);
+            }, 500);
+            
+        }, 2000); // Esperar 2 segundos para asegurar que todo esté cargado
+        // Main App Controller for the root index.html
+        class VigiChatApp {
+            constructor() {
+                this.socket = null;
+                this.currentUser = null;
+                this.currentConversation = null;
+                this.contacts = new Map();
+                this.conversations = new Map();
+                this.pendingMessages = new Map(); // Track pending messages
+                this.retryAttempts = new Map(); // Track retry attempts
+                this.connectionQuality = 'good'; // Track connection quality
+                
+                this.init();
+            }
+            
+            async init() {
+                // Check if user is logged in
+                const token = localStorage.getItem('authToken');
+                if (!token) {
+                    this.redirectToAuth();
+                    return;
+                }
+                
+                try {
+                    // Verify token and get user data
+                    await this.loadCurrentUser();
+                    this.initializeSocket();
+                    this.setupEventListeners();
+                    await this.loadData();
+                } catch (error) {
+                    console.error('Initialization error:', error);
+                    this.redirectToAuth();
+                }
+            }
+            
+            async loadCurrentUser() {
+                const response = await fetch('/api/users/profile', {
+                    headers: {
+                        'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Invalid token');
+                }
+                
+                this.currentUser = await response.json();
+                this.updateUserProfile();
+            }
+            
+            updateUserProfile() {
+                const nameElement = document.querySelector('.user-profile h2');
+                const avatarElement = document.querySelector('.user-profile .profile-img');
+                
+                if (nameElement && this.currentUser.data) {
+                    nameElement.textContent = this.currentUser.data.fullName || 'VigiChat';
+                }
+                
+                if (avatarElement && this.currentUser.data?.avatar) {
+                    avatarElement.src = this.currentUser.data.avatar;
+                }
+            }
+            
+            initializeSocket() {
+                this.socket = io({
+                    auth: {
+                        token: localStorage.getItem('authToken')
+                    }
+                });
+                
+                this.socket.on('connect', () => {
+                    console.log('Connected to VigiChat server');
+                    this.showNotification('Conectado a VigiChat', 'success');
+                });
+                
+                this.socket.on('message-received', (data) => {
+                    this.handleIncomingMessage(data);
+                });
+                
+                this.socket.on('message-sent', (data) => {
+                    this.handleMessageSent(data);
+                });
+                
+                this.socket.on('message-delivered', (data) => {
+                    this.handleMessageDelivered(data);
+                });
+                
+                this.socket.on('message-read', (data) => {
+                    this.handleMessageRead(data);
+                });
+                
+                this.socket.on('message-error', (data) => {
+                    this.handleMessageError(data);
+                });
+                
+                // Connection quality monitoring
+                this.socket.on('connect', () => {
+                    this.connectionQuality = 'good';
+                    this.updateConnectionIndicator();
+                    this.retryPendingMessages();
+                });
+                
+                this.socket.on('disconnect', () => {
+                    this.connectionQuality = 'poor';
+                    this.updateConnectionIndicator();
+                });
+                
+                this.socket.on('connect_error', () => {
+                    this.connectionQuality = 'poor';
+                    this.updateConnectionIndicator();
+                });
+                
+                this.socket.on('user-typing', (data) => {
+                    this.showTypingIndicator(data);
+                });
+                
+                this.socket.on('user-stopped-typing', (data) => {
+                    this.hideTypingIndicator();
+                });
+                
+                this.socket.on('contact-status-changed', (data) => {
+                    this.updateContactStatus(data);
+                });
+            }
+            
+            setupEventListeners() {
+                // Message input
+                const messageInput = document.getElementById('message-input');
+                const sendButton = document.getElementById('send-message-btn');
+                
+                if (messageInput && sendButton) {
+                    sendButton.addEventListener('click', () => this.sendMessage());
+                    messageInput.addEventListener('keypress', (e) => {
+                        if (e.key === 'Enter') {
+                            e.preventDefault();
+                            this.sendMessage();
+                        }
+                    });
+                    
+                    // Typing indicators
+                    let typingTimer;
+                    messageInput.addEventListener('input', () => {
+                        if (this.currentConversation) {
+                            this.socket?.emit('typing-start', {
+                                recipientId: this.getRecipientId(),
+                                conversationId: this.currentConversation._id
+                            });
+                            
+                            clearTimeout(typingTimer);
+                            typingTimer = setTimeout(() => {
+                                this.socket?.emit('typing-stop', {
+                                    recipientId: this.getRecipientId(),
+                                    conversationId: this.currentConversation._id
+                                });
+                            }, 3000);
+                        }
+                    });
+                }
+                
+                // Chat item clicks
+                this.setupChatItemListeners();
+                
+                // Action buttons
+                this.setupActionButtons();
+            }
+            
+            setupChatItemListeners() {
+                // Add click listeners to existing chat items
+                document.querySelectorAll('.chat-item').forEach(item => {
+                    item.addEventListener('click', () => {
+                        const contactName = item.querySelector('.chat-name').textContent;
+                        this.selectChatByName(contactName);
+                    });
+                });
+            }
+            
+            setupActionButtons() {
+                console.log('Setting up action buttons...');
+                
+                // Call button
+                const callBtn = document.querySelector('.icon-btn .fa-phone')?.parentElement;
+                if (callBtn) {
+                    callBtn.addEventListener('click', () => this.initiateCall());
+                }
+                
+                // Video call button
+                const videoBtn = document.querySelector('.icon-btn .fa-video')?.parentElement;
+                if (videoBtn) {
+                    videoBtn.addEventListener('click', () => this.initiateVideoCall());
+                }
+                
+                // Info button
+                const infoBtn = document.querySelector('.icon-btn .fa-info-circle')?.parentElement;
+                if (infoBtn) {
+                    infoBtn.addEventListener('click', () => this.showContactInfo());
+                }
+                
+                // Search button
+                const searchBtn = document.querySelector('.icon-btn .fa-search')?.parentElement;
+                if (searchBtn) {
+                    searchBtn.addEventListener('click', () => this.toggleSearch());
+                }
+                
+                // Attachment button
+                const attachBtn = document.querySelector('.icon-btn .fa-paperclip')?.parentElement;
+                if (attachBtn) {
+                    attachBtn.addEventListener('click', () => this.showAttachmentOptions());
+                }
+                
+                // ROBOCAM - MÚLTIPLES ESTRATEGIAS DE DETECCIÓN
+                this.setupRoboCamButton();
+                
+                // Emoji button
+                const emojiBtn = document.querySelector('.icon-btn .fa-smile')?.parentElement;
+                if (emojiBtn) {
+                    emojiBtn.addEventListener('click', () => this.toggleEmojiPicker());
+                }
+                
+                // New chat button
+                const newChatBtn = document.getElementById('new-chat-btn');
+                if (newChatBtn) {
+                    newChatBtn.addEventListener('click', () => this.showNewChatModal());
+                }
+                
+                // Settings button
+                const settingsBtn = document.getElementById('settings-btn');
+                if (settingsBtn) {
+                    settingsBtn.addEventListener('click', () => this.showSettings());
+                }
+            }
+            
+            setupRoboCamButton() {
+                console.log('Setting up RoboCam button...');
+                
+                const attempts = [
+                    () => document.getElementById('robocam-instant-trigger'),
+                    () => document.querySelector('#robocam-instant-trigger'),
+                    () => document.querySelector('.robocam-trigger-btn'),
+                    () => document.querySelector('button[title="RoboCam Instantánea"]'),
+                    () => {
+                        const buttons = document.querySelectorAll('button');
+                        for (let btn of buttons) {
+                            if (btn.id === 'robocam-instant-trigger') return btn;
+                        }
+                        return null;
+                    }
+                ];
+                
+                let robocamBtn = null;
+                
+                for (let i = 0; i < attempts.length; i++) {
+                    try {
+                        robocamBtn = attempts[i]();
+                        if (robocamBtn) {
+                            console.log(`RoboCam button found with attempt ${i + 1}:`, robocamBtn);
+                            break;
+                        }
+                    } catch (e) {
+                        console.log(`Attempt ${i + 1} failed:`, e);
+                    }
+                }
+                
+                if (robocamBtn) {
+                    console.log('RoboCam button found, setting up handler');
+                    
+                    const handler = (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('RoboCam clicked!');
+                        alert('ROBOCAM FUNCIONA! Click detectado');
+                        
+                        // Aquí iría la función real de cámara
+                        this.openSimpleCamera();
+                    };
+                    
+                    robocamBtn.addEventListener('click', handler);
+                    robocamBtn.addEventListener('touchstart', handler);
+                    
+                    console.log('RoboCam handler configured successfully');
+                } else {
+                    console.error('RoboCam button NOT FOUND after all attempts');
+                    
+                    // Estrategia de último recurso - buscar cada segundo
+                    let retryCount = 0;
+                    const retryInterval = setInterval(() => {
+                        retryCount++;
+                        console.log(`Retry ${retryCount}: Looking for RoboCam button...`);
+                        
+                        const btn = document.getElementById('robocam-instant-trigger');
+                        if (btn) {
+                            console.log('RoboCam button found on retry!');
+                            clearInterval(retryInterval);
+                            this.setupRoboCamButton();
+                        } else if (retryCount >= 10) {
+                            console.error('RoboCam button not found after 10 retries');
+                            clearInterval(retryInterval);
+                        }
+                    }, 1000);
+                }
+            }
+            
+            async loadData() {
+                try {
+                    await Promise.all([
+                        this.loadConversations(),
+                        this.loadContacts()
+                    ]);
+                } catch (error) {
+                    console.error('Error loading data:', error);
+                }
+            }
+            
+            async loadConversations() {
+                try {
+                    const response = await fetch('/api/messages/conversations', {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.conversations.clear();
+                        data.data.forEach(conv => {
+                            this.conversations.set(conv._id, conv);
+                        });
+                        this.renderConversations();
+                    }
+                } catch (error) {
+                    console.error('Error loading conversations:', error);
+                }
+            }
+            
+            async loadContacts() {
+                try {
+                    const response = await fetch('/api/contacts', {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.contacts.clear();
+                        data.data.forEach(contact => {
+                            this.contacts.set(contact._id, contact);
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error loading contacts:', error);
+                }
+            }
+            
+            renderConversations() {
+                const chatList = document.querySelector('.chat-list');
+                if (!chatList) return;
+                
+                // Keep existing demo conversations for now, but make them functional
+                this.setupChatItemListeners();
+            }
+            
+            selectChatByName(contactName) {
+                // Find conversation by contact name
+                const conversation = Array.from(this.conversations.values()).find(conv => 
+                    conv.name === contactName
+                );
+                
+                if (conversation) {
+                    this.selectConversation(conversation);
+                } else {
+                    // Create new conversation or show contact info
+                    this.showContactSearch(contactName);
+                }
+            }
+            
+            async selectConversation(conversation) {
+                this.currentConversation = conversation;
+                
+                // Update active chat item
+                document.querySelectorAll('.chat-item').forEach(item => {
+                    item.classList.remove('active');
+                });
+                
+                // Find and activate the correct chat item
+                const chatItems = document.querySelectorAll('.chat-item');
+                chatItems.forEach(item => {
+                    const nameElement = item.querySelector('.chat-name');
+                    if (nameElement && nameElement.textContent === conversation.name) {
+                        item.classList.add('active');
+                    }
+                });
+                
+                // Update chat header
+                this.updateChatHeader(conversation);
+                
+                // Load messages
+                await this.loadConversationMessages(conversation._id);
+                
+                // Join conversation room
+                this.socket?.emit('join-conversation', conversation._id);
+            }
+            
+            updateChatHeader(conversation) {
+                const contactImg = document.querySelector('.contact-info img');
+                const contactName = document.querySelector('.contact-info h3');
+                const contactStatus = document.querySelector('.contact-info .status');
+                
+                if (contactImg) contactImg.src = conversation.avatar || 'images/avatar-placeholder.svg';
+                if (contactName) contactName.textContent = conversation.name;
+                if (contactStatus) contactStatus.textContent = 'En línea'; // Update with real status
+            }
+            
+            async loadConversationMessages(conversationId) {
+                try {
+                    const response = await fetch(`/api/messages/conversation/${conversationId}`, {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        this.renderMessages(data.data.messages);
+                    }
+                } catch (error) {
+                    console.error('Error loading messages:', error);
+                }
+            }
+            
+            renderMessages(messages) {
+                const container = document.querySelector('.messages-container');
+                if (!container) return;
+                
+                // Clear existing messages (keep date divider)
+                const dateDiv = container.querySelector('.date-divider');
+                container.innerHTML = '';
+                if (dateDiv) container.appendChild(dateDiv);
+                
+                messages.forEach(message => {
+                    this.addMessageToUI(message);
+                });
+                
+                this.scrollToBottom();
+            }
+            
+            addMessageToUI(message, animate = false) {
+                const container = document.querySelector('.messages-container');
+                if (!container) return;
+                
+                const messageDiv = document.createElement('div');
+                const isOwn = message.sender._id === this.currentUser.data._id;
+                messageDiv.className = `message ${isOwn ? 'sent' : 'received'}`;
+                
+                // Add unique identifier for easy updates
+                messageDiv.setAttribute('data-message-id', message._id);
+                if (message.clientId) {
+                    messageDiv.setAttribute('data-client-id', message.clientId);
+                }
+                
+                const time = new Date(message.createdAt).toLocaleTimeString('es-ES', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                if (isOwn) {
+                    messageDiv.innerHTML = `
+                        <div class="message-content">
+                            <div class="message-text">${this.escapeHtml(message.content.text)}</div>
+                            <span class="message-time">${time}</span>
+                            <span class="message-status" data-status="${message.status || 'sending'}">
+                                ${this.getStatusIndicator(message.status || 'sending')}
+                            </span>
+                        </div>
+                    `;
+                } else {
+                    messageDiv.innerHTML = `
+                        <img src="${message.sender.avatar || 'images/avatar-placeholder.svg'}" 
+                             alt="${message.sender.fullName}" class="message-avatar">
+                        <div class="message-content">
+                            <div class="message-text">${this.escapeHtml(message.content.text)}</div>
+                            <span class="message-time">${time}</span>
+                        </div>
+                    `;
+                }
+                
+                // Add visual feedback for connection quality (without transparency)
+                if (message.isOptimistic && this.connectionQuality !== 'good') {
+                    messageDiv.classList.add('message-pending-connection');
+                }
+                
+                // Messages appear immediately without any animation
+                container.appendChild(messageDiv);
+                
+                this.scrollToBottom();
+                return messageDiv;
+            }
+            
+            sendMessage() {
+                const input = document.getElementById('message-input');
+                const content = input.value.trim();
+                
+                if (!content || !this.currentConversation) return;
+                
+                const recipientId = this.getRecipientId();
+                if (!recipientId) return;
+                
+                // Generate unique client ID for this message
+                const clientId = this.generateClientId();
+                const timestamp = Date.now();
+                
+                // Create optimistic message object
+                const optimisticMessage = {
+                    _id: 'temp_' + clientId,
+                    clientId: clientId,
+                    sender: {
+                        _id: this.currentUser.data._id,
+                        fullName: this.currentUser.data.fullName,
+                        avatar: this.currentUser.data.avatar
+                    },
+                    recipient: recipientId,
+                    content: { text: content },
+                    type: 'text',
+                    status: 'sending', // Start with sending but no icon
+                    createdAt: new Date(timestamp),
+                    isOptimistic: true // Mark as optimistic update
+                };
+                
+                // INSTANT UI UPDATE - Show message immediately
+                this.addMessageToUI(optimisticMessage, true);
+                
+                // Clear input immediately for better UX
+                input.value = '';
+                
+                // Track as pending
+                this.pendingMessages.set(clientId, {
+                    message: optimisticMessage,
+                    recipientId,
+                    content,
+                    timestamp,
+                    attempts: 0
+                });
+                
+                // Send via socket with retry mechanism
+                this.sendMessageWithRetry({
+                    recipientId,
+                    content,
+                    type: 'text',
+                    clientId,
+                    timestamp
+                });
+                
+                // Stop typing indicator
+                this.socket?.emit('typing-stop', {
+                    recipientId,
+                    conversationId: this.currentConversation._id
+                });
+            }
+            
+            getRecipientId() {
+                if (!this.currentConversation) return null;
+                return this.currentConversation.participants.find(p => p !== this.currentUser.data._id);
+            }
+            
+            handleIncomingMessage(message) {
+                this.addMessageToUI(message, true);
+                this.playNotificationSound();
+                
+                // Update conversation last message
+                this.updateConversationPreview(message);
+                
+                // Show notification if window is not focused
+                if (document.hidden) {
+                    this.showDesktopNotification(message);
+                }
+            }
+            
+            handleMessageSent(message) {
+                console.log('✅ Message sent confirmation:', message);
+                
+                // Find the optimistic message and update it
+                if (message.clientId) {
+                    this.updateMessageStatus(message.clientId, 'sent', message.messageId || message._id);
+                    
+                    // Remove from pending if exists
+                    this.pendingMessages.delete(message.clientId);
+                    
+                    // Update the temporary message with real server data
+                    this.replaceOptimisticMessage(message);
+                }
+            }
+            
+            handleMessageDelivered(data) {
+                console.log('📬 Message delivered:', data);
+                
+                // Update status to delivered
+                this.updateMessageStatusById(data.messageId, 'delivered');
+            }
+            
+            handleMessageRead(data) {
+                console.log('👁️ Message read:', data);
+                
+                // Update status to read
+                this.updateMessageStatusById(data.messageId, 'read');
+            }
+            
+            handleMessageError(data) {
+                console.error('❌ Message error:', data);
+                
+                if (data.clientId) {
+                    // Check if we should retry
+                    const pending = this.pendingMessages.get(data.clientId);
+                    if (pending && pending.attempts < 3) {
+                        // Retry after delay
+                        setTimeout(() => {
+                            this.retryMessage(data.clientId);
+                        }, Math.pow(2, pending.attempts) * 1000); // Exponential backoff
+                    } else {
+                        // Mark as failed
+                        this.updateMessageStatus(data.clientId, 'failed');
+                        this.showNotification('Error enviando mensaje. Toca para reintentar.', 'error');
+                    }
+                }
+            }
+            
+            updateConversationPreview(message) {
+                // Update the chat item preview
+                const chatItems = document.querySelectorAll('.chat-item');
+                chatItems.forEach(item => {
+                    const nameElement = item.querySelector('.chat-name');
+                    if (nameElement && this.currentConversation && 
+                        nameElement.textContent === this.currentConversation.name) {
+                        const lastMsgElement = item.querySelector('.chat-last-msg');
+                        const timeElement = item.querySelector('.chat-time');
+                        
+                        if (lastMsgElement) {
+                            const isOwn = message.sender._id === this.currentUser.data._id;
+                            const prefix = isOwn ? 'Tú: ' : '';
+                            lastMsgElement.textContent = prefix + message.content.text;
+                        }
+                        
+                        if (timeElement) {
+                            timeElement.textContent = new Date().toLocaleTimeString('es-ES', {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                            });
+                        }
+                    }
+                });
+            }
+            
+            showTypingIndicator(data) {
+                // Add typing indicator to messages
+                this.removeTypingIndicator(); // Remove existing
+                
+                const container = document.querySelector('.messages-container');
+                if (!container) return;
+                
+                const typingDiv = document.createElement('div');
+                typingDiv.className = 'message received typing-message';
+                typingDiv.innerHTML = `
+                    <img src="images/avatar-placeholder.svg" alt="Contact" class="message-avatar">
+                    <div class="message-content">
+                        <div class="typing-indicator">
+                            <span></span>
+                            <span></span>
+                            <span></span>
+                        </div>
+                    </div>
+                `;
+                
+                container.appendChild(typingDiv);
+                this.scrollToBottom();
+            }
+            
+            hideTypingIndicator() {
+                this.removeTypingIndicator();
+            }
+            
+            removeTypingIndicator() {
+                const typingMessage = document.querySelector('.typing-message');
+                if (typingMessage) {
+                    typingMessage.remove();
+                }
+            }
+            
+            updateContactStatus(data) {
+                // Update contact status in UI
+                console.log('Contact status updated:', data);
+            }
+            
+            // Action button handlers
+            initiateCall() {
+                if (!this.currentConversation) {
+                    this.showNotification('Selecciona un contacto para llamar', 'warning');
+                    return;
+                }
+                
+                // Show call interface
+                this.showCallInterface('audio');
+                
+                // Emit call initiation to server
+                this.socket?.emit('initiate-call', {
+                    recipientId: this.getRecipientId(),
+                    type: 'audio',
+                    conversationId: this.currentConversation._id
+                });
+                
+                this.showNotification('Iniciando llamada...', 'info');
+            }
+            
+            initiateVideoCall() {
+                if (!this.currentConversation) {
+                    this.showNotification('Selecciona un contacto para videollamada', 'warning');
+                    return;
+                }
+                
+                // Show video call interface
+                this.showCallInterface('video');
+                
+                // Emit video call initiation to server
+                this.socket?.emit('initiate-call', {
+                    recipientId: this.getRecipientId(),
+                    type: 'video',
+                    conversationId: this.currentConversation._id
+                });
+                
+                this.showNotification('Iniciando videollamada...', 'info');
+            }
+            
+            showCallInterface(type) {
+                // Create call interface overlay
+                const callOverlay = document.createElement('div');
+                callOverlay.id = 'call-overlay';
+                callOverlay.className = 'call-overlay';
+                callOverlay.innerHTML = `
+                    <div class="call-container">
+                        <div class="call-header">
+                            <div class="call-contact-info">
+                                <img src="${this.currentConversation.avatar || 'images/avatar-placeholder.svg'}" 
+                                     alt="${this.currentConversation.name}" class="call-avatar">
+                                <div class="call-contact-details">
+                                    <h3>${this.currentConversation.name}</h3>
+                                    <p class="call-status">Conectando...</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        ${type === 'video' ? `
+                            <div class="video-container">
+                                <video id="remote-video" class="remote-video" autoplay></video>
+                                <video id="local-video" class="local-video" autoplay muted></video>
+                            </div>
+                        ` : `
+                            <div class="audio-call-content">
+                                <div class="call-avatar-large">
+                                    <img src="${this.currentConversation.avatar || 'images/avatar-placeholder.svg'}" 
+                                         alt="${this.currentConversation.name}">
+                                </div>
+                                <div class="call-timer">00:00</div>
+                            </div>
+                        `}
+                        
+                        <div class="call-controls">
+                            <button class="call-btn mute-btn" id="mute-btn" title="Silenciar">
+                                <i class="fas fa-microphone"></i>
+                            </button>
+                            ${type === 'video' ? `
+                                <button class="call-btn camera-btn" id="camera-btn" title="Cámara">
+                                    <i class="fas fa-video"></i>
+                                </button>
+                            ` : ''}
+                            <button class="call-btn end-call-btn" id="end-call-btn" title="Colgar">
+                                <i class="fas fa-phone-slash"></i>
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(callOverlay);
+                
+                // Setup call controls
+                this.setupCallControls(type);
+                
+                // Show with animation
+                setTimeout(() => {
+                    callOverlay.classList.add('show');
+                }, 10);
+            }
+            
+            setupCallControls(type) {
+                const muteBtn = document.getElementById('mute-btn');
+                const endCallBtn = document.getElementById('end-call-btn');
+                const cameraBtn = document.getElementById('camera-btn');
+                
+                let isMuted = false;
+                let isCameraOff = false;
+                
+                if (muteBtn) {
+                    muteBtn.addEventListener('click', () => {
+                        isMuted = !isMuted;
+                        muteBtn.innerHTML = `<i class="fas fa-microphone${isMuted ? '-slash' : ''}"></i>`;
+                        muteBtn.classList.toggle('muted', isMuted);
+                        // Implement actual mute logic here
+                    });
+                }
+                
+                if (cameraBtn && type === 'video') {
+                    cameraBtn.addEventListener('click', () => {
+                        isCameraOff = !isCameraOff;
+                        cameraBtn.innerHTML = `<i class="fas fa-video${isCameraOff ? '-slash' : ''}"></i>`;
+                        cameraBtn.classList.toggle('camera-off', isCameraOff);
+                        // Implement actual camera toggle logic here
+                    });
+                }
+                
+                if (endCallBtn) {
+                    endCallBtn.addEventListener('click', () => {
+                        this.endCall();
+                    });
+                }
+            }
+            
+            endCall() {
+                const callOverlay = document.getElementById('call-overlay');
+                if (callOverlay) {
+                    callOverlay.classList.remove('show');
+                    setTimeout(() => {
+                        if (callOverlay.parentNode) {
+                            callOverlay.parentNode.removeChild(callOverlay);
+                        }
+                    }, 300);
+                }
+                
+                // Emit end call to server
+                this.socket?.emit('end-call', {
+                    recipientId: this.getRecipientId(),
+                    conversationId: this.currentConversation?._id
+                });
+            }
+            
+            showContactInfo() {
+                if (!this.currentConversation) {
+                    this.showNotification('Selecciona un contacto para ver información', 'warning');
+                    return;
+                }
+                
+                // Create contact info modal
+                this.showContactInfoModal();
+            }
+            
+            showContactInfoModal() {
+                const modal = document.createElement('div');
+                modal.className = 'contact-info-modal';
+                modal.innerHTML = `
+                    <div class="modal-overlay" onclick="this.parentElement.remove()"></div>
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>Información del contacto</h3>
+                            <button class="close-btn" onclick="this.closest('.contact-info-modal').remove()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="contact-info-details">
+                                <div class="contact-avatar-section">
+                                    <img src="${this.currentConversation.avatar || 'images/avatar-placeholder.svg'}" 
+                                         alt="${this.currentConversation.name}" class="contact-info-avatar">
+                                </div>
+                                <div class="contact-details">
+                                    <h4>${this.currentConversation.name}</h4>
+                                    <p class="contact-status">En línea</p>
+                                    <div class="contact-actions">
+                                        <button class="action-btn" onclick="this.closest('.contact-info-modal').remove(); window.vigiChatApp.initiateCall();">
+                                            <i class="fas fa-phone"></i> Llamar
+                                        </button>
+                                        <button class="action-btn" onclick="this.closest('.contact-info-modal').remove(); window.vigiChatApp.initiateVideoCall();">
+                                            <i class="fas fa-video"></i> Videollamada
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                setTimeout(() => modal.classList.add('show'), 10);
+            }
+            
+            toggleSearch() {
+                const searchContainer = document.querySelector('.search-container');
+                const searchInput = searchContainer?.querySelector('input');
+                
+                if (searchInput) {
+                    searchInput.focus();
+                    this.showNotification('Busca en tus conversaciones...', 'info');
+                } else {
+                    this.showNotification('Búsqueda no disponible', 'warning');
+                }
+            }
+            
+            showAttachmentOptions() {
+                console.log('VigiChat: Showing attachment options...');
+                
+                // Remove any existing attachment menu first
+                const existingMenu = document.querySelector('.vigichat-attachment-menu');
+                if (existingMenu) {
+                    existingMenu.remove();
+                }
+
+                // Create attachment options menu with unique names
+                const attachMenu = document.createElement('div');
+                attachMenu.className = 'vigichat-attachment-menu';
+                attachMenu.innerHTML = `
+                    <div class="vigichat-menu-overlay"></div>
+                    <div class="vigichat-menu-content">
+                        <div class="vigichat-menu-item" data-type="image">
+                            <i class="fas fa-image"></i>
+                            <span>Imagen</span>
+                        </div>
+                        <div class="vigichat-menu-item" data-type="file">
+                            <i class="fas fa-file"></i>
+                            <span>Archivo</span>
+                        </div>
+                        <div class="vigichat-menu-item vigichat-camera-option" data-type="camera">
+                            <i class="fas fa-camera"></i>
+                            <span>Cámara</span>
+                        </div>
+                        <div class="vigichat-menu-item" data-type="location">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Ubicación</span>
+                        </div>
+                        <div class="vigichat-menu-item" data-type="live-location">
+                            <i class="fas fa-broadcast-tower"></i>
+                            <span>Ubicación en tiempo real</span>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(attachMenu);
+                
+                // Setup event listeners with immediate binding
+                this.setupAttachmentMenuEventsRobust(attachMenu);
+                
+                // Show menu immediately
+                requestAnimationFrame(() => {
+                    attachMenu.classList.add('vigichat-show');
+                });
+            }
+            
+            setupAttachmentMenuEventsRobust(attachMenu) {
+                console.log('VigiChat: Setting up attachment menu events...');
+                
+                const menuItems = attachMenu.querySelectorAll('.vigichat-menu-item');
+                const overlay = attachMenu.querySelector('.vigichat-menu-overlay');
+                const cameraOption = attachMenu.querySelector('.vigichat-camera-option');
+                
+                // Clean up function - más robusta
+                const cleanupMenu = () => {
+                    console.log('VigiChat: Cleaning up attachment menu...');
+                    if (attachMenu && attachMenu.parentNode) {
+                        attachMenu.classList.remove('vigichat-show');
+                        setTimeout(() => {
+                            if (attachMenu.parentNode) {
+                                attachMenu.parentNode.removeChild(attachMenu);
+                            }
+                        }, 200);
+                    }
+                };
+                
+                // Handle overlay clicks - close menu
+                if (overlay) {
+                    overlay.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        console.log('VigiChat: Overlay clicked, closing menu');
+                        cleanupMenu();
+                    });
+                }
+                
+                // Handle camera option specifically - INMEDIATO
+                if (cameraOption) {
+                    const cameraClickHandler = async (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        
+                        console.log('VigiChat: Camera option clicked - IMMEDIATE ACTION');
+                        
+                        // Cerrar menu INMEDIATAMENTE
+                        cleanupMenu();
+                        
+                        // Abrir cámara INMEDIATAMENTE usando el sistema robusto
+                        if (window.vigichatCamera) {
+                            try {
+                                await window.vigichatCamera.openCamera();
+                            } catch (error) {
+                                console.error('VigiChat: Error opening camera:', error);
+                                this.showNotification('Error abriendo cámara', 'error');
+                            }
+                        } else {
+                            console.error('VigiChat: CameraHandler not loaded');
+                            this.showNotification('Sistema de cámara no disponible', 'error');
+                        }
+                    };
+                    
+                    // Bind multiple events for maximum compatibility
+                    cameraOption.addEventListener('click', cameraClickHandler);
+                    cameraOption.addEventListener('touchstart', cameraClickHandler);
+                    cameraOption.addEventListener('mousedown', cameraClickHandler);
+                }
+                
+                // Handle other menu items (non-camera)
+                menuItems.forEach(item => {
+                    if (!item.classList.contains('vigichat-camera-option')) {
+                        item.addEventListener('click', (e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            
+                            const type = item.getAttribute('data-type');
+                            console.log(`VigiChat: ${type} option clicked`);
+                            
+                            cleanupMenu();
+                            
+                            setTimeout(() => {
+                                this.selectFileNonCamera(type);
+                            }, 50);
+                        });
+                    }
+                });
+                
+                // Prevent menu from closing when clicking inside
+                attachMenu.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                });
+                
+                // Auto cleanup after 15 seconds
+                setTimeout(() => {
+                    console.log('VigiChat: Auto cleanup attachment menu');
+                    cleanupMenu();
+                }, 15000);
+            }
+            
+            selectFileNonCamera(type) {
+                console.log(`VigiChat: selectFileNonCamera called with type: ${type}`);
+                
+                if (type === 'location') {
+                    this.requestLocation();
+                } else if (type === 'live-location') {
+                    // Iniciar ubicación en tiempo real
+                    if (window.locationRealtime) {
+                        window.locationRealtime.startRealtimeLocationSharing();
+                    } else {
+                        console.error('LocationRealTimeManager not available');
+                        Utils.Notifications.error('Sistema de ubicación en tiempo real no disponible');
+                    }
+                } else {
+                    this.showNotification(`Función de ${type} próximamente disponible`, 'info');
+                }
+            }
+            
+            // FUNCIÓN DE UBICACIÓN - Como WhatsApp
+            async requestLocation() {
+                console.log('VigiChat: Requesting location...');
+                
+                if (!navigator.geolocation) {
+                    this.showNotification('Geolocalización no soportada en este navegador', 'error');
+                    return;
+                }
+                
+                // Mostrar modal de carga
+                this.showLocationLoadingModal();
+                
+                const options = {
+                    enableHighAccuracy: true,
+                    timeout: 15000,
+                    maximumAge: 300000 // 5 minutos
+                };
+                
+                navigator.geolocation.getCurrentPosition(
+                    async (position) => {
+                        console.log('Location obtained:', position.coords);
+                        
+                        // Obtener la dirección real usando geocodificación reversa
+                        const address = await this.reverseGeocode(position.coords.latitude, position.coords.longitude);
+                        
+                        this.showLocationPreview(position.coords, address);
+                    },
+                    (error) => {
+                        console.error('Location error:', error);
+                        this.hideLocationLoadingModal();
+                        
+                        let message = 'Error obteniendo ubicación';
+                        switch(error.code) {
+                            case error.PERMISSION_DENIED:
+                                message = 'Permiso de ubicación denegado. Activa la ubicación en tu navegador.';
+                                break;
+                            case error.POSITION_UNAVAILABLE:
+                                message = 'Ubicación no disponible';
+                                break;
+                            case error.TIMEOUT:
+                                message = 'Tiempo de espera agotado para obtener ubicación';
+                                break;
+                        }
+                        this.showNotification(message, 'error');
+                    },
+                    options
+                );
+            }
+            
+            showLocationLoadingModal() {
+                const modal = document.createElement('div');
+                modal.id = 'location-loading-modal';
+                modal.style.cssText = `
+                    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                    background: rgba(0,0,0,0.7); z-index: 10000;
+                    display: flex; align-items: center; justify-content: center;
+                `;
+                
+                modal.innerHTML = `
+                    <div style="
+                        background: white; border-radius: 12px; padding: 30px;
+                        text-align: center; max-width: 300px; width: 90%;
+                    ">
+                        <i class="fas fa-map-marker-alt" style="
+                            font-size: 48px; color: #1976d2; margin-bottom: 20px;
+                        "></i>
+                        <h3 style="margin: 0 0 10px 0; color: #333;">Obteniendo ubicación...</h3>
+                        <p style="margin: 0 0 20px 0; color: #666; font-size: 14px;">
+                            Asegúrate de permitir el acceso a tu ubicación
+                        </p>
+                        <div style="
+                            width: 40px; height: 40px; border: 4px solid #e3f2fd;
+                            border-top: 4px solid #1976d2; border-radius: 50%;
+                            animation: locationSpin 1s linear infinite; margin: 0 auto;
+                        "></div>
+                        <button onclick="document.getElementById('location-loading-modal').remove()" style="
+                            margin-top: 20px; padding: 8px 16px; background: #f5f5f5;
+                            border: 1px solid #ddd; border-radius: 6px; cursor: pointer;
+                        ">Cancelar</button>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+            }
+            
+            hideLocationLoadingModal() {
+                const modal = document.getElementById('location-loading-modal');
+                if (modal) modal.remove();
+            }
+            
+            async reverseGeocode(lat, lng) {
+                try {
+                    // Usar Nominatim de OpenStreetMap para geocodificación reversa
+                    const response = await fetch(`https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&zoom=18&addressdetails=1&accept-language=es`);
+                    
+                    if (!response.ok) {
+                        throw new Error('Geocoding failed');
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Construir dirección legible
+                    const address = data.address || {};
+                    let formattedAddress = '';
+                    
+                    // Priorizar elementos más específicos
+                    if (address.house_number && address.road) {
+                        formattedAddress = `${address.road} ${address.house_number}`;
+                    } else if (address.road) {
+                        formattedAddress = address.road;
+                    } else if (address.pedestrian) {
+                        formattedAddress = address.pedestrian;
+                    } else if (address.neighbourhood) {
+                        formattedAddress = address.neighbourhood;
+                    } else if (address.suburb) {
+                        formattedAddress = address.suburb;
+                    }
+                    
+                    // Agregar localidad
+                    if (address.city) {
+                        formattedAddress += formattedAddress ? `, ${address.city}` : address.city;
+                    } else if (address.town) {
+                        formattedAddress += formattedAddress ? `, ${address.town}` : address.town;
+                    } else if (address.village) {
+                        formattedAddress += formattedAddress ? `, ${address.village}` : address.village;
+                    }
+                    
+                    // Agregar estado/provincia si está disponible
+                    if (address.state) {
+                        formattedAddress += `, ${address.state}`;
+                    }
+                    
+                    // Agregar país si está disponible
+                    if (address.country) {
+                        formattedAddress += `, ${address.country}`;
+                    }
+                    
+                    // Si no se pudo construir una dirección, usar display_name como fallback
+                    if (!formattedAddress && data.display_name) {
+                        formattedAddress = data.display_name;
+                    }
+                    
+                    return {
+                        formatted: formattedAddress || 'Ubicación desconocida',
+                        full: data.display_name || '',
+                        raw: address
+                    };
+                } catch (error) {
+                    console.error('Error in reverse geocoding:', error);
+                    return {
+                        formatted: 'Ubicación no disponible',
+                        full: '',
+                        raw: {}
+                    };
+                }
+            }
+            
+            showLocationPreview(coords, address = null) {
+                this.hideLocationLoadingModal();
+                console.log('Showing location preview:', coords, address);
+                
+                // Crear modal de preview con mapa
+                const modal = document.createElement('div');
+                modal.id = 'location-preview-modal';
+                modal.style.cssText = `
+                    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                    background: rgba(0,0,0,0.7); z-index: 10000;
+                    display: flex; align-items: center; justify-content: center;
+                `;
+                
+                const latitude = coords.latitude;
+                const longitude = coords.longitude;
+                const accuracy = Math.round(coords.accuracy);
+                
+                modal.innerHTML = `
+                    <div style="
+                        background: white; border-radius: 12px; overflow: hidden;
+                        max-width: 400px; width: 90%; max-height: 80vh;
+                    ">
+                        <div style="padding: 20px 20px 0 20px;">
+                            <h3 style="margin: 0 0 10px 0; color: #333; display: flex; align-items: center;">
+                                <i class="fas fa-map-marker-alt" style="color: #1976d2; margin-right: 8px;"></i>
+                                Enviar ubicación
+                            </h3>
+                            ${address ? `
+                                <div style="
+                                    background: #f8f9fa; border-radius: 6px; padding: 10px; margin-bottom: 15px;
+                                    border-left: 4px solid #1976d2;
+                                ">
+                                    <div style="font-weight: 500; color: #333; margin-bottom: 4px;">
+                                        📍 ${address.formatted}
+                                    </div>
+                                    <div style="font-size: 12px; color: #666;">
+                                        Precisión: ±${accuracy} metros
+                                    </div>
+                                </div>
+                            ` : `
+                                <p style="margin: 0 0 15px 0; color: #666; font-size: 14px;">
+                                    Precisión: ±${accuracy} metros
+                                </p>
+                            `}
+                        </div>
+                        
+                        <div id="location-map" style="
+                            width: 100%; height: 250px; background: #f0f0f0;
+                            position: relative; overflow: hidden;
+                        ">
+                            <!-- Mapa se cargará aquí -->
+                            <div style="
+                                position: absolute; top: 50%; left: 50%;
+                                transform: translate(-50%, -50%); text-align: center;
+                            ">
+                                <i class="fas fa-map" style="font-size: 48px; color: #ccc; margin-bottom: 10px;"></i>
+                                <p style="color: #999; margin: 0;">Cargando mapa...</p>
+                            </div>
+                        </div>
+                        
+                        <div style="padding: 15px 20px 20px 20px;">
+                            <div style="
+                                background: #f5f5f5; border-radius: 8px; padding: 12px; margin-bottom: 20px;
+                                font-family: monospace; font-size: 12px; color: #666;
+                            ">
+                                Lat: ${latitude.toFixed(6)}<br>
+                                Lng: ${longitude.toFixed(6)}
+                            </div>
+                            
+                            <div style="display: flex; gap: 10px;">
+                                <button onclick="document.getElementById('location-preview-modal').remove()" style="
+                                    flex: 1; padding: 12px; background: #f5f5f5; border: 1px solid #ddd;
+                                    border-radius: 6px; cursor: pointer;
+                                ">Cancelar</button>
+                                <button onclick="window.chatInterface.sendLocation(${latitude}, ${longitude}, ${accuracy}, ${address ? `'${address.formatted.replace(/'/g, "\\'")}'` : 'null'})" style="
+                                    flex: 1; padding: 12px; background: #1976d2; color: white;
+                                    border: none; border-radius: 6px; cursor: pointer;
+                                ">Enviar ubicación</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                
+                // Cargar mapa usando OpenStreetMap
+                this.loadLocationMap(latitude, longitude);
+            }
+            
+            loadLocationMap(lat, lng) {
+                const mapContainer = document.getElementById('location-map');
+                if (!mapContainer) return;
+                
+                // Usar imagen estática de OpenStreetMap para simplicidad
+                const zoom = 15;
+                const width = 400;
+                const height = 250;
+                
+                // Crear mapa estático con marcador
+                mapContainer.innerHTML = `
+                    <div style="position: relative; width: 100%; height: 100%;">
+                        <iframe
+                            width="100%"
+                            height="100%"
+                            frameborder="0"
+                            scrolling="no"
+                            marginheight="0"
+                            marginwidth="0"
+                            src="https://www.openstreetmap.org/export/embed.html?bbox=${lng-0.01},${lat-0.01},${lng+0.01},${lat+0.01}&layer=mapnik&marker=${lat},${lng}"
+                            style="border: none;">
+                        </iframe>
+                        <div style="
+                            position: absolute; top: 50%; left: 50%;
+                            transform: translate(-50%, -50%);
+                            width: 20px; height: 20px;
+                            background: #1976d2; border: 3px solid white;
+                            border-radius: 50%; box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+                            z-index: 1000;
+                        "></div>
+                    </div>
+                `;
+                
+                // Fallback si no carga el iframe
+                setTimeout(() => {
+                    const iframe = mapContainer.querySelector('iframe');
+                    if (iframe) {
+                        iframe.onerror = () => {
+                            this.loadStaticMap(lat, lng, mapContainer);
+                        };
+                    }
+                }, 1000);
+            }
+            
+            loadStaticMap(lat, lng, container) {
+                // Fallback con imagen estática
+                container.innerHTML = `
+                    <div style="
+                        width: 100%; height: 100%; background: linear-gradient(45deg, #e8f5e8, #d4edda);
+                        display: flex; flex-direction: column; align-items: center; justify-content: center;
+                        position: relative;
+                    ">
+                        <div style="
+                            position: absolute; top: 20px; left: 20px; right: 20px; bottom: 20px;
+                            border: 2px dashed #28a745; border-radius: 8px;
+                            background: rgba(255,255,255,0.5);
+                        "></div>
+                        <i class="fas fa-map-marker-alt" style="
+                            font-size: 48px; color: #1976d2; margin-bottom: 10px; z-index: 2;
+                        "></i>
+                        <p style="
+                            color: #333; font-weight: bold; z-index: 2; margin: 0;
+                        ">Tu ubicación</p>
+                        <p style="
+                            color: #666; font-size: 12px; z-index: 2; margin: 5px 0 0 0;
+                        ">${lat.toFixed(4)}, ${lng.toFixed(4)}</p>
+                    </div>
+                `;
+            }
+            
+            sendLocation(latitude, longitude, accuracy, address = null) {
+                console.log('Sending location:', latitude, longitude, accuracy, address);
+                
+                // Cerrar modal
+                const modal = document.getElementById('location-preview-modal');
+                if (modal) modal.remove();
+                
+                if (!window.chatManager) {
+                    console.error('ChatManager not available');
+                    this.showNotification('Error enviando ubicación', 'error');
+                    return;
+                }
+                
+                // Crear objeto de ubicación completo
+                const locationData = {
+                    type: 'location',
+                    latitude: latitude,
+                    longitude: longitude,
+                    accuracy: accuracy,
+                    address: address || 'Ubicación no disponible',
+                    timestamp: Date.now()
+                };
+                
+                // Enviar como mensaje
+                window.chatManager.sendLocationMessage(locationData);
+            }
+            
+            // FUNCIÓN SIMPLE DE CÁMARA - BASADA EN LA PRUEBA EXITOSA
+            async openSimpleCamera() {
+                console.log('Opening simple camera...');
+                
+                try {
+                    // Crear modal simple (como en la prueba)
+                    const modal = document.createElement('div');
+                    modal.style.cssText = `
+                        position: fixed;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        background: rgba(0,0,0,0.9);
+                        z-index: 999999;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                    `;
+                    
+                    modal.innerHTML = `
+                        <div style="background: white; padding: 20px; border-radius: 10px; text-align: center; max-width: 500px;">
+                            <h3>Cámara Simple</h3>
+                            <video id="simple-camera-video" autoplay playsinline style="width: 100%; max-width: 400px; border-radius: 10px;"></video>
+                            <br><br>
+                            <button id="simple-capture-btn" style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px;">
+                                Capturar
+                            </button>
+                            <button id="simple-close-btn" style="background: #dc3545; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; margin: 5px;">
+                                Cerrar
+                            </button>
+                            <canvas id="simple-canvas" style="display: none;"></canvas>
+                        </div>
+                    `;
+                    
+                    document.body.appendChild(modal);
+                    
+                    // Obtener stream de cámara
+                    console.log('Requesting camera access...');
+                    const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                    
+                    const video = modal.querySelector('#simple-camera-video');
+                    video.srcObject = stream;
+                    
+                    console.log('Camera activated successfully!');
+                    
+                    // Configurar botones
+                    modal.querySelector('#simple-close-btn').onclick = () => {
+                        stream.getTracks().forEach(track => track.stop());
+                        modal.remove();
+                        console.log('Simple camera closed');
+                    };
+                    
+                    modal.querySelector('#simple-capture-btn').onclick = () => {
+                        const canvas = modal.querySelector('#simple-canvas');
+                        canvas.width = video.videoWidth;
+                        canvas.height = video.videoHeight;
+                        
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(video, 0, 0);
+                        
+                        canvas.toBlob((blob) => {
+                            if (blob) {
+                                const message = {
+                                    _id: 'simple_cam_' + Date.now(),
+                                    sender: {
+                                        _id: this.currentUser?.data?._id || 'user',
+                                        fullName: this.currentUser?.data?.fullName || 'Usuario',
+                                        avatar: this.currentUser?.data?.avatar || 'images/avatar-placeholder.svg'
+                                    },
+                                    content: { 
+                                        text: '',
+                                        image: URL.createObjectURL(blob),
+                                        type: 'image'
+                                    },
+                                    type: 'image',
+                                    status: 'sent',
+                                    createdAt: new Date()
+                                };
+                                
+                                this.addImageMessageToUI(message);
+                                alert('Foto capturada y enviada!');
+                                
+                                // Cerrar
+                                stream.getTracks().forEach(track => track.stop());
+                                modal.remove();
+                            }
+                        }, 'image/jpeg', 0.9);
+                    };
+                    
+                } catch (error) {
+                    console.error('Simple camera error:', error);
+                    alert('Error: ' + error.message);
+                }
+            }
+            
+            // ROBOCAM - SISTEMA ULTRA-ROBUSTO DE CÁMARA INSTANTÁNEA
+            async activateRoboCam() {
+                try {
+                    console.log('RoboCam: Activation sequence initiated');
+                    
+                    // Limpieza preventiva
+                    this.cleanupAllModals();
+                    
+                    // Crear modal RoboCam inmediatamente
+                    const robocamModal = this.createRoboCamModal();
+                    
+                    // Mostrar modal instantáneamente
+                    document.body.appendChild(robocamModal);
+                    
+                    // Forzar renderizado
+                    robocamModal.offsetHeight;
+                    
+                    // Activar animación
+                    robocamModal.classList.add('robocam-active');
+                    
+                    // Inicializar cámara inmediatamente
+                    await this.initRoboCam(robocamModal);
+                    
+                    console.log('RoboCam: Successfully activated');
+                    
+                } catch (error) {
+                    console.error('RoboCam: Activation failed:', error);
+                    this.showNotification('Error activando RoboCam: ' + error.message, 'error');
+                }
+            }
+            
+            cleanupAllModals() {
+                // Limpiar cualquier modal existente
+                const modals = document.querySelectorAll('.robocam-modal, .vigichat-camera-modal, .camera-modal, .attachment-menu, .vigichat-attachment-menu');
+                modals.forEach(modal => {
+                    if (modal && modal.parentNode) {
+                        modal.parentNode.removeChild(modal);
+                    }
+                });
+                console.log('RoboCam: All modals cleaned');
+            }
+            
+            createRoboCamModal() {
+                const modal = document.createElement('div');
+                modal.className = 'robocam-modal';
+                modal.id = 'robocam-active-modal';
+                modal.innerHTML = `
+                    <div class="robocam-overlay"></div>
+                    <div class="robocam-container">
+                        <div class="robocam-header">
+                            <h3>RoboCam Instantánea</h3>
+                            <button class="robocam-close" type="button">×</button>
+                        </div>
+                        <div class="robocam-viewport">
+                            <video id="robocam-video" autoplay playsinline muted class="robocam-video"></video>
+                            <canvas id="robocam-canvas" style="display: none;"></canvas>
+                            <div id="robocam-preview" class="robocam-preview" style="display: none;">
+                                <img id="robocam-image" alt="Foto capturada">
+                            </div>
+                            <div class="robocam-loading">
+                                <div class="robocam-spinner"></div>
+                                <p>Conectando RoboCam...</p>
+                            </div>
+                        </div>
+                        <div class="robocam-controls">
+                            <button id="robocam-capture" class="robocam-btn capture">
+                                📷 CAPTURAR
+                            </button>
+                            <button id="robocam-retake" class="robocam-btn retake" style="display: none;">
+                                🔄 REPETIR
+                            </button>
+                            <button id="robocam-send" class="robocam-btn send" style="display: none;">
+                                📤 ENVIAR
+                            </button>
+                        </div>
+                    </div>
+                `;
+                
+                this.setupRoboCamEvents(modal);
+                return modal;
+            }
+            
+            setupRoboCamEvents(modal) {
+                const closeBtn = modal.querySelector('.robocam-close');
+                const overlay = modal.querySelector('.robocam-overlay');
+                const captureBtn = modal.querySelector('#robocam-capture');
+                const retakeBtn = modal.querySelector('#robocam-retake');
+                const sendBtn = modal.querySelector('#robocam-send');
+                
+                let robocamStream = null;
+                
+                const closeRoboCam = () => {
+                    console.log('RoboCam: Closing...');
+                    if (robocamStream) {
+                        robocamStream.getTracks().forEach(track => track.stop());
+                    }
+                    if (modal.parentNode) {
+                        modal.classList.remove('robocam-active');
+                        setTimeout(() => {
+                            if (modal.parentNode) {
+                                modal.parentNode.removeChild(modal);
+                            }
+                        }, 300);
+                    }
+                };
+                
+                // Eventos de cierre
+                closeBtn.addEventListener('click', closeRoboCam);
+                overlay.addEventListener('click', closeRoboCam);
+                
+                // Capturar
+                captureBtn.addEventListener('click', () => {
+                    this.robocamCapture(modal);
+                });
+                
+                // Repetir
+                retakeBtn.addEventListener('click', () => {
+                    this.robocamRetake(modal);
+                });
+                
+                // Enviar
+                sendBtn.addEventListener('click', () => {
+                    this.robocamSend(modal);
+                    closeRoboCam();
+                });
+                
+                // Almacenar stream para limpieza
+                this.setRoboCamStream = (stream) => { robocamStream = stream; };
+            }
+            
+            async initRoboCam(modal) {
+                const video = modal.querySelector('#robocam-video');
+                const loading = modal.querySelector('.robocam-loading');
+                
+                try {
+                    console.log('RoboCam: Initializing camera...');
+                    
+                    const stream = await navigator.mediaDevices.getUserMedia({
+                        video: { 
+                            facingMode: 'user',
+                            width: { ideal: 1280 },
+                            height: { ideal: 720 }
+                        }
+                    });
+                    
+                    video.srcObject = stream;
+                    this.setRoboCamStream(stream);
+                    
+                    await new Promise(resolve => {
+                        video.onloadedmetadata = resolve;
+                    });
+                    
+                    // Ocultar loading, mostrar video
+                    loading.style.display = 'none';
+                    video.style.display = 'block';
+                    
+                    console.log('RoboCam: Camera initialized successfully');
+                    
+                } catch (error) {
+                    console.error('RoboCam: Camera initialization failed:', error);
+                    loading.innerHTML = '<p>Error: No se pudo acceder a la cámara</p>';
+                }
+            }
+            
+            robocamCapture(modal) {
+                const video = modal.querySelector('#robocam-video');
+                const canvas = modal.querySelector('#robocam-canvas');
+                const preview = modal.querySelector('#robocam-preview');
+                const previewImg = modal.querySelector('#robocam-image');
+                const captureBtn = modal.querySelector('#robocam-capture');
+                const retakeBtn = modal.querySelector('#robocam-retake');
+                const sendBtn = modal.querySelector('#robocam-send');
+                
+                try {
+                    console.log('RoboCam: Capturing photo...');
+                    
+                    canvas.width = video.videoWidth;
+                    canvas.height = video.videoHeight;
+                    
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(video, 0, 0);
+                    
+                    canvas.toBlob((blob) => {
+                        if (blob) {
+                            this.robocamBlob = blob;
+                            previewImg.src = URL.createObjectURL(blob);
+                            
+                            // Mostrar preview
+                            video.style.display = 'none';
+                            preview.style.display = 'block';
+                            
+                            // Cambiar botones
+                            captureBtn.style.display = 'none';
+                            retakeBtn.style.display = 'inline-block';
+                            sendBtn.style.display = 'inline-block';
+                            
+                            console.log('RoboCam: Photo captured');
+                        }
+                    }, 'image/jpeg', 0.9);
+                    
+                } catch (error) {
+                    console.error('RoboCam: Capture failed:', error);
+                }
+            }
+            
+            robocamRetake(modal) {
+                const video = modal.querySelector('#robocam-video');
+                const preview = modal.querySelector('#robocam-preview');
+                const previewImg = modal.querySelector('#robocam-image');
+                const captureBtn = modal.querySelector('#robocam-capture');
+                const retakeBtn = modal.querySelector('#robocam-retake');
+                const sendBtn = modal.querySelector('#robocam-send');
+                
+                // Limpiar foto anterior
+                if (this.robocamBlob) {
+                    URL.revokeObjectURL(previewImg.src);
+                    this.robocamBlob = null;
+                }
+                
+                // Mostrar video
+                video.style.display = 'block';
+                preview.style.display = 'none';
+                
+                // Cambiar botones
+                captureBtn.style.display = 'inline-block';
+                retakeBtn.style.display = 'none';
+                sendBtn.style.display = 'none';
+                
+                console.log('RoboCam: Photo retaken');
+            }
+            
+            robocamSend(modal) {
+                if (!this.robocamBlob) return;
+                
+                try {
+                    console.log('RoboCam: Sending photo...');
+                    
+                    const message = {
+                        _id: 'robocam_' + Date.now(),
+                        sender: {
+                            _id: this.currentUser?.data?._id || 'user',
+                            fullName: this.currentUser?.data?.fullName || 'Usuario',
+                            avatar: this.currentUser?.data?.avatar || 'images/avatar-placeholder.svg'
+                        },
+                        content: { 
+                            text: '',
+                            image: URL.createObjectURL(this.robocamBlob),
+                            type: 'image'
+                        },
+                        type: 'image',
+                        status: 'sent',
+                        createdAt: new Date()
+                    };
+                    
+                    this.addImageMessageToUI(message);
+                    this.showNotification('RoboCam: Foto enviada', 'success');
+                    
+                    // Limpiar
+                    this.robocamBlob = null;
+                    
+                } catch (error) {
+                    console.error('RoboCam: Send failed:', error);
+                }
+            }
+            
+            // Función para mostrar imágenes en mensajes - funciona con el nuevo CameraHandler
+            addImageMessageToUI(message) {
+                const container = document.querySelector('.messages-container');
+                if (!container) return;
+                
+                const messageDiv = document.createElement('div');
+                const isOwn = message.sender._id === this.currentUser.data._id;
+                messageDiv.className = `message ${isOwn ? 'sent' : 'received'}`;
+                
+                const time = new Date(message.createdAt).toLocaleTimeString('es-ES', {
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                if (isOwn) {
+                    messageDiv.innerHTML = `
+                        <div class="message-content">
+                            <div class="vigichat-message-image">
+                                <img src="${message.content.image}" alt="Foto enviada" onclick="this.classList.toggle('fullscreen')">
+                            </div>
+                            <span class="message-time">${time}</span>
+                            <span class="message-status">
+                                <i class="fas fa-check-double message-read" title="Enviado"></i>
+                            </span>
+                        </div>
+                    `;
+                } else {
+                    messageDiv.innerHTML = `
+                        <img src="${message.sender.avatar || 'images/avatar-placeholder.svg'}" 
+                             alt="${message.sender.fullName}" class="message-avatar">
+                        <div class="message-content">
+                            <div class="vigichat-message-image">
+                                <img src="${message.content.image}" alt="Foto recibida" onclick="this.classList.toggle('fullscreen')">
+                            </div>
+                            <span class="message-time">${time}</span>
+                        </div>
+                    `;
+                }
+                
+                container.appendChild(messageDiv);
+                this.scrollToBottom();
+                return messageDiv;
+            }
+            
+            toggleEmojiPicker() {
+                // Usar el selector de emojis avanzado
+                const messageInput = document.getElementById('message-input');
+                if (messageInput && window.emojiPicker) {
+                    window.emojiPicker.toggle(messageInput);
+                } else {
+                    console.error('EmojiPicker no está disponible o no se encontró el input de mensaje');
+                }
+            }
+            
+            
+            showNewChatModal() {
+                const modal = document.createElement('div');
+                modal.className = 'new-chat-modal';
+                modal.innerHTML = `
+                    <div class="modal-overlay" onclick="this.parentElement.remove()"></div>
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>Nuevo chat</h3>
+                            <button class="close-btn" onclick="this.closest('.new-chat-modal').remove()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="search-contact">
+                                <input type="text" placeholder="Buscar contacto..." id="contact-search-input">
+                            </div>
+                            <div class="contacts-list" id="modal-contacts-list">
+                                <p>Cargando contactos...</p>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                setTimeout(() => modal.classList.add('show'), 10);
+                
+                // Load contacts for modal
+                this.loadContactsForModal();
+            }
+            
+            async loadContactsForModal() {
+                const contactsList = document.getElementById('modal-contacts-list');
+                if (!contactsList) return;
+                
+                try {
+                    const response = await fetch('/api/contacts', {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        contactsList.innerHTML = '';
+                        
+                        data.data.forEach(contact => {
+                            const contactItem = document.createElement('div');
+                            contactItem.className = 'modal-contact-item';
+                            contactItem.innerHTML = `
+                                <img src="${contact.avatar || 'images/avatar-placeholder.svg'}" 
+                                     alt="${contact.fullName}" class="contact-avatar">
+                                <div class="contact-info">
+                                    <h4>${contact.fullName}</h4>
+                                    <p class="contact-status">${contact.status || 'Desconectado'}</p>
+                                </div>
+                            `;
+                            
+                            contactItem.addEventListener('click', () => {
+                                this.startChatWithContact(contact);
+                                document.querySelector('.new-chat-modal').remove();
+                            });
+                            
+                            contactsList.appendChild(contactItem);
+                        });
+                    }
+                } catch (error) {
+                    contactsList.innerHTML = '<p>Error cargando contactos</p>';
+                }
+            }
+            
+            async startChatWithContact(contact) {
+                // Find or create conversation with this contact
+                try {
+                    const response = await fetch('/api/messages/conversations', {
+                        headers: {
+                            'Authorization': `Bearer ${localStorage.getItem('authToken')}`
+                        }
+                    });
+                    
+                    if (response.ok) {
+                        const data = await response.json();
+                        let conversation = data.data.find(conv => 
+                            conv.participants.includes(contact._id)
+                        );
+                        
+                        if (conversation) {
+                            await this.selectConversation(conversation);
+                        } else {
+                            // Create new conversation
+                            this.showNotification(`Iniciando chat con ${contact.fullName}`, 'success');
+                        }
+                    }
+                } catch (error) {
+                    this.showNotification('Error iniciando chat', 'error');
+                }
+            }
+            
+            showSettings() {
+                const modal = document.createElement('div');
+                modal.className = 'settings-modal';
+                modal.innerHTML = `
+                    <div class="modal-overlay" onclick="this.parentElement.remove()"></div>
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h3>Configuración</h3>
+                            <button class="close-btn" onclick="this.closest('.settings-modal').remove()">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="settings-section">
+                                <h4>Perfil</h4>
+                                <div class="setting-item">
+                                    <span>Nombre: ${this.currentUser?.data?.fullName || 'Usuario'}</span>
+                                </div>
+                                <div class="setting-item">
+                                    <span>Email: ${this.currentUser?.data?.email || 'No disponible'}</span>
+                                </div>
+                            </div>
+                            <div class="settings-section">
+                                <h4>Notificaciones</h4>
+                                <div class="setting-item">
+                                    <label>
+                                        <input type="checkbox" checked> Sonidos de notificación
+                                    </label>
+                                </div>
+                                <div class="setting-item">
+                                    <label>
+                                        <input type="checkbox" checked> Notificaciones de escritorio
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="settings-section">
+                                <h4>Cuenta</h4>
+                                <button class="logout-btn" onclick="window.vigiChatApp.logout()">
+                                    <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                
+                document.body.appendChild(modal);
+                setTimeout(() => modal.classList.add('show'), 10);
+            }
+            
+            logout() {
+                if (confirm('¿Estás seguro de que quieres cerrar sesión?')) {
+                    localStorage.removeItem('authToken');
+                    localStorage.removeItem('currentUser');
+                    this.socket?.disconnect();
+                    window.location.href = '/public/index.html';
+                }
+            }
+            
+            // Message status management
+            updateMessageStatus(clientId, status, messageId = null) {
+                const messageElement = document.querySelector(`[data-client-id="${clientId}"]`);
+                if (messageElement) {
+                    const statusElement = messageElement.querySelector('.message-status');
+                    if (statusElement) {
+                        statusElement.setAttribute('data-status', status);
+                        statusElement.innerHTML = this.getStatusIndicator(status);
+                    }
+                    
+                    // Update message ID if provided
+                    if (messageId) {
+                        messageElement.setAttribute('data-message-id', messageId);
+                    }
+                    
+                    // Remove pending connection class if successful
+                    if (status === 'sent' || status === 'delivered' || status === 'read') {
+                        messageElement.classList.remove('message-pending-connection');
+                    }
+                    
+                    // Add click handler for failed messages
+                    if (status === 'failed') {
+                        messageElement.classList.add('message-failed-retry');
+                        messageElement.addEventListener('click', () => {
+                            this.retryMessage(clientId);
+                        });
+                    }
+                }
+            }
+            
+            updateMessageStatusById(messageId, status) {
+                const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
+                if (messageElement) {
+                    const statusElement = messageElement.querySelector('.message-status');
+                    if (statusElement) {
+                        statusElement.setAttribute('data-status', status);
+                        statusElement.innerHTML = this.getStatusIndicator(status);
+                    }
+                }
+            }
+            
+            replaceOptimisticMessage(serverMessage) {
+                if (!serverMessage.clientId) return;
+                
+                const messageElement = document.querySelector(`[data-client-id="${serverMessage.clientId}"]`);
+                if (messageElement) {
+                    // Update with server data but keep the UI element
+                    messageElement.setAttribute('data-message-id', serverMessage._id || serverMessage.messageId);
+                    
+                    // Update any other necessary fields from server response
+                    const timeElement = messageElement.querySelector('.message-time');
+                    if (timeElement && serverMessage.createdAt) {
+                        const time = new Date(serverMessage.createdAt).toLocaleTimeString('es-ES', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                        });
+                        timeElement.textContent = time;
+                    }
+                }
+            }
+            
+            // Retry mechanism
+            sendMessageWithRetry(messageData) {
+                const maxRetries = 3;
+                const retryDelay = (attempt) => Math.min(1000 * Math.pow(2, attempt), 10000); // Max 10s
+                
+                const attemptSend = (attempt = 0) => {
+                    // Update pending message attempt count
+                    const pending = this.pendingMessages.get(messageData.clientId);
+                    if (pending) {
+                        pending.attempts = attempt;
+                    }
+                    
+                    // Add timeout to detect failure
+                    const timeout = setTimeout(() => {
+                        if (this.pendingMessages.has(messageData.clientId)) {
+                            console.warn(`Message timeout on attempt ${attempt + 1}`);
+                            
+                            if (attempt < maxRetries - 1) {
+                                // Retry
+                                setTimeout(() => attemptSend(attempt + 1), retryDelay(attempt));
+                            } else {
+                                // Mark as failed
+                                this.updateMessageStatus(messageData.clientId, 'failed');
+                                this.pendingMessages.delete(messageData.clientId);
+                            }
+                        }
+                    }, 5000); // 5 second timeout per attempt
+                    
+                    // Store timeout reference
+                    if (pending) {
+                        pending.timeout = timeout;
+                    }
+                    
+                    // Actually send the message
+                    this.socket?.emit('send-message', messageData);
+                };
+                
+                attemptSend();
+            }
+            
+            retryMessage(clientId) {
+                const pending = this.pendingMessages.get(clientId);
+                if (pending) {
+                    // Reset status to sending
+                    this.updateMessageStatus(clientId, 'sending');
+                    
+                    // Remove failed styling
+                    const messageElement = document.querySelector(`[data-client-id="${clientId}"]`);
+                    if (messageElement) {
+                        messageElement.classList.remove('message-failed-retry');
+                    }
+                    
+                    // Retry sending
+                    this.sendMessageWithRetry({
+                        recipientId: pending.recipientId,
+                        content: pending.content,
+                        type: 'text',
+                        clientId: clientId,
+                        timestamp: pending.timestamp
+                    });
+                }
+            }
+            
+            retryPendingMessages() {
+                // Retry all pending messages when connection is restored
+                for (const [clientId, pending] of this.pendingMessages.entries()) {
+                    if (pending.attempts < 3) {
+                        setTimeout(() => {
+                            this.retryMessage(clientId);
+                        }, 1000 + Math.random() * 2000); // Stagger retries
+                    }
+                }
+            }
+            
+            generateClientId() {
+                return Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+            }
+            
+            updateConnectionIndicator() {
+                // Add connection quality indicator to UI
+                let indicator = document.querySelector('.connection-indicator');
+                if (!indicator) {
+                    indicator = document.createElement('div');
+                    indicator.className = 'connection-indicator';
+                    document.querySelector('.chat-header').appendChild(indicator);
+                }
+                
+                indicator.className = `connection-indicator connection-${this.connectionQuality}`;
+                indicator.innerHTML = {
+                    'good': '<i class="fas fa-wifi" title="Conectado"></i>',
+                    'poor': '<i class="fas fa-wifi" title="Conexión débil" style="opacity: 0.5"></i>',
+                    'offline': '<i class="fas fa-exclamation-triangle" title="Sin conexión"></i>'
+                }[this.connectionQuality] || '';
+            }
+            
+            // Utility methods
+            escapeHtml(text) {
+                const div = document.createElement('div');
+                div.textContent = text;
+                return div.innerHTML;
+            }
+            
+            getMessageStatusClass(status) {
+                switch (status) {
+                    case 'sending': return 'message-sending';
+                    case 'sent': return 'message-sent';
+                    case 'delivered': return 'message-delivered';
+                    case 'read': return 'message-read';
+                    case 'failed': return 'message-failed';
+                    default: return 'message-sending';
+                }
+            }
+            
+            getStatusIndicator(status) {
+                switch (status) {
+                    case 'sending':
+                        return ''; // No icon while sending
+                    case 'sent':
+                        return '<i class="fas fa-check message-sent" title="Enviado"></i>';
+                    case 'delivered':
+                        return '<i class="fas fa-check-double message-delivered" title="Entregado"></i>';
+                    case 'read':
+                        return '<i class="fas fa-check-double message-read" title="Leído"></i>';
+                    case 'failed':
+                        return '<i class="fas fa-exclamation-triangle message-failed" title="Error - Toca para reintentar"></i>';
+                    default:
+                        return ''; // No icon by default
+                }
+            }
+            
+            scrollToBottom() {
+                const container = document.querySelector('.messages-container');
+                if (container) {
+                    container.scrollTop = container.scrollHeight;
+                }
+            }
+            
+            showNotification(message, type = 'info') {
+                // Simple notification system
+                const notification = document.createElement('div');
+                notification.className = `notification notification-${type}`;
+                notification.textContent = message;
+                notification.style.cssText = `
+                    position: fixed;
+                    top: 20px;
+                    right: 20px;
+                    background: ${type === 'success' ? '#4ade80' : type === 'warning' ? '#fbbf24' : type === 'error' ? '#ef4444' : '#3b82f6'};
+                    color: white;
+                    padding: 12px 20px;
+                    border-radius: 8px;
+                    z-index: 10000;
+                    animation: slideIn 0.3s ease;
+                `;
+                
+                document.body.appendChild(notification);
+                
+                setTimeout(() => {
+                    notification.style.animation = 'slideOut 0.3s ease';
+                    setTimeout(() => {
+                        if (notification.parentNode) {
+                            notification.parentNode.removeChild(notification);
+                        }
+                    }, 300);
+                }, 3000);
+            }
+            
+            playNotificationSound() {
+                // Simple beep sound
+                try {
+                    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                    const oscillator = audioContext.createOscillator();
+                    const gainNode = audioContext.createGain();
+                    
+                    oscillator.connect(gainNode);
+                    gainNode.connect(audioContext.destination);
+                    
+                    oscillator.frequency.value = 800;
+                    oscillator.type = 'sine';
+                    
+                    gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+                    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+                    
+                    oscillator.start(audioContext.currentTime);
+                    oscillator.stop(audioContext.currentTime + 0.3);
+                } catch (error) {
+                    console.log('Audio not available');
+                }
+            }
+            
+            showDesktopNotification(message) {
+                if (Notification.permission === 'granted') {
+                    new Notification(`Nuevo mensaje de ${message.sender.fullName}`, {
+                        body: message.content.text,
+                        icon: message.sender.avatar || 'images/avatar-placeholder.svg'
+                    });
+                }
+            }
+            
+            redirectToAuth() {
+                window.location.href = '/public/index.html';
+            }
+        }
+        
+        // Initialize app when DOM is loaded
+        document.addEventListener('DOMContentLoaded', () => {
+            // Request notification permission
+            if ('Notification' in window && Notification.permission === 'default') {
+                Notification.requestPermission();
+            }
+            
+            // Start the app
+            window.vigiChatApp = new VigiChatApp();
+        });
+        
+        // Add notification animations
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+            .typing-indicator {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                padding: 8px 12px;
+            }
+            .typing-indicator span {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background-color: #9ca3af;
+                animation: typing 1.4s infinite ease-in-out;
+            }
+            .typing-indicator span:nth-child(1) { animation-delay: -0.32s; }
+            .typing-indicator span:nth-child(2) { animation-delay: -0.16s; }
+            @keyframes typing {
+                0%, 80%, 100% { transform: scale(0.8); opacity: 0.5; }
+                40% { transform: scale(1); opacity: 1; }
+            }
+            
+            /* Call Interface Styles */
+            .call-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.95);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+            
+            .call-overlay.show {
+                opacity: 1;
+            }
+            
+            .call-container {
+                background: #1f2937;
+                border-radius: 16px;
+                padding: 24px;
+                text-align: center;
+                color: white;
+                min-width: 320px;
+            }
+            
+            .call-header {
+                margin-bottom: 24px;
+            }
+            
+            .call-contact-info {
+                display: flex;
+                align-items: center;
+                gap: 16px;
+                justify-content: center;
+            }
+            
+            .call-avatar {
+                width: 60px;
+                height: 60px;
+                border-radius: 50%;
+                object-fit: cover;
+            }
+            
+            .call-avatar-large img {
+                width: 120px;
+                height: 120px;
+                border-radius: 50%;
+                object-fit: cover;
+                margin-bottom: 16px;
+            }
+            
+            .call-timer {
+                font-size: 24px;
+                font-weight: 600;
+                color: #9ca3af;
+            }
+            
+            .video-container {
+                position: relative;
+                margin: 24px 0;
+                border-radius: 12px;
+                overflow: hidden;
+                background: #000;
+                min-height: 200px;
+            }
+            
+            .remote-video {
+                width: 100%;
+                height: 200px;
+                object-fit: cover;
+            }
+            
+            .local-video {
+                position: absolute;
+                top: 12px;
+                right: 12px;
+                width: 80px;
+                height: 60px;
+                border-radius: 8px;
+                object-fit: cover;
+                border: 2px solid white;
+            }
+            
+            .call-controls {
+                display: flex;
+                gap: 16px;
+                justify-content: center;
+                margin-top: 24px;
+            }
+            
+            .call-btn {
+                width: 56px;
+                height: 56px;
+                border-radius: 50%;
+                border: none;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 20px;
+            }
+            
+            .mute-btn {
+                background: #374151;
+                color: white;
+            }
+            
+            .mute-btn.muted {
+                background: #ef4444;
+            }
+            
+            .camera-btn {
+                background: #374151;
+                color: white;
+            }
+            
+            .camera-btn.camera-off {
+                background: #ef4444;
+            }
+            
+            .end-call-btn {
+                background: #ef4444;
+                color: white;
+            }
+            
+            .call-btn:hover {
+                transform: scale(1.1);
+            }
+            
+            /* Modal Styles */
+            .contact-info-modal,
+            .new-chat-modal,
+            .settings-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 9999;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+            
+            .contact-info-modal.show,
+            .new-chat-modal.show,
+            .settings-modal.show {
+                opacity: 1;
+            }
+            
+            .modal-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+            }
+            
+            .modal-content {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                border-radius: 12px;
+                max-width: 500px;
+                width: 90%;
+                max-height: 80vh;
+                overflow-y: auto;
+            }
+            
+            .modal-header {
+                display: flex;
+                justify-content: between;
+                align-items: center;
+                padding: 20px;
+                border-bottom: 1px solid #e5e7eb;
+            }
+            
+            .modal-header h3 {
+                margin: 0;
+                flex: 1;
+            }
+            
+            .close-btn {
+                background: none;
+                border: none;
+                font-size: 20px;
+                cursor: pointer;
+                color: #6b7280;
+                padding: 4px;
+            }
+            
+            .modal-body {
+                padding: 20px;
+            }
+            
+            .contact-info-details {
+                text-align: center;
+            }
+            
+            .contact-info-avatar {
+                width: 100px;
+                height: 100px;
+                border-radius: 50%;
+                object-fit: cover;
+                margin-bottom: 16px;
+            }
+            
+            .contact-actions {
+                display: flex;
+                gap: 12px;
+                justify-content: center;
+                margin-top: 20px;
+            }
+            
+            .action-btn {
+                background: #4f46e5;
+                color: white;
+                border: none;
+                padding: 10px 20px;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: background 0.2s ease;
+            }
+            
+            .action-btn:hover {
+                background: #4338ca;
+            }
+            
+            /* VigicChat Attachment Menu - Robust System */
+            .vigichat-attachment-menu {
+                position: fixed;
+                bottom: 100px;
+                right: 20px;
+                background: white;
+                border-radius: 12px;
+                box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+                z-index: 9999;
+                opacity: 0;
+                transform: scale(0.9) translateY(10px);
+                transition: all 0.2s cubic-bezier(0.4, 0.0, 0.2, 1);
+                visibility: hidden;
+            }
+            
+            .vigichat-attachment-menu.vigichat-show {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+                visibility: visible;
+            }
+            
+            .vigichat-menu-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                z-index: -1;
+                background: transparent;
+                cursor: pointer;
+            }
+            
+            .vigichat-menu-content {
+                padding: 8px;
+                position: relative;
+                z-index: 1;
+            }
+            
+            .vigichat-menu-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px 16px;
+                cursor: pointer;
+                border-radius: 8px;
+                transition: all 0.2s ease;
+                user-select: none;
+                position: relative;
+            }
+            
+            .vigichat-menu-item:hover {
+                background: #f3f4f6;
+                transform: translateX(2px);
+            }
+            
+            .vigichat-menu-item:active {
+                transform: translateX(2px) scale(0.98);
+                background: #e5e7eb;
+            }
+            
+            .vigichat-menu-item i {
+                color: #4f46e5;
+                width: 20px;
+                font-size: 16px;
+            }
+            
+            .vigichat-menu-item span {
+                font-weight: 500;
+                color: #374151;
+            }
+            
+            /* Special highlighting for camera option */
+            .vigichat-camera-option {
+                border: 1px solid transparent;
+            }
+            
+            .vigichat-camera-option:hover {
+                background: #f0f9ff;
+                border-color: #3b82f6;
+            }
+            
+            .vigichat-camera-option i {
+                color: #3b82f6;
+            }
+            
+            .vigichat-camera-option:hover i {
+                color: #1d4ed8;
+            }
+            
+            /* ROBOCAM - ESTILOS ULTRA-DISTINTIVOS */
+            .robocam-trigger-btn {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+                border: 2px solid #4c63d2 !important;
+                transform: scale(1.05) !important;
+            }
+            
+            .robocam-trigger-btn:hover {
+                background: linear-gradient(135deg, #764ba2 0%, #667eea 100%) !important;
+                box-shadow: 0 4px 20px rgba(102, 126, 234, 0.4) !important;
+                transform: scale(1.1) !important;
+            }
+            
+            .robocam-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 999999;
+                opacity: 0;
+                visibility: hidden;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                background: rgba(0, 0, 0, 0.98);
+            }
+            
+            .robocam-modal.robocam-active {
+                opacity: 1;
+                visibility: visible;
+            }
+            
+            .robocam-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.95);
+                cursor: pointer;
+            }
+            
+            .robocam-container {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                border-radius: 20px;
+                max-width: 600px;
+                width: 95%;
+                max-height: 90vh;
+                overflow: hidden;
+                box-shadow: 0 25px 50px rgba(102, 126, 234, 0.3);
+            }
+            
+            .robocam-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 20px;
+                background: rgba(0, 0, 0, 0.2);
+                color: white;
+            }
+            
+            .robocam-header h3 {
+                margin: 0;
+                font-size: 20px;
+                font-weight: 700;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            }
+            
+            .robocam-close {
+                background: rgba(255, 255, 255, 0.2);
+                border: none;
+                color: white;
+                font-size: 24px;
+                font-weight: bold;
+                cursor: pointer;
+                padding: 10px 15px;
+                border-radius: 50%;
+                transition: all 0.2s ease;
+            }
+            
+            .robocam-close:hover {
+                background: rgba(255, 255, 255, 0.3);
+                transform: scale(1.1);
+            }
+            
+            .robocam-viewport {
+                position: relative;
+                background: #000;
+                min-height: 300px;
+                max-height: 400px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                overflow: hidden;
+            }
+            
+            .robocam-video {
+                width: 100%;
+                height: auto;
+                max-height: 400px;
+                object-fit: cover;
+                display: none;
+            }
+            
+            .robocam-preview {
+                width: 100%;
+                height: 100%;
+                display: none;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            #robocam-image {
+                width: 100%;
+                height: auto;
+                max-height: 400px;
+                object-fit: cover;
+            }
+            
+            .robocam-loading {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                color: white;
+                padding: 40px;
+                text-align: center;
+            }
+            
+            .robocam-spinner {
+                width: 50px;
+                height: 50px;
+                border: 4px solid rgba(255, 255, 255, 0.3);
+                border-top: 4px solid #fff;
+                border-radius: 50%;
+                animation: robocam-spin 1s linear infinite;
+                margin-bottom: 20px;
+            }
+            
+            @keyframes robocam-spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            
+            @keyframes locationSpin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+            
+            .robocam-loading p {
+                margin: 0;
+                font-size: 18px;
+                font-weight: 500;
+                text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+            }
+            
+            .robocam-controls {
+                display: flex;
+                justify-content: center;
+                gap: 20px;
+                padding: 25px;
+                background: rgba(0, 0, 0, 0.2);
+            }
+            
+            .robocam-btn {
+                padding: 15px 25px;
+                border: none;
+                border-radius: 12px;
+                font-size: 16px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                min-width: 120px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                position: relative;
+                overflow: hidden;
+            }
+            
+            .robocam-btn::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+                transition: left 0.5s;
+            }
+            
+            .robocam-btn:hover::before {
+                left: 100%;
+            }
+            
+            .robocam-btn.capture {
+                background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+                color: white;
+                box-shadow: 0 8px 25px rgba(79, 172, 254, 0.3);
+            }
+            
+            .robocam-btn.capture:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 12px 35px rgba(79, 172, 254, 0.4);
+            }
+            
+            .robocam-btn.retake {
+                background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+                color: #8b4513;
+                box-shadow: 0 8px 25px rgba(252, 182, 159, 0.3);
+            }
+            
+            .robocam-btn.retake:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 12px 35px rgba(252, 182, 159, 0.4);
+            }
+            
+            .robocam-btn.send {
+                background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+                color: #2d3748;
+                box-shadow: 0 8px 25px rgba(168, 237, 234, 0.3);
+            }
+            
+            .robocam-btn.send:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 12px 35px rgba(168, 237, 234, 0.4);
+            }
+            
+            .robocam-btn:active {
+                transform: translateY(0);
+            }
+            
+            /* Responsive para RoboCam */
+            @media (max-width: 768px) {
+                .robocam-container {
+                    width: 98%;
+                    max-height: 95vh;
+                    border-radius: 16px;
+                }
+                
+                .robocam-header {
+                    padding: 16px;
+                }
+                
+                .robocam-header h3 {
+                    font-size: 18px;
+                }
+                
+                .robocam-close {
+                    padding: 8px 12px;
+                    font-size: 20px;
+                }
+                
+                .robocam-controls {
+                    gap: 15px;
+                    padding: 20px 16px;
+                    flex-wrap: wrap;
+                }
+                
+                .robocam-btn {
+                    min-width: 100px;
+                    padding: 12px 20px;
+                    font-size: 14px;
+                }
+            }
+            
+            /* Modal Contact Items */
+            .modal-contact-item {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 12px;
+                border-radius: 8px;
+                cursor: pointer;
+                transition: background 0.2s ease;
+            }
+            
+            .modal-contact-item:hover {
+                background: #f3f4f6;
+            }
+            
+            .contact-avatar {
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                object-fit: cover;
+            }
+            
+            .contact-info h4 {
+                margin: 0 0 4px 0;
+                font-size: 14px;
+                font-weight: 600;
+            }
+            
+            .contact-status {
+                margin: 0;
+                font-size: 12px;
+                color: #6b7280;
+            }
+            
+            /* Settings Styles */
+            .settings-section {
+                margin-bottom: 24px;
+            }
+            
+            .settings-section h4 {
+                margin: 0 0 12px 0;
+                color: #1f2937;
+                font-size: 16px;
+                font-weight: 600;
+                border-bottom: 1px solid #e5e7eb;
+                padding-bottom: 8px;
+            }
+            
+            .setting-item {
+                padding: 8px 0;
+                font-size: 14px;
+            }
+            
+            .setting-item label {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                cursor: pointer;
+            }
+            
+            .logout-btn {
+                background: #ef4444;
+                color: white;
+                border: none;
+                padding: 12px 24px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 14px;
+                transition: background 0.2s ease;
+            }
+            
+            .logout-btn:hover {
+                background: #dc2626;
+            }
+            
+            /* Search Contact */
+            .search-contact {
+                margin-bottom: 16px;
+            }
+            
+            .search-contact input {
+                width: 100%;
+                padding: 12px;
+                border: 1px solid #d1d5db;
+                border-radius: 8px;
+                font-size: 14px;
+            }
+            
+            .search-contact input:focus {
+                outline: none;
+                border-color: #4f46e5;
+                box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+            }
+            
+            /* Message Status Indicators */
+            .message-status {
+                margin-left: 8px;
+                display: inline-flex;
+                align-items: center;
+            }
+            
+            .message-sending {
+                /* No special styling - appears normal */
+            }
+            
+            .message-sent {
+                color: #9ca3af;
+            }
+            
+            .message-delivered {
+                color: #9ca3af;
+            }
+            
+            .message-read {
+                color: #3b82f6; /* Blue for read */
+            }
+            
+            .message-failed {
+                color: #ef4444;
+                cursor: pointer;
+            }
+            
+            .message-failed:hover {
+                color: #dc2626;
+            }
+            
+            @keyframes pulse {
+                0%, 100% { opacity: 0.5; }
+                50% { opacity: 1; }
+            }
+            
+            /* Connection Quality Indicator */
+            .connection-indicator {
+                display: flex;
+                align-items: center;
+                margin-left: 12px;
+                font-size: 14px;
+            }
+            
+            .connection-good {
+                color: #10b981;
+            }
+            
+            .connection-poor {
+                color: #f59e0b;
+            }
+            
+            .connection-offline {
+                color: #ef4444;
+            }
+            
+            /* Pending Message States */
+            .message-pending-connection {
+                /* Removed opacity to keep messages fully visible */
+                border-left: 3px solid #f59e0b;
+                padding-left: 8px;
+            }
+            
+            .message-failed-retry {
+                background-color: rgba(239, 68, 68, 0.1);
+                border-left: 3px solid #ef4444;
+                padding-left: 8px;
+                cursor: pointer;
+                transition: background-color 0.2s ease;
+            }
+            
+            .message-failed-retry:hover {
+                background-color: rgba(239, 68, 68, 0.2);
+            }
+            
+            /* No animations for instant appearance */
+            
+            /* Retry Button for Failed Messages */
+            .retry-message-btn {
+                background: #ef4444;
+                color: white;
+                border: none;
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 12px;
+                cursor: pointer;
+                margin-left: 8px;
+                transition: background 0.2s ease;
+            }
+            
+            .retry-message-btn:hover {
+                background: #dc2626;
+            }
+            
+            /* Status Tooltips */
+            .message-status i {
+                position: relative;
+            }
+            
+            .message-status i:hover::after {
+                content: attr(title);
+                position: absolute;
+                bottom: 100%;
+                left: 50%;
+                transform: translateX(-50%);
+                background: #1f2937;
+                color: white;
+                padding: 4px 8px;
+                border-radius: 4px;
+                font-size: 12px;
+                white-space: nowrap;
+                z-index: 1000;
+                pointer-events: none;
+            }
+            
+            /* Camera Modal Styles */
+            .camera-modal {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                z-index: 10001;
+                opacity: 0;
+                transition: opacity 0.3s ease;
+            }
+            
+            .camera-modal.show {
+                opacity: 1;
+            }
+            
+            .camera-overlay {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.95);
+            }
+            
+            .camera-content {
+                position: absolute;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: #1f2937;
+                border-radius: 16px;
+                max-width: 600px;
+                width: 95%;
+                max-height: 90vh;
+                overflow: hidden;
+            }
+            
+            .camera-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 20px;
+                background: #374151;
+                color: white;
+            }
+            
+            .camera-header h3 {
+                margin: 0;
+                font-size: 20px;
+                font-weight: 600;
+            }
+            
+            .camera-close-btn {
+                background: none;
+                border: none;
+                color: white;
+                font-size: 20px;
+                cursor: pointer;
+                padding: 8px;
+                border-radius: 50%;
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: background 0.2s ease;
+            }
+            
+            .camera-close-btn:hover {
+                background: rgba(255, 255, 255, 0.1);
+            }
+            
+            .camera-body {
+                position: relative;
+                background: #000;
+                min-height: 300px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            #camera-video {
+                width: 100%;
+                height: auto;
+                max-height: 400px;
+                object-fit: cover;
+                display: block;
+            }
+            
+            .camera-preview {
+                width: 100%;
+                height: 100%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            }
+            
+            #preview-image {
+                width: 100%;
+                height: auto;
+                max-height: 400px;
+                object-fit: cover;
+            }
+            
+            .camera-controls {
+                display: flex;
+                justify-content: center;
+                gap: 16px;
+                padding: 20px;
+                background: #374151;
+            }
+            
+            .camera-btn {
+                display: inline-flex;
+                align-items: center;
+                gap: 8px;
+                padding: 12px 20px;
+                border: none;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                min-width: 100px;
+                justify-content: center;
+            }
+            
+            .camera-btn.primary {
+                background: #4f46e5;
+                color: white;
+            }
+            
+            .camera-btn.primary:hover {
+                background: #4338ca;
+                transform: translateY(-1px);
+            }
+            
+            .camera-btn.secondary {
+                background: #6b7280;
+                color: white;
+            }
+            
+            .camera-btn.secondary:hover {
+                background: #5b6170;
+                transform: translateY(-1px);
+            }
+            
+            .camera-btn.success {
+                background: #10b981;
+                color: white;
+            }
+            
+            .camera-btn.success:hover {
+                background: #059669;
+                transform: translateY(-1px);
+            }
+            
+            .camera-btn i {
+                font-size: 16px;
+            }
+            
+            /* Message Image Styles */
+            .message-image {
+                margin: 4px 0;
+                border-radius: 12px;
+                overflow: hidden;
+                max-width: 300px;
+                cursor: pointer;
+            }
+            
+            .message-image img {
+                width: 100%;
+                height: auto;
+                display: block;
+                transition: transform 0.2s ease;
+            }
+            
+            .message-image img:hover {
+                transform: scale(1.02);
+            }
+            
+            .message-image img.fullscreen {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                object-fit: contain;
+                background: rgba(0, 0, 0, 0.9);
+                z-index: 10000;
+                cursor: zoom-out;
+                transform: none;
+                border-radius: 0;
+            }
+            
+            /* Responsive Design */
+            @media (max-width: 768px) {
+                .modal-content {
+                    width: 95%;
+                    max-height: 90vh;
+                }
+                
+                .call-container {
+                    min-width: 280px;
+                    padding: 20px;
+                }
+                
+                .call-controls {
+                    gap: 12px;
+                }
+                
+                .call-btn {
+                    width: 48px;
+                    height: 48px;
+                    font-size: 18px;
+                }
+                
+                .attachment-menu {
+                    right: 16px;
+                    bottom: 80px;
+                }
+                
+                .connection-indicator {
+                    font-size: 12px;
+                }
+                
+                .message-status {
+                    margin-left: 4px;
+                }
+                
+                .camera-content {
+                    width: 98%;
+                    max-height: 95vh;
+                }
+                
+                .camera-header {
+                    padding: 16px;
+                }
+                
+                .camera-header h3 {
+                    font-size: 18px;
+                }
+                
+                .camera-controls {
+                    gap: 12px;
+                    padding: 16px;
+                    flex-wrap: wrap;
+                }
+                
+                .camera-btn {
+                    min-width: 80px;
+                    padding: 10px 16px;
+                    font-size: 12px;
+                }
+                
+                .camera-btn span {
+                    display: none;
+                }
+                
+                .message-image {
+                    max-width: 250px;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    </script>
+</body>
+</html>
