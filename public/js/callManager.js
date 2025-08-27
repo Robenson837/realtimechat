@@ -32,15 +32,42 @@ class CallManager {
     };
     this.currentRingtone = null;
     
-    // Enhanced ICE servers configuration with TURN server for NAT traversal
+    // Enhanced ICE servers configuration with STUN and TURN servers for NAT traversal
     this.iceServers = {
       iceServers: [
+        // STUN servers for basic NAT traversal
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
         { urls: 'stun:stun2.l.google.com:19302' },
-        { urls: 'stun:stun3.l.google.com:19302' },
-        { urls: 'stun:stun4.l.google.com:19302' }
-      ]
+        
+        // Free TURN servers for more restrictive NATs
+        {
+          urls: 'turn:numb.viagenie.ca:80',
+          username: 'webrtc@live.com',
+          credential: 'muazkh'
+        },
+        {
+          urls: 'turn:numb.viagenie.ca:3478',
+          username: 'webrtc@live.com', 
+          credential: 'muazkh'
+        },
+        {
+          urls: 'turn:openrelay.metered.ca:80',
+          username: 'openrelayproject',
+          credential: 'openrelayproject'
+        },
+        {
+          urls: 'turn:openrelay.metered.ca:443',
+          username: 'openrelayproject',
+          credential: 'openrelayproject'
+        },
+        {
+          urls: 'turn:openrelay.metered.ca:443?transport=tcp',
+          username: 'openrelayproject',
+          credential: 'openrelayproject'
+        }
+      ],
+      iceCandidatePoolSize: 10
     };
 
     this.initializeElements();
@@ -440,8 +467,16 @@ class CallManager {
   }
 
   async setupPeerConnection() {
+    console.log('WEBRTC: Setting up peer connection with config:', {
+      iceServers: this.iceServers.iceServers.length,
+      iceCandidatePoolSize: this.iceServers.iceCandidatePoolSize
+    });
+    
     this.peerConnection = new RTCPeerConnection(this.iceServers);
     this.connectionState = 'connecting';
+    
+    // Log detailed connection information
+    console.log('WEBRTC: Peer connection created with ID:', this.callId);
     
     // Add local stream tracks
     if (this.localStream) {
@@ -463,23 +498,41 @@ class CallManager {
       this.playCallSound('connected');
     };
     
-    // Handle ICE candidates with queueing
+    // Handle ICE candidates with enhanced logging
     this.peerConnection.onicecandidate = (event) => {
       if (event.candidate) {
+        console.log('WEBRTC: ICE candidate generated:', {
+          type: event.candidate.type,
+          protocol: event.candidate.protocol,
+          address: event.candidate.address,
+          port: event.candidate.port,
+          foundation: event.candidate.foundation
+        });
+        
         this.emitCallSignal('call:ice-candidate', {
           callId: this.callId,
           to: this.getRecipientId(),
           candidate: event.candidate
         });
       } else {
-        console.log('SIGNAL: ICE gathering completed');
+        console.log('WEBRTC: ICE gathering completed - all candidates sent');
       }
     };
     
     // Handle connection state changes with detailed logging
     this.peerConnection.onconnectionstatechange = () => {
       const state = this.peerConnection.connectionState;
-      console.log('SIGNAL: Connection state changed to:', state);
+      const iceState = this.peerConnection.iceConnectionState;
+      const gatheringState = this.peerConnection.iceGatheringState;
+      
+      console.log('WEBRTC: Connection state changed:', {
+        connectionState: state,
+        iceConnectionState: iceState,
+        iceGatheringState: gatheringState,
+        signalingState: this.peerConnection.signalingState,
+        timestamp: new Date().toISOString()
+      });
+      
       this.connectionState = state;
       
       switch (state) {
@@ -505,9 +558,18 @@ class CallManager {
       }
     };
     
-    // Handle ICE connection state
+    // Handle ICE connection state with detailed analysis
     this.peerConnection.oniceconnectionstatechange = () => {
-      console.log('SIGNAL: ICE connection state:', this.peerConnection.iceConnectionState);
+      const iceState = this.peerConnection.iceConnectionState;
+      const connectionState = this.peerConnection.connectionState;
+      
+      console.log('WEBRTC: ICE connection state changed:', {
+        iceConnectionState: iceState,
+        connectionState: connectionState,
+        localDescription: !!this.peerConnection.localDescription,
+        remoteDescription: !!this.peerConnection.remoteDescription,
+        timestamp: new Date().toISOString()
+      });
       
       switch (this.peerConnection.iceConnectionState) {
         case 'checking':
@@ -518,7 +580,13 @@ class CallManager {
           this.updateCallStatus('Conectado');
           break;
         case 'failed':
-          console.error('ICE connection failed');
+          console.error('WEBRTC: ICE connection failed - analyzing failure:', {
+            localCandidates: this.peerConnection.getLocalDescription(),
+            remoteCandidates: this.peerConnection.getRemoteDescription(),
+            iceServers: this.iceServers.iceServers.map(s => ({ urls: s.urls, hasCredentials: !!s.credential })),
+            connectionState: this.peerConnection.connectionState,
+            timestamp: new Date().toISOString()
+          });
           this.updateCallStatus('Error de conexión');
           setTimeout(() => this.endCall('ice-failed'), 5000);
           break;
@@ -531,9 +599,16 @@ class CallManager {
       }
     };
     
-    // Handle signaling state changes
+    // Handle signaling state changes with context
     this.peerConnection.onsignalingstatechange = () => {
-      console.log('SIGNAL: Signaling state:', this.peerConnection.signalingState);
+      console.log('WEBRTC: Signaling state changed:', {
+        signalingState: this.peerConnection.signalingState,
+        connectionState: this.peerConnection.connectionState,
+        iceConnectionState: this.peerConnection.iceConnectionState,
+        hasLocalDescription: !!this.peerConnection.localDescription,
+        hasRemoteDescription: !!this.peerConnection.remoteDescription,
+        timestamp: new Date().toISOString()
+      });
     };
   }
 
@@ -543,16 +618,36 @@ class CallManager {
       offerToReceiveVideo: this.currentCallType === 'video'
     };
     
+    console.log('WEBRTC: Creating offer with options:', offerOptions);
     const offer = await this.peerConnection.createOffer(offerOptions);
+    
+    console.log('WEBRTC: Setting local description (offer):', {
+      type: offer.type,
+      sdpLength: offer.sdp.length,
+      hasAudio: offer.sdp.includes('m=audio'),
+      hasVideo: offer.sdp.includes('m=video'),
+      iceUfrag: offer.sdp.includes('ice-ufrag')
+    });
+    
     await this.peerConnection.setLocalDescription(offer);
-    console.log('SEND: Offer created and set as local description');
+    console.log('WEBRTC: Local description set successfully (offer)');
     return offer;
   }
 
   async createAnswer() {
+    console.log('WEBRTC: Creating answer for remote offer');
     const answer = await this.peerConnection.createAnswer();
+    
+    console.log('WEBRTC: Setting local description (answer):', {
+      type: answer.type,
+      sdpLength: answer.sdp.length,
+      hasAudio: answer.sdp.includes('m=audio'),
+      hasVideo: answer.sdp.includes('m=video'),
+      iceUfrag: answer.sdp.includes('ice-ufrag')
+    });
+    
     await this.peerConnection.setLocalDescription(answer);
-    console.log('SEND: Answer created and set as local description');
+    console.log('WEBRTC: Local description set successfully (answer)');
     return answer;
   }
 
@@ -1689,7 +1784,16 @@ class CallManager {
       await this.setupPeerConnection();
       
       // Set remote description (offer)
+      console.log('WEBRTC: Setting remote description (offer):', {
+        type: offer.type,
+        sdpLength: offer.sdp?.length || 0,
+        hasAudio: offer.sdp?.includes('m=audio') || false,
+        hasVideo: offer.sdp?.includes('m=video') || false,
+        iceUfrag: offer.sdp?.includes('ice-ufrag') || false
+      });
+      
       await this.peerConnection.setRemoteDescription(new RTCSessionDescription(offer));
+      console.log('WEBRTC: Remote description (offer) set successfully');
       
       // Process any queued ICE candidates
       while (this.candidatesQueue.length > 0) {
@@ -1765,8 +1869,16 @@ class CallManager {
       
       // Set remote description (answer)
       if (data.answer) {
+        console.log('WEBRTC: Setting remote description (answer):', {
+          type: data.answer.type,
+          sdpLength: data.answer.sdp?.length || 0,
+          hasAudio: data.answer.sdp?.includes('m=audio') || false,
+          hasVideo: data.answer.sdp?.includes('m=video') || false,
+          iceUfrag: data.answer.sdp?.includes('ice-ufrag') || false
+        });
+        
         await this.peerConnection.setRemoteDescription(new RTCSessionDescription(data.answer));
-        console.log('Remote description (answer) set successfully');
+        console.log('WEBRTC: Remote description (answer) set successfully');
       }
       
       // Process any queued ICE candidates
@@ -2175,6 +2287,69 @@ class CallManager {
     
     document.dispatchEvent(event);
     console.log(`📞 Event dispatched: ${eventName}`, data);
+  }
+
+  // Debug helper method for WebRTC connection troubleshooting
+  getWebRTCDebugInfo() {
+    const debugInfo = {
+      timestamp: new Date().toISOString(),
+      callState: {
+        callId: this.callId,
+        isInitiator: this.isInitiator,
+        currentCallType: this.currentCallType,
+        connectionState: this.connectionState
+      },
+      peerConnection: null,
+      localStream: null,
+      remoteStream: null,
+      iceServers: this.iceServers
+    };
+
+    if (this.peerConnection) {
+      debugInfo.peerConnection = {
+        connectionState: this.peerConnection.connectionState,
+        iceConnectionState: this.peerConnection.iceConnectionState,
+        iceGatheringState: this.peerConnection.iceGatheringState,
+        signalingState: this.peerConnection.signalingState,
+        localDescription: this.peerConnection.localDescription ? {
+          type: this.peerConnection.localDescription.type,
+          sdpLength: this.peerConnection.localDescription.sdp.length
+        } : null,
+        remoteDescription: this.peerConnection.remoteDescription ? {
+          type: this.peerConnection.remoteDescription.type,
+          sdpLength: this.peerConnection.remoteDescription.sdp.length
+        } : null
+      };
+    }
+
+    if (this.localStream) {
+      debugInfo.localStream = {
+        id: this.localStream.id,
+        active: this.localStream.active,
+        tracks: this.localStream.getTracks().map(track => ({
+          kind: track.kind,
+          enabled: track.enabled,
+          readyState: track.readyState,
+          label: track.label
+        }))
+      };
+    }
+
+    if (this.remoteStream) {
+      debugInfo.remoteStream = {
+        id: this.remoteStream.id,
+        active: this.remoteStream.active,
+        tracks: this.remoteStream.getTracks().map(track => ({
+          kind: track.kind,
+          enabled: track.enabled,
+          readyState: track.readyState,
+          label: track.label
+        }))
+      };
+    }
+
+    console.log('WEBRTC: Complete debug information:', debugInfo);
+    return debugInfo;
   }
 }
 

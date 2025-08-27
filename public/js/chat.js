@@ -3473,60 +3473,43 @@ class ChatManager {
 
   // Helper method to detect if a message contains location data
   isLocationMessage(message) {
-    console.log('DEBUG: Checking if message is location:', {
-      messageType: message.messageType,
-      type: message.type,
-      content: message.content,
-      contentType: typeof message.content
-    });
-    
-    // Check if messageType is explicitly set to location
+    // Check if messageType is explicitly set to location (most reliable)
     if (message.messageType === 'location' || message.type === 'location') {
-      console.log('SUCCESS: Location message detected by messageType/type');
       return true;
     }
     
-    // Check if content contains location data (JSON string or object)
-    try {
-      let contentToCheck = message.content;
-      
-      // If content is an object with text property, check the text
-      if (typeof contentToCheck === 'object' && contentToCheck?.text) {
-        contentToCheck = contentToCheck.text;
-        console.log('DEBUG: Checking content.text:', contentToCheck);
-      }
-      
-      // If it's a string, try to parse it
-      if (typeof contentToCheck === 'string') {
-        const parsed = JSON.parse(contentToCheck);
-        console.log('DEBUG: Parsed JSON content:', parsed);
-        const isLocation = parsed.type === 'location' && 
-               parsed.latitude !== undefined && 
-               parsed.longitude !== undefined;
-        if (isLocation) {
-          console.log('SUCCESS: Location message detected by JSON content');
+    // Only check content for location data if we have reasonable indication it might be one
+    let contentToCheck = message.content;
+    
+    // If content is an object with text property, check the text
+    if (typeof contentToCheck === 'object' && contentToCheck?.text) {
+      contentToCheck = contentToCheck.text;
+    }
+    
+    // Quick check before expensive JSON parsing - only parse if string looks like JSON
+    if (typeof contentToCheck === 'string') {
+      // Only attempt JSON parsing if string looks like it could be JSON
+      if (contentToCheck.trim().startsWith('{') && contentToCheck.includes('latitude')) {
+        try {
+          const parsed = JSON.parse(contentToCheck);
+          return parsed.type === 'location' && 
+                 parsed.latitude !== undefined && 
+                 parsed.longitude !== undefined;
+        } catch (e) {
+          // Silently ignore parsing errors for non-JSON content
+          return false;
         }
-        return isLocation;
       }
-      
-      // If it's already an object, check directly
-      if (typeof contentToCheck === 'object' && contentToCheck) {
-        console.log('DEBUG: Checking object content:', contentToCheck);
-        const isLocation = contentToCheck.type === 'location' && 
-               contentToCheck.latitude !== undefined && 
-               contentToCheck.longitude !== undefined;
-        if (isLocation) {
-          console.log('SUCCESS: Location message detected by object content');
-        }
-        return isLocation;
-      }
-    } catch (e) {
-      console.log('ERROR: Error parsing location content:', e.message);
-      // Not a valid JSON or location data
       return false;
     }
     
-    console.log('ERROR: Not a location message');
+    // If it's already an object, check directly
+    if (typeof contentToCheck === 'object' && contentToCheck) {
+      return contentToCheck.type === 'location' && 
+             contentToCheck.latitude !== undefined && 
+             contentToCheck.longitude !== undefined;
+    }
+    
     return false;
   }
 
@@ -3811,13 +3794,17 @@ class ChatManager {
             `;
     } else if (message.messageType === 'location') {
       // Location message
-      console.log('Rendering location message:', message);
       let locationData;
       try {
         locationData = typeof message.content === 'string' ? JSON.parse(message.content) : message.content;
       } catch (e) {
-        console.error('Error parsing location data:', e, message.content);
-        locationData = message.content || {};
+        // If parsing fails, try to use raw content or provide default
+        locationData = (typeof message.content === 'object' && message.content) ? message.content : {};
+        if (!locationData.latitude || !locationData.longitude) {
+          // Invalid location data - render as text message instead
+          messageContentHTML = `<div class="message-text">Location data corrupted</div>`;
+          return this.finalizeMessageElement(messageEl, messageContentHTML, message);
+        }
       }
       
       console.log('Parsed location data:', locationData);
