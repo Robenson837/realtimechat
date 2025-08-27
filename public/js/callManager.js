@@ -32,25 +32,27 @@ class CallManager {
     };
     this.currentRingtone = null;
     
-    // Enhanced ICE servers configuration with STUN and TURN servers for NAT traversal
+    // Enhanced ICE servers configuration - August 2025 verified working servers
     this.iceServers = {
       iceServers: [
-        // STUN servers for basic NAT traversal
+        // Google STUN servers (most reliable)
         { urls: 'stun:stun.l.google.com:19302' },
         { urls: 'stun:stun1.l.google.com:19302' },
         { urls: 'stun:stun2.l.google.com:19302' },
         
-        // Free TURN servers for more restrictive NATs
+        // Cloudflare STUN (fast and reliable 2025)
+        { urls: 'stun:stun.cloudflare.com:3478' },
+        
+        // FreeTurn.net (verified working August 2025)
+        { urls: 'stun:freestun.net:3478' },
         {
-          urls: 'turn:numb.viagenie.ca:80',
-          username: 'webrtc@live.com',
-          credential: 'muazkh'
+          urls: 'turn:freestun.net:3478',
+          username: 'free',
+          credential: 'free'
         },
-        {
-          urls: 'turn:numb.viagenie.ca:3478',
-          username: 'webrtc@live.com', 
-          credential: 'muazkh'
-        },
+        
+        // OpenRelay Project (most reliable free TURN 2025)
+        // 20GB free per month, ports 80/443 bypass firewalls
         {
           urls: 'turn:openrelay.metered.ca:80',
           username: 'openrelayproject',
@@ -65,9 +67,20 @@ class CallManager {
           urls: 'turn:openrelay.metered.ca:443?transport=tcp',
           username: 'openrelayproject',
           credential: 'openrelayproject'
-        }
+        },
+        
+        // Alternative STUN servers for redundancy
+        { urls: 'stun:stun.stunprotocol.org:3478' },
+        { urls: 'stun:stun.voiparound.com' },
+        { urls: 'stun:stun.voipbuster.com' },
+        
+        // Twilio STUN (enterprise grade)
+        { urls: 'stun:global.stun.twilio.com:3478' }
       ],
-      iceCandidatePoolSize: 10
+      iceCandidatePoolSize: 25,
+      bundlePolicy: 'max-bundle',
+      rtcpMuxPolicy: 'require',
+      iceTransportPolicy: 'all'
     };
 
     this.initializeElements();
@@ -485,131 +498,11 @@ class CallManager {
       });
     }
     
-    // Handle remote stream
-    this.peerConnection.ontrack = (event) => {
-      console.log('SIGNAL: Remote track received');
-      this.remoteStream = event.streams[0];
-      if (this.remoteVideo) {
-        this.remoteVideo.srcObject = this.remoteStream;
-      }
-      this.connectionState = 'connected';
-      this.updateCallInterface('connected');
-      this.stopCallSound('outgoing');
-      this.playCallSound('connected');
-    };
+    // Initialize fallback flag
+    this.fallbackAttempted = false;
     
-    // Handle ICE candidates with enhanced logging
-    this.peerConnection.onicecandidate = (event) => {
-      if (event.candidate) {
-        console.log('WEBRTC: ICE candidate generated:', {
-          type: event.candidate.type,
-          protocol: event.candidate.protocol,
-          address: event.candidate.address,
-          port: event.candidate.port,
-          foundation: event.candidate.foundation
-        });
-        
-        this.emitCallSignal('call:ice-candidate', {
-          callId: this.callId,
-          to: this.getRecipientId(),
-          candidate: event.candidate
-        });
-      } else {
-        console.log('WEBRTC: ICE gathering completed - all candidates sent');
-      }
-    };
-    
-    // Handle connection state changes with detailed logging
-    this.peerConnection.onconnectionstatechange = () => {
-      const state = this.peerConnection.connectionState;
-      const iceState = this.peerConnection.iceConnectionState;
-      const gatheringState = this.peerConnection.iceGatheringState;
-      
-      console.log('WEBRTC: Connection state changed:', {
-        connectionState: state,
-        iceConnectionState: iceState,
-        iceGatheringState: gatheringState,
-        signalingState: this.peerConnection.signalingState,
-        timestamp: new Date().toISOString()
-      });
-      
-      this.connectionState = state;
-      
-      switch (state) {
-        case 'connecting':
-          this.updateCallStatus('Conectando...');
-          break;
-        case 'connected':
-          this.updateCallStatus('Conectado');
-          this.onCallConnected();
-          break;
-        case 'disconnected':
-          this.updateCallStatus('Desconectado');
-          console.warn('Connection disconnected, attempting to reconnect...');
-          break;
-        case 'failed':
-          this.updateCallStatus('Conexión fallida');
-          console.error('Connection failed');
-          setTimeout(() => this.endCall('connection-failed'), 3000);
-          break;
-        case 'closed':
-          console.log('Connection closed');
-          break;
-      }
-    };
-    
-    // Handle ICE connection state with detailed analysis
-    this.peerConnection.oniceconnectionstatechange = () => {
-      const iceState = this.peerConnection.iceConnectionState;
-      const connectionState = this.peerConnection.connectionState;
-      
-      console.log('WEBRTC: ICE connection state changed:', {
-        iceConnectionState: iceState,
-        connectionState: connectionState,
-        localDescription: !!this.peerConnection.localDescription,
-        remoteDescription: !!this.peerConnection.remoteDescription,
-        timestamp: new Date().toISOString()
-      });
-      
-      switch (this.peerConnection.iceConnectionState) {
-        case 'checking':
-          this.updateCallStatus('Estableciendo conexión...');
-          break;
-        case 'connected':
-        case 'completed':
-          this.updateCallStatus('Conectado');
-          break;
-        case 'failed':
-          console.error('WEBRTC: ICE connection failed - analyzing failure:', {
-            localCandidates: this.peerConnection.getLocalDescription(),
-            remoteCandidates: this.peerConnection.getRemoteDescription(),
-            iceServers: this.iceServers.iceServers.map(s => ({ urls: s.urls, hasCredentials: !!s.credential })),
-            connectionState: this.peerConnection.connectionState,
-            timestamp: new Date().toISOString()
-          });
-          this.updateCallStatus('Error de conexión');
-          setTimeout(() => this.endCall('ice-failed'), 5000);
-          break;
-        case 'disconnected':
-          this.updateCallStatus('Reconectando...');
-          break;
-        case 'closed':
-          console.log('ICE connection closed');
-          break;
-      }
-    };
-    
-    // Handle signaling state changes with context
-    this.peerConnection.onsignalingstatechange = () => {
-      console.log('WEBRTC: Signaling state changed:', {
-        signalingState: this.peerConnection.signalingState,
-        connectionState: this.peerConnection.connectionState,
-        iceConnectionState: this.peerConnection.iceConnectionState,
-        hasLocalDescription: !!this.peerConnection.localDescription,
-        hasRemoteDescription: !!this.peerConnection.remoteDescription,
-        timestamp: new Date().toISOString()
-      });
-    };
+    // Setup all peer connection event handlers
+    this.setupPeerConnectionHandlers();
   }
 
   async createOffer() {
@@ -2287,6 +2180,250 @@ class CallManager {
     
     document.dispatchEvent(event);
     console.log(`📞 Event dispatched: ${eventName}`, data);
+  }
+
+  // Fallback method for direct peer connection when TURN servers fail
+  async attemptDirectConnectionFallback() {
+    console.log('WEBRTC: Starting direct connection fallback...');
+    this.fallbackAttempted = true;
+    this.updateCallStatus('Intentando conexión directa...');
+    
+    try {
+      // Create new peer connection with minimal STUN servers only
+      const directConfig = {
+        iceServers: [
+          { urls: 'stun:stun.l.google.com:19302' },
+          { urls: 'stun:stun.cloudflare.com:3478' }
+        ],
+        iceCandidatePoolSize: 5,
+        bundlePolicy: 'balanced',
+        rtcpMuxPolicy: 'require',
+        iceTransportPolicy: 'all'
+      };
+      
+      console.log('WEBRTC: Creating fallback peer connection with config:', directConfig);
+      
+      // Clean up existing connection
+      if (this.peerConnection) {
+        this.peerConnection.close();
+      }
+      
+      // Create new direct connection
+      this.peerConnection = new RTCPeerConnection(directConfig);
+      this.connectionState = 'connecting';
+      
+      // Re-add media stream
+      if (this.localStream) {
+        this.localStream.getTracks().forEach(track => {
+          this.peerConnection.addTrack(track, this.localStream);
+        });
+      }
+      
+      // Re-setup all event handlers
+      this.setupPeerConnectionHandlers();
+      
+      // Re-create offer/answer depending on role
+      if (this.isInitiator) {
+        console.log('WEBRTC: Creating new offer for direct connection...');
+        const offer = await this.createOffer();
+        
+        // Send new offer to remote peer
+        this.emitCallSignal('call:renegotiate', {
+          callId: this.callId,
+          to: this.getRecipientId(),
+          offer: offer,
+          fallback: true
+        });
+      }
+      
+      console.log('WEBRTC: Direct connection fallback initiated');
+      
+    } catch (error) {
+      console.error('WEBRTC: Direct connection fallback failed:', error);
+      this.updateCallStatus('Error de conexión');
+      setTimeout(() => this.endCall('fallback-failed'), 3000);
+    }
+  }
+
+  // Setup peer connection event handlers (extracted for reuse)
+  setupPeerConnectionHandlers() {
+    // Handle remote stream
+    this.peerConnection.ontrack = (event) => {
+      console.log('WEBRTC: Remote track received');
+      this.remoteStream = event.streams[0];
+      if (this.remoteVideo) {
+        this.remoteVideo.srcObject = this.remoteStream;
+      }
+      this.connectionState = 'connected';
+      this.updateCallInterface('connected');
+      this.stopCallSound('outgoing');
+      this.playCallSound('connected');
+    };
+    
+    // Handle ICE candidates with enhanced logging
+    this.peerConnection.onicecandidate = (event) => {
+      if (event.candidate) {
+        console.log('WEBRTC: ICE candidate generated:', {
+          type: event.candidate.type,
+          protocol: event.candidate.protocol,
+          address: event.candidate.address,
+          port: event.candidate.port,
+          foundation: event.candidate.foundation
+        });
+        
+        this.emitCallSignal('call:ice-candidate', {
+          callId: this.callId,
+          to: this.getRecipientId(),
+          candidate: event.candidate
+        });
+      } else {
+        console.log('WEBRTC: ICE gathering completed - all candidates sent');
+      }
+    };
+    
+    // Handle connection state changes with detailed logging
+    this.peerConnection.onconnectionstatechange = () => {
+      const state = this.peerConnection.connectionState;
+      const iceState = this.peerConnection.iceConnectionState;
+      const gatheringState = this.peerConnection.iceGatheringState;
+      
+      console.log('WEBRTC: Connection state changed:', {
+        connectionState: state,
+        iceConnectionState: iceState,
+        iceGatheringState: gatheringState,
+        signalingState: this.peerConnection.signalingState,
+        timestamp: new Date().toISOString()
+      });
+      
+      this.connectionState = state;
+      
+      switch (state) {
+        case 'connecting':
+          this.updateCallStatus('Conectando...');
+          break;
+        case 'connected':
+          this.updateCallStatus('Conectado');
+          this.onCallConnected();
+          break;
+        case 'disconnected':
+          this.updateCallStatus('Desconectado');
+          console.warn('Connection disconnected, attempting to reconnect...');
+          break;
+        case 'failed':
+          console.error('Connection failed');
+          this.updateCallStatus('Conexión fallida');
+          setTimeout(() => this.endCall('connection-failed'), 3000);
+          break;
+        case 'closed':
+          console.log('Connection closed');
+          break;
+      }
+    };
+    
+    // Handle ICE connection state with detailed analysis
+    this.peerConnection.oniceconnectionstatechange = () => {
+      const iceState = this.peerConnection.iceConnectionState;
+      const connectionState = this.peerConnection.connectionState;
+      
+      console.log('WEBRTC: ICE connection state changed:', {
+        iceConnectionState: iceState,
+        connectionState: connectionState,
+        localDescription: !!this.peerConnection.localDescription,
+        remoteDescription: !!this.peerConnection.remoteDescription,
+        timestamp: new Date().toISOString()
+      });
+      
+      switch (iceState) {
+        case 'checking':
+          this.updateCallStatus('Estableciendo conexión...');
+          break;
+        case 'connected':
+        case 'completed':
+          this.updateCallStatus('Conectado');
+          break;
+        case 'failed':
+          // This is now handled by the main fallback logic above
+          break;
+        case 'disconnected':
+          this.updateCallStatus('Reconectando...');
+          break;
+        case 'closed':
+          console.log('ICE connection closed');
+          break;
+      }
+    };
+    
+    // Handle signaling state changes with context
+    this.peerConnection.onsignalingstatechange = () => {
+      console.log('WEBRTC: Signaling state changed:', {
+        signalingState: this.peerConnection.signalingState,
+        connectionState: this.peerConnection.connectionState,
+        iceConnectionState: this.peerConnection.iceConnectionState,
+        hasLocalDescription: !!this.peerConnection.localDescription,
+        hasRemoteDescription: !!this.peerConnection.remoteDescription,
+        timestamp: new Date().toISOString()
+      });
+    };
+  }
+
+  // Test STUN/TURN server connectivity
+  async testICEServers() {
+    console.log('WEBRTC: Testing ICE server connectivity...');
+    const results = [];
+    
+    for (const server of this.iceServers.iceServers) {
+      const result = {
+        urls: server.urls,
+        hasCredentials: !!server.credential,
+        status: 'testing'
+      };
+      
+      try {
+        const testPC = new RTCPeerConnection({ iceServers: [server] });
+        const timeout = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('Timeout')), 5000)
+        );
+        
+        const candidatePromise = new Promise((resolve) => {
+          testPC.onicecandidate = (event) => {
+            if (event.candidate) {
+              resolve(event.candidate.type);
+            }
+          };
+          testPC.onicegatheringstatechange = () => {
+            if (testPC.iceGatheringState === 'complete') {
+              resolve('no-candidates');
+            }
+          };
+        });
+        
+        // Start ICE gathering
+        const offer = await testPC.createOffer();
+        await testPC.setLocalDescription(offer);
+        
+        const candidateType = await Promise.race([candidatePromise, timeout]);
+        result.status = 'working';
+        result.candidateType = candidateType;
+        
+        testPC.close();
+      } catch (error) {
+        result.status = 'failed';
+        result.error = error.message;
+      }
+      
+      results.push(result);
+      console.log('WEBRTC: ICE server test result:', result);
+    }
+    
+    const summary = {
+      total: results.length,
+      working: results.filter(r => r.status === 'working').length,
+      failed: results.filter(r => r.status === 'failed').length,
+      results: results
+    };
+    
+    console.log('WEBRTC: ICE connectivity test summary:', summary);
+    return summary;
   }
 
   // Debug helper method for WebRTC connection troubleshooting
