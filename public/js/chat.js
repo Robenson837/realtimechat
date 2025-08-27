@@ -60,9 +60,9 @@ window.fixMessagePositioning = function () {
     typeof window.chatManager.enforceMessagePositioningImmediate === "function"
   ) {
     window.chatManager.enforceMessagePositioningImmediate();
-    console.log("✅ Corrección aplicada exitosamente");
+    console.log("SUCCESS: Corrección aplicada exitosamente");
   } else {
-    console.error("❌ Chat manager no disponible");
+    console.error("ERROR: Chat manager no disponible");
   }
 };
 
@@ -206,7 +206,7 @@ class ChatManager {
       this.lastStatusUpdate = new Map(); // For throttling status updates
       this.initialized = false; // Start as not initialized
 
-      console.log("✅ Basic properties initialized");
+      console.log("SUCCESS: Basic properties initialized");
 
       // Multi-selection state
       this.isSelectionMode = false;
@@ -231,7 +231,7 @@ class ChatManager {
         handlers: [],
       };
 
-      console.log("✅ Advanced properties initialized");
+      console.log("SUCCESS: Advanced properties initialized");
 
       // Force welcome screen immediately on ChatManager creation
       this.forceWelcomeScreenOnConstruction();
@@ -247,7 +247,7 @@ class ChatManager {
       this.setupElements();
       this.init();
 
-      console.log("✅ ChatManager constructor completed successfully");
+      console.log("SUCCESS: ChatManager constructor completed successfully");
     } catch (error) {
       console.error("❌ Error in ChatManager constructor:", error);
       throw error;
@@ -1190,14 +1190,14 @@ class ChatManager {
   async getRealTimeContactData(recipientId) {
     let contactData = null;
 
-    console.log(`🔍 Getting real-time contact data for: ${recipientId}`);
+    console.log(`DEBUG: Getting real-time contact data for: ${recipientId}`);
 
     // 1. Try from contacts manager cache first (basic contact info)
     if (window.contactsManager && window.contactsManager.contacts) {
       const contact = window.contactsManager.contacts.get(recipientId);
       if (contact) {
         contactData = { ...contact };
-        console.log("✅ Got basic contact data from cache");
+        console.log("SUCCESS: Got basic contact data from cache");
       }
     }
 
@@ -1222,19 +1222,19 @@ class ChatManager {
             contactData.sessionCount = presenceData.sessionCount;
           }
 
-          console.log(`✅ Got real-time presence data:`, {
+          console.log(`SUCCESS: Got real-time presence data:`, {
             status: presenceData.status,
             isOnline: presenceData.isOnline,
             sessionCount: presenceData.sessionCount,
           });
         } else {
-          console.log("⚠️ Presence API returned no data");
+          console.log("WARN: Presence API returned no data");
         }
       } else {
-        console.log("⚠️ Presence API request failed");
+        console.log("WARN: Presence API request failed");
       }
     } catch (error) {
-      console.log("⚠️ Error fetching presence data:", error);
+      console.log("WARN: Error fetching presence data:", error);
     }
 
     // 3. Fallback to socket active users if no presence data
@@ -1249,7 +1249,7 @@ class ChatManager {
             contactData.isOnline = true;
           }
         }
-        console.log("✅ Enhanced with socket active user data");
+        console.log("SUCCESS: Enhanced with socket active user data");
       }
     }
 
@@ -1266,11 +1266,11 @@ class ChatManager {
           const result = await response.json();
           if (result.success) {
             contactData = result.data;
-            console.log("✅ Got contact data from direct API");
+            console.log("SUCCESS: Got contact data from direct API");
           }
         }
       } catch (error) {
-        console.log("⚠️ Direct API failed");
+        console.log("WARN: Direct API failed");
       }
 
       // Final fallback to contacts API
@@ -1282,16 +1282,16 @@ class ChatManager {
               (contact) => contact._id === recipientId
             );
             if (contactData) {
-              console.log("✅ Got contact data from contacts API fallback");
+              console.log("SUCCESS: Got contact data from contacts API fallback");
             }
           }
         } catch (error) {
-          console.log("⚠️ Contacts API fallback failed");
+          console.log("WARN: Contacts API fallback failed");
         }
       }
     }
 
-    console.log(`🔍 Final contact data for ${recipientId}:`, {
+    console.log(`DEBUG: Final contact data for ${recipientId}:`, {
       hasData: !!contactData,
       status: contactData?.status,
       isOnline: contactData?.isOnline,
@@ -1759,7 +1759,7 @@ class ChatManager {
       // Aplicar verificación después de renderizar contactos
       setTimeout(() => {
         if (window.verificationSystem) {
-          console.log('🔵 Aplicando verificación a contactos cargados...');
+          console.log('INFO: Aplicando verificación a contactos cargados...');
           window.verificationSystem.updateAllUserElements();
         }
       }, 200);
@@ -2299,7 +2299,7 @@ class ChatManager {
         childList: true,
       });
 
-      console.log("🛡️ Protector de posición de mensajes iniciado");
+      console.log("INFO: Protector de posición de mensajes iniciado");
     }
   }
 
@@ -2308,7 +2308,7 @@ class ChatManager {
     if (this.positionObserver) {
       this.positionObserver.disconnect();
       this.positionObserver = null;
-      console.log("🛡️ Protector de posición de mensajes detenido");
+      console.log("INFO: Protector de posición de mensajes detenido");
     }
   }
 
@@ -3473,7 +3473,7 @@ class ChatManager {
 
   // Helper method to detect if a message contains location data
   isLocationMessage(message) {
-    console.log('🔍 Checking if message is location:', {
+    console.log('DEBUG: Checking if message is location:', {
       messageType: message.messageType,
       type: message.type,
       content: message.content,
@@ -3482,7 +3482,7 @@ class ChatManager {
     
     // Check if messageType is explicitly set to location
     if (message.messageType === 'location' || message.type === 'location') {
-      console.log('✅ Location message detected by messageType/type');
+      console.log('SUCCESS: Location message detected by messageType/type');
       return true;
     }
     
@@ -3493,40 +3493,40 @@ class ChatManager {
       // If content is an object with text property, check the text
       if (typeof contentToCheck === 'object' && contentToCheck?.text) {
         contentToCheck = contentToCheck.text;
-        console.log('🔍 Checking content.text:', contentToCheck);
+        console.log('DEBUG: Checking content.text:', contentToCheck);
       }
       
       // If it's a string, try to parse it
       if (typeof contentToCheck === 'string') {
         const parsed = JSON.parse(contentToCheck);
-        console.log('🔍 Parsed JSON content:', parsed);
+        console.log('DEBUG: Parsed JSON content:', parsed);
         const isLocation = parsed.type === 'location' && 
                parsed.latitude !== undefined && 
                parsed.longitude !== undefined;
         if (isLocation) {
-          console.log('✅ Location message detected by JSON content');
+          console.log('SUCCESS: Location message detected by JSON content');
         }
         return isLocation;
       }
       
       // If it's already an object, check directly
       if (typeof contentToCheck === 'object' && contentToCheck) {
-        console.log('🔍 Checking object content:', contentToCheck);
+        console.log('DEBUG: Checking object content:', contentToCheck);
         const isLocation = contentToCheck.type === 'location' && 
                contentToCheck.latitude !== undefined && 
                contentToCheck.longitude !== undefined;
         if (isLocation) {
-          console.log('✅ Location message detected by object content');
+          console.log('SUCCESS: Location message detected by object content');
         }
         return isLocation;
       }
     } catch (e) {
-      console.log('❌ Error parsing location content:', e.message);
+      console.log('ERROR: Error parsing location content:', e.message);
       // Not a valid JSON or location data
       return false;
     }
     
-    console.log('❌ Not a location message');
+    console.log('ERROR: Not a location message');
     return false;
   }
 
@@ -4444,7 +4444,7 @@ class ChatManager {
     }
 
     console.log('Recipient ID determined:', recipientId);
-    console.log('🔍 DEBUG - Current conversation object:', {
+    console.log('DEBUG: DEBUG - Current conversation object:', {
       _id: this.currentConversation._id,
       id: this.currentConversation.id,
       userId: this.currentConversation.userId,
@@ -4606,7 +4606,7 @@ class ChatManager {
   async sendCurrentMessage() {
     const content = this.messageInput.textContent.trim();
 
-    console.log("🔍 sendCurrentMessage inicio:", {
+    console.log("DEBUG: sendCurrentMessage inicio:", {
       content: content,
       contentLength: content.length,
       pendingImageFile: !!this.pendingImageFile,
@@ -4655,7 +4655,7 @@ class ChatManager {
         !this.isMediaReady) ||
       !this.currentConversation
     ) {
-      console.log("❌ Envío cancelado - no hay contenido ni archivos");
+      console.log("ERROR: Envío cancelado - no hay contenido ni archivos");
       return;
     }
 
@@ -4757,7 +4757,7 @@ class ChatManager {
     }, 50); // Ultra-fast visual feedback
 
     // Send via socket with proper error handling
-    console.log("🔍 Verificando estado del socket antes de enviar:", {
+    console.log("DEBUG: Verificando estado del socket antes de enviar:", {
       socketManager: !!window.SocketManager,
       isConnected: window.SocketManager?.isConnected,
       recipientId,
@@ -4816,7 +4816,7 @@ class ChatManager {
       let messageType = "text";
       let messageContent = content;
 
-      console.log("🔍 Estado de archivos pendientes:", {
+      console.log("DEBUG: Estado de archivos pendientes:", {
         pendingImageFile: this.pendingImageFile,
         pendingVideoFile: this.pendingVideoFile,
         pendingImageFileType: typeof this.pendingImageFile,
@@ -4825,7 +4825,7 @@ class ChatManager {
 
       // Handle image attachment - Upload to server first
       if (this.pendingImageFile) {
-        console.log("🔍 Procesando imagen pendiente:", this.pendingImageFile);
+        console.log("DEBUG: Procesando imagen pendiente:", this.pendingImageFile);
         messageType = "image";
         try {
           // Guardar info del archivo antes de que pueda ser limpiado
@@ -4835,7 +4835,7 @@ class ChatManager {
             size: this.pendingImageFile.size,
           };
 
-          console.log("📤 Iniciando upload de imagen...");
+          console.log("SEND: Iniciando upload de imagen...");
           const uploadResult = await this.uploadFile(
             this.pendingImageFile,
             "image"
@@ -4932,7 +4932,7 @@ class ChatManager {
         messageContent = "";
       }
 
-      console.log("🔍 Datos que se enviarán al servidor:", {
+      console.log("DEBUG: Datos que se enviarán al servidor:", {
         recipientId,
         messageContent: messageContent,
         messageType,
@@ -5166,7 +5166,7 @@ class ChatManager {
   }
 
   handleMessageSent(message) {
-    console.log("📤 Mensaje enviado exitosamente:", message);
+    console.log("SEND: Mensaje enviado exitosamente:", message);
 
     // Handle conversion from temporary conversation to real conversation
     if (
@@ -5541,7 +5541,7 @@ class ChatManager {
   validateAndUpdateMessageStatuses() {
     if (!this.currentConversation) return;
 
-    console.log("🔍 Validating message statuses for conversation...");
+    console.log("DEBUG: Validating message statuses for conversation...");
 
     const recipientId = this.getRecipientId();
     if (!recipientId) return;
@@ -5718,7 +5718,7 @@ class ChatManager {
         }
       }
       statusElement.style.display = "none";
-      console.log("✅ Header: Escribiendo... (verde) - typing activo");
+      console.log("SUCCESS: Header: Escribiendo... (verde) - typing activo");
       return;
     }
 
@@ -5738,22 +5738,22 @@ class ChatManager {
         presenceData.lastSeen
       );
     }
-    console.log(`⚠️ Header: OCULTO - sin datos válidos de presencia`);
+    console.log(`WARN: Header: OCULTO - sin datos válidos de presencia`);
   }
 
   // Debug function to force presence update (útil para pruebas)
   forcePresenceUpdate() {
     const recipientId = this.getRecipientId();
     if (!recipientId) {
-      console.log("❌ No hay conversación activa para actualizar presencia");
+      console.log("ERROR: No hay conversación activa para actualizar presencia");
       return;
     }
 
-    console.log(`🔄 Forzando actualización de presencia para: ${recipientId}`);
+    console.log(`UPDATE: Forzando actualización de presencia para: ${recipientId}`);
 
     // Get fresh presence data (now with contact data fallback)
     const presenceData = window.SocketManager?.getUserPresence(recipientId);
-    console.log(`🔍 Datos de presencia obtenidos:`, presenceData);
+    console.log(`DEBUG: Datos de presencia obtenidos:`, presenceData);
 
     // Always update the header with whatever data we have (even if offline with lastSeen)
     if (presenceData) {
@@ -5764,7 +5764,7 @@ class ChatManager {
         presenceData.status &&
         (presenceData.status !== "offline" || presenceData.lastSeen)
       ) {
-        console.log(`✅ Presencia actualizada exitosamente`);
+        console.log(`SUCCESS: Presencia actualizada exitosamente`);
         return;
       }
     }
@@ -5786,7 +5786,7 @@ class ChatManager {
           );
           this.updateConversationHeaderStatusInstant(fallbackPresence);
         } else {
-          console.log(`❌ No se pudo obtener información de última conexión`);
+          console.log(`ERROR: No se pudo obtener información de última conexión`);
         }
       })
       .catch((error) => {
@@ -6004,6 +6004,12 @@ class ChatManager {
   // Ensure current user always shows as online when active
   ensureCurrentUserOnlineDisplay() {
     console.log("Ensuring current user shows as online");
+
+    // Check if current user exists before trying to access _id
+    if (!this.currentUser || !this.currentUser._id) {
+      console.warn("Current user is not available for online display");
+      return;
+    }
 
     // Update current user in contacts list
     const currentUserContact = document.querySelector(
@@ -6691,7 +6697,7 @@ class ChatManager {
       return;
     }
 
-    console.log("🚀 INSTANT move conversation to top:", conversationId);
+    console.log("EMIT: INSTANT move conversation to top:", conversationId);
 
     // Move to top immediately without animation
     chatList.insertBefore(chatItem, chatList.firstElementChild);
@@ -6704,7 +6710,7 @@ class ChatManager {
     const conversation = this.conversations.get(this.currentConversation._id);
     if (!conversation) return;
 
-    console.log("🚀 INSTANT updating conversation for sent message");
+    console.log("EMIT: INSTANT updating conversation for sent message");
 
     // Update conversation data with proper content handling
     let messageContent = "";
@@ -7364,7 +7370,7 @@ class ChatManager {
       this.currentConversation &&
       this.currentConversation._id === conversationId
     ) {
-      console.log("🔄 Marking all messages in current conversation as read");
+      console.log("UPDATE: Marking all messages in current conversation as read");
 
       // Find all unread messages in current conversation and mark them as read
       const unreadMessages = document.querySelectorAll(
@@ -7464,7 +7470,7 @@ class ChatManager {
     // Mark messages as read when user focuses the window
     window.addEventListener("focus", () => {
       if (this.currentConversation && !document.hidden) {
-        console.log("🔍 Window focused - marking conversation as read");
+        console.log("DEBUG: Window focused - marking conversation as read");
         this.markConversationAsRead(this.currentConversation._id);
         window.SocketManager?.markConversationAsRead(
           this.currentConversation._id
@@ -7492,7 +7498,7 @@ class ChatManager {
   }
 
   handleUserTyping(data) {
-    console.log("⌨️ User typing:", data);
+    console.log("INFO: User typing:", data);
     const { userId, conversationId } = data;
 
     // Update typing indicator in chat header if it's the active conversation
@@ -7508,7 +7514,7 @@ class ChatManager {
   }
 
   handleUserStoppedTyping(data) {
-    console.log("⌨️ User stopped typing:", data);
+    console.log("INFO: User stopped typing:", data);
     const { userId, conversationId } = data;
 
     // Remove typing indicator from chat header
@@ -7674,7 +7680,7 @@ class ChatManager {
   }
 
   handleMessageDeleted(data) {
-    console.log("🗑️ Message deleted confirmation received:", data);
+    console.log("INFO: Message deleted confirmation received:", data);
 
     const {
       messageId,
@@ -7760,7 +7766,7 @@ class ChatManager {
   }
 
   handleContactStatusChanged(data) {
-    console.log("🔄 Contact status changed:", data);
+    console.log("UPDATE: Contact status changed:", data);
 
     // Check for automatic message delivery when user comes online
     if (data.status === "online") {
@@ -7966,7 +7972,7 @@ class ChatManager {
 
     // Use the persistent updater to ensure consistent display
     await this.updateConversationHeaderPersistent(recipientId);
-    console.log(`✅ Header actualizado automáticamente para ${recipientId}`);
+    console.log(`SUCCESS: Header actualizado automáticamente para ${recipientId}`);
   }
 
   // Start automatic header updates
@@ -8053,7 +8059,7 @@ class ChatManager {
       }
     });
 
-    console.log(`✅ Chat items status updated automatically`);
+    console.log(`SUCCESS: Chat items status updated automatically`);
   }
 
   // Cleanup all intervals (for logout or page unload)
@@ -8213,13 +8219,13 @@ class ChatManager {
           userId: this.currentUser?._id,
           timestamp: new Date().toISOString(),
         });
-        console.log("✅ Socket notification sent for read status");
+        console.log("SUCCESS: Socket notification sent for read status");
       }
 
       // Try to use SocketManager's markConversationAsRead if available
       if (window.SocketManager?.markConversationAsRead) {
         window.SocketManager.markConversationAsRead(conversationId);
-        console.log("✅ SocketManager markConversationAsRead called");
+        console.log("SUCCESS: SocketManager markConversationAsRead called");
       }
 
       console.log(
@@ -8405,7 +8411,7 @@ class ChatManager {
       }
     });
 
-    console.log(`📊 Total unread messages calculated: ${totalUnread}`);
+    console.log(`STATS: Total unread messages calculated: ${totalUnread}`);
     return totalUnread;
   }
 
@@ -8507,7 +8513,7 @@ class ChatManager {
     // Log de elementos encontrados
     Object.entries(elements).forEach(([name, element]) => {
       if (element) {
-        console.log(`✅ ${name}: encontrado`);
+        console.log(`SUCCESS: ${name}: encontrado`);
       } else {
         console.warn(`⚠️ ${name}: no encontrado`);
       }
@@ -8531,7 +8537,7 @@ class ChatManager {
       });
     }
 
-    console.log("✅ Sistema de contadores inicializado correctamente");
+    console.log("SUCCESS: Sistema de contadores inicializado correctamente");
   }
 
   // Función de prueba mejorada para verificar el sistema de notificaciones
@@ -8695,7 +8701,7 @@ class ChatManager {
       globalCounter.style.visibility = "visible";
       globalCounter.style.opacity = "1";
 
-      console.log("✅ Counter forced to display with 3 unread messages");
+      console.log("SUCCESS: Counter forced to display with 3 unread messages");
       console.log("Final display style:", globalCounter.style.display);
       console.log("Final visibility:", globalCounter.style.visibility);
 
@@ -8740,7 +8746,7 @@ class ChatManager {
       this.updateGlobalUnreadCounter();
       this.renderConversations();
 
-      console.log("✅ Updated UI through normal system");
+      console.log("SUCCESS: Updated UI through normal system");
     }
   }
 
@@ -8835,7 +8841,7 @@ class ChatManager {
   // Find existing conversation or create new one
   async findOrCreateConversation(userId) {
     try {
-      console.log("🔍 Finding or creating conversation with user:", userId);
+      console.log("DEBUG: Finding or creating conversation with user:", userId);
       console.log("Current user ID:", this.currentUser?._id);
 
       // Check authentication first
@@ -10241,7 +10247,7 @@ class ChatManager {
   }
 
   forceCleanAllSelectionStyles() {
-    console.log("🧹 Force cleaning all selection styles...");
+    console.log("CLEANUP: Force cleaning all selection styles...");
     const messages = document.querySelectorAll(".message");
 
     messages.forEach((messageEl) => {
@@ -10270,7 +10276,7 @@ class ChatManager {
       }
     });
 
-    console.log("🧹 Force cleanup completed");
+    console.log("CLEANUP: Force cleanup completed");
   }
 
   toggleMessageSelection(messageId) {
@@ -10293,7 +10299,7 @@ class ChatManager {
   }
 
   updateSelectionVisuals() {
-    console.log("🎨 Updating selection visuals...");
+    console.log("RENDER: Updating selection visuals...");
     const messages = document.querySelectorAll(".message");
     console.log(`Found ${messages.length} messages to update visually`);
     console.log(
@@ -10337,7 +10343,7 @@ class ChatManager {
       }
     });
 
-    console.log("🎨 Selection visuals update completed");
+    console.log("RENDER: Selection visuals update completed");
   }
 
   addSelectionIndicator(messageEl, isSelected) {
@@ -10377,7 +10383,7 @@ class ChatManager {
     const indicator = messageEl.querySelector(".selection-indicator");
     if (indicator) {
       indicator.remove();
-      console.log("🗑️ Selection indicator removed");
+      console.log("INFO: Selection indicator removed");
     }
 
     // Also ensure any inline styles related to selection are cleared
@@ -10639,7 +10645,7 @@ class ChatManager {
   }
 
   async deleteSelectedMessages() {
-    console.log("🗑️ Starting delete selected messages...");
+    console.log("INFO: Starting delete selected messages...");
     console.log(`Selected messages count: ${this.selectedMessages.size}`);
 
     if (this.selectedMessages.size === 0) {
@@ -10836,7 +10842,7 @@ class ChatManager {
 
     // Close modal when clicking overlay
     this.attachmentModalHandlers.overlayClickHandler = () => {
-      console.log("🔄 Overlay clicked - cerrando modal");
+      console.log("UPDATE: Overlay clicked - cerrando modal");
       this.hideAttachmentModal();
     };
     overlay.addEventListener(
@@ -10853,7 +10859,7 @@ class ChatManager {
         !modal.contains(e.target) &&
         !attachBtn?.contains(e.target)
       ) {
-        console.log("🔄 Click fuera del modal - cerrando");
+        console.log("UPDATE: Click fuera del modal - cerrando");
         this.hideAttachmentModal();
       }
     };
@@ -10890,7 +10896,7 @@ class ChatManager {
       });
     });
 
-    console.log("✅ Attachment modal configurado correctamente");
+    console.log("SUCCESS: Attachment modal configurado correctamente");
   }
 
   handleAttachmentType(type) {
@@ -10908,7 +10914,7 @@ class ChatManager {
         this.openCamera();
         break;
       case "gallery":
-        console.log("🖼️ Abriendo galería...");
+        console.log("INFO: Abriendo galería...");
         this.openGallery();
         break;
       case "location":
@@ -10920,7 +10926,7 @@ class ChatManager {
         this.openDocumentPicker();
         break;
       default:
-        console.log("❌ Tipo de adjunto desconocido:", type);
+        console.log("ERROR: Tipo de adjunto desconocido:", type);
     }
   }
 
@@ -11423,7 +11429,7 @@ class ChatManager {
   }
   // Función para añadir video al campo de entrada
   addVideoToInput(videoBlob, videoUrl = null) {
-    console.log("📹 Añadiendo video al input...");
+    console.log("VIDEO: Añadiendo video al input...");
 
     try {
       this.createVideoPreview(videoUrl, videoBlob);
@@ -11547,7 +11553,7 @@ class ChatManager {
       // Actualizar el botón de envío
       this.updateSendButton();
 
-      console.log("📹 Video añadido y listo para enviar");
+      console.log("VIDEO: Video añadido y listo para enviar");
     } catch (error) {
       console.error("Error creando preview de video:", error);
     }
@@ -11555,7 +11561,7 @@ class ChatManager {
 
   // Función para enviar mensaje de video
   sendVideoMessage(videoBlob, messageText = "") {
-    console.log("📹 Enviando mensaje de video...");
+    console.log("VIDEO: Enviando mensaje de video...");
 
     try {
       // Convertir blob a File object para usar el sistema existente
@@ -11576,7 +11582,7 @@ class ChatManager {
       // Enviar usando el sistema existente
       this.sendCurrentMessage();
 
-      console.log("📹 Video enviado usando el sistema existente");
+      console.log("VIDEO: Video enviado usando el sistema existente");
     } catch (error) {
       console.error("Error enviando video:", error);
     }
@@ -11911,7 +11917,7 @@ class ChatManager {
     // Esperar a que el video esté listo para captura
     return new Promise((resolve) => {
       video.addEventListener("loadedmetadata", () => {
-        console.log("📹 Video metadata cargada, listo para captura");
+        console.log("VIDEO: Video metadata cargada, listo para captura");
         resolve();
       });
     });
@@ -11931,7 +11937,7 @@ class ChatManager {
       handlers: [],
     };
 
-    console.log("🧹 Event listeners de cámara limpiados");
+    console.log("CLEANUP: Event listeners de cámara limpiados");
   }
 
   addCameraEventListener(element, event, handler) {
@@ -11946,7 +11952,7 @@ class ChatManager {
 
     // Evitar configuración múltiple
     if (this.cameraEventHandlers.setupComplete) {
-      console.log("⚠️ Event listeners de cámara ya configurados, saltando...");
+      console.log("WARN: Event listeners de cámara ya configurados, saltando...");
       return;
     }
 
@@ -12140,7 +12146,7 @@ class ChatManager {
 
     // Marcar configuración como completa
     this.cameraEventHandlers.setupComplete = true;
-    console.log("✅ Event listeners de cámara configurados correctamente");
+    console.log("SUCCESS: Event listeners de cámara configurados correctamente");
   }
 
   startRecordingTimer() {
@@ -12558,7 +12564,7 @@ class ChatManager {
   }
 
   closeCameraModal() {
-    console.log("🔄 Cerrando modal de cámara...");
+    console.log("UPDATE: Cerrando modal de cámara...");
 
     const overlay = document.getElementById("camera-modal-overlay");
     const capturePreview = document.getElementById("capture-preview");
@@ -13290,7 +13296,7 @@ class ChatManager {
     console.log('📍 Location data being sent:', locationData);
     
     // DEBUG: Check recipient ID before sending
-    console.log('🔍 PREVIEW DEBUG - Current conversation:', {
+    console.log('DEBUG: PREVIEW DEBUG - Current conversation:', {
       _id: this.currentConversation?._id,
       participant: this.currentConversation?.participant?._id,
       userId: this.currentConversation?.userId
@@ -14411,7 +14417,7 @@ class ChatManager {
     const globalUnreadBadge = document.getElementById("global-unread-badge");
     const globalUnreadCount = document.getElementById("global-unread-count");
 
-    console.log(`🔍 DOM elements found:`, {
+    console.log(`DEBUG: DOM elements found:`, {
       badge: !!globalUnreadBadge,
       count: !!globalUnreadCount,
       badgeClasses: globalUnreadBadge?.className,
@@ -14427,7 +14433,7 @@ class ChatManager {
 
     if (totalUnread > 0) {
       // Show badge immediately without animations
-      console.log(`🔔 Showing global badge with count: ${displayCount}`);
+      console.log(`NOTIFY: Showing global badge with count: ${displayCount}`);
       globalUnreadBadge.style.transition = "none";
       globalUnreadBadge.classList.remove("hidden");
       globalUnreadBadge.style.display = "flex";
@@ -14655,12 +14661,12 @@ class ChatManager {
     for (const selector of selectors) {
       const badge = chatItem.querySelector(selector);
       if (badge) {
-        console.log(`🔍 Found badge with selector: ${selector}`);
+        console.log(`DEBUG: Found badge with selector: ${selector}`);
         return badge;
       }
     }
 
-    console.log(`🔍 No existing badge found in chat item`);
+    console.log(`DEBUG: No existing badge found in chat item`);
     return null;
   }
 
@@ -14698,14 +14704,14 @@ class ChatManager {
       const container = chatItem.querySelector(selector);
       if (container) {
         container.appendChild(badge);
-        console.log(`✅ Badge created and placed in: ${selector}`);
+        console.log(`SUCCESS: Badge created and placed in: ${selector}`);
         return badge;
       }
     }
 
     // Fallback: append to chat item directly
     chatItem.appendChild(badge);
-    console.log(`✅ Badge created and placed as direct child of chat item`);
+    console.log(`SUCCESS: Badge created and placed as direct child of chat item`);
     return badge;
   }
 
@@ -14741,14 +14747,14 @@ class ChatManager {
       for (const container of containers) {
         if (container) {
           container.insertAdjacentHTML("beforeend", badgeHTML);
-          console.log(`✅ Force-injected badge into container`);
+          console.log(`SUCCESS: Force-injected badge into container`);
           return true;
         }
       }
 
       // Ultimate fallback
       chatItem.insertAdjacentHTML("beforeend", badgeHTML);
-      console.log(`✅ Force-injected badge as direct child`);
+      console.log(`SUCCESS: Force-injected badge as direct child`);
       return true;
     }
 
@@ -14795,7 +14801,7 @@ class ChatManager {
       // Scroll to bottom (latest messages)
       this.scrollToBottom();
 
-      console.log(`✅ Message loading completed for: ${conversationId}`);
+      console.log(`SUCCESS: Message loading completed for: ${conversationId}`);
     } catch (error) {
       console.error(`❌ Error loading messages:`, error);
       this.handleLoadingError(error, conversationId);
@@ -14964,7 +14970,7 @@ class ChatManager {
       const result = await response.json();
 
       if (result.success && result.data) {
-        console.log("✅ Loaded conversation states:", result.data.length);
+        console.log("SUCCESS: Loaded conversation states:", result.data.length);
 
         // Update local conversations with real unread counts
         result.data.forEach((state) => {
@@ -15010,7 +15016,7 @@ class ChatManager {
           userId: this.currentUser?._id,
           timestamp: new Date().toISOString(),
         });
-        console.log("✅ Unread count sent via socket");
+        console.log("SUCCESS: Unread count sent via socket");
         return true;
       } else {
         console.warn("⚠️ Socket not connected, unread count not saved");
@@ -15037,7 +15043,7 @@ class ChatManager {
       document.querySelector(".global-unread-count") ||
       globalBadge?.querySelector(".count");
 
-    console.log(`🔔 Updating global counter: ${totalUnread} unread messages`, {
+    console.log(`NOTIFY: Updating global counter: ${totalUnread} unread messages`, {
       badge: !!globalBadge,
       count: !!globalCount,
       badgeElement: globalBadge?.tagName,
@@ -15050,12 +15056,12 @@ class ChatManager {
         globalBadge.style.visibility = "visible";
         globalBadge.classList.remove("hidden");
         globalCount.textContent = totalUnread > 99 ? "99+" : totalUnread;
-        console.log(`✅ Badge shown with count: ${globalCount.textContent}`);
+        console.log(`SUCCESS: Badge shown with count: ${globalCount.textContent}`);
       } else {
         globalBadge.style.display = "none";
         globalBadge.style.visibility = "hidden";
         globalBadge.classList.add("hidden");
-        console.log(`✅ Badge hidden (no unread messages)`);
+        console.log(`SUCCESS: Badge hidden (no unread messages)`);
       }
     } else {
       console.warn("❌ Global notification elements not found", {
@@ -15141,7 +15147,7 @@ class ChatManager {
       if (window.SocketManager?.isConnected) {
         try {
           window.SocketManager.markConversationAsRead(conversationId);
-          console.log("✅ Read status sent to server");
+          console.log("SUCCESS: Read status sent to server");
         } catch (serverError) {
           console.warn(
             "⚠️ Server update failed, but local update succeeded:",
@@ -15176,7 +15182,7 @@ class ChatManager {
       // Update contact presence and status
       const contactData = await this.getRealTimeContactData(recipientId);
       if (contactData) {
-        console.log(`✅ Got contact data for ${recipientId}:`, contactData);
+        console.log(`SUCCESS: Got contact data for ${recipientId}:`, contactData);
 
         // Update header with fresh data
         this.updateConversationHeaderPersistent(
@@ -15197,7 +15203,7 @@ class ChatManager {
     previousUnreadCount
   ) {
     try {
-      console.log("🎨 Performing final UI updates...");
+      console.log("RENDER: Performing final UI updates...");
 
       // 1. Auto-scroll to latest messages
       this.performRobustAutoScroll();
@@ -15219,7 +15225,7 @@ class ChatManager {
         this.updateConversationItemSmart(conversationId, conversation);
       }
 
-      console.log("✅ Final UI updates completed");
+      console.log("SUCCESS: Final UI updates completed");
     } catch (error) {
       console.error("❌ Error in final UI updates:", error);
     }
@@ -15240,7 +15246,7 @@ class ChatManager {
         );
         if (currentItem) {
           currentItem.classList.add("active");
-          console.log(`✅ Chat item marked as active: ${conversationId}`);
+          console.log(`SUCCESS: Chat item marked as active: ${conversationId}`);
         }
       }
     } catch (error) {
@@ -15283,7 +15289,7 @@ class ChatManager {
       const loadingElements = document.querySelectorAll(".loading");
       loadingElements.forEach((el) => el.classList.remove("loading"));
 
-      console.log("✅ Recovery completed");
+      console.log("SUCCESS: Recovery completed");
     } catch (error) {
       console.error("❌ Recovery failed:", error);
     }
@@ -15325,7 +15331,7 @@ class ChatManager {
 
   // Debug function to inspect actual DOM structure
   inspectChatItemStructure() {
-    console.log("🔍 Inspecting chat item DOM structure...");
+    console.log("DEBUG: Inspecting chat item DOM structure...");
 
     const chatItems = document.querySelectorAll(".chat-item");
     console.log(`Found ${chatItems.length} chat items`);
@@ -15371,7 +15377,7 @@ class ChatManager {
 
   // Force reset all unread counts (for testing)
   forceResetAllUnreadCounts() {
-    console.log("🔄 Force resetting all unread counts...");
+    console.log("UPDATE: Force resetting all unread counts...");
 
     this.conversations.forEach((conversation, id) => {
       if (conversation.unreadCount > 0) {
@@ -15385,7 +15391,7 @@ class ChatManager {
     });
 
     this.updateGlobalUnreadCounter();
-    console.log("✅ All unread counts reset");
+    console.log("SUCCESS: All unread counts reset");
   }
 
   // Simulate unread messages (for testing)
@@ -15419,7 +15425,7 @@ class ChatManager {
     });
 
     this.updateGlobalUnreadCounter();
-    console.log("✅ All badges force updated");
+    console.log("SUCCESS: All badges force updated");
   }
 
   // Test specific conversation badge update
@@ -15552,7 +15558,7 @@ class ChatManager {
       return;
     }
 
-    console.log("🔍 DEBUGGING COUNTER FLOW");
+    console.log("DEBUG: DEBUGGING COUNTER FLOW");
     console.log("========================");
 
     // Step 1: Show current state
@@ -15624,7 +15630,7 @@ class ChatManager {
       }
 
       console.log("========================");
-      console.log("🔍 Counter flow debugging completed");
+      console.log("DEBUG: Counter flow debugging completed");
     }, 500);
   }
 
@@ -15664,10 +15670,10 @@ class ChatManager {
 const initChatManager = () => {
   try {
     if (typeof Utils !== "undefined") {
-      console.log("🚀 Initializing ChatManager...");
+      console.log("EMIT: Initializing ChatManager...");
       window.Chat = new ChatManager();
       window.chatManager = window.Chat; // For compatibility with contacts.js
-      console.log("✅ ChatManager created successfully");
+      console.log("SUCCESS: ChatManager created successfully");
 
       // Initialize with current user if available
       const currentUser = window.AuthManager
@@ -15677,14 +15683,14 @@ const initChatManager = () => {
         console.log("👤 Initializing with current user:", currentUser.username);
         window.Chat.initialize(currentUser);
       } else {
-        console.log("⚠️ No current user found for ChatManager initialization");
+        console.log("WARN: No current user found for ChatManager initialization");
       }
 
       // Listen for authentication events to update current user
       if (window.Utils && Utils.EventBus) {
         Utils.EventBus.on("auth:login-success", (data) => {
           if (data.user && window.Chat) {
-            console.log("🔄 Re-initializing ChatManager with logged-in user");
+            console.log("UPDATE: Re-initializing ChatManager with logged-in user");
             window.Chat.initialize(data.user);
           }
         });

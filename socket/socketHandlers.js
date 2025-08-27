@@ -1058,13 +1058,38 @@ const initializeSocketHandlers = (io) => {
             try {
                 const { callId, to, type, offer, from } = data;
                 
-                console.log(`📞 Call initiated: ${callId} from ${from?.userId || socket.userId} to ${to}`);
+                console.log(`CALL: Call initiated: ${callId} from ${from?.userId || socket.userId} to ${to}`);
+                
+                // Obtener información completa del usuario emisor si no está disponible
+                let callerInfo = from;
+                if (!callerInfo || !callerInfo.name || callerInfo.name === 'Usuario') {
+                    try {
+                        const User = require('../models/User');
+                        const caller = await User.findById(socket.userId);
+                        if (caller) {
+                            callerInfo = {
+                                userId: socket.userId,
+                                name: caller.fullName || caller.username,
+                                profilePhoto: caller.avatar,
+                                username: caller.username
+                            };
+                            console.log(`SUCCESS: Loaded caller info from DB:`, callerInfo);
+                        }
+                    } catch (error) {
+                        console.error('ERROR: Failed to load caller info:', error);
+                        callerInfo = {
+                            userId: socket.userId,
+                            name: socket.user?.fullName || socket.user?.username || 'Usuario',
+                            profilePhoto: socket.user?.avatar
+                        };
+                    }
+                }
                 
                 // Verificar que el destinatario está en línea
                 const recipientConnection = activeUsers.get(to);
                 
                 if (!recipientConnection) {
-                    console.log(`⚠️ User ${to} not in activeUsers, searching all connected sockets...`);
+                    console.log(`WARN: User ${to} not in activeUsers, searching all connected sockets...`);
                     
                     // Buscar socket por userId en todas las conexiones activas
                     let foundSocket = false;
@@ -1072,7 +1097,7 @@ const initializeSocketHandlers = (io) => {
                     
                     for (const [socketId, connectedSocket] of io.sockets.sockets) {
                         if (connectedSocket.userId === to) {
-                            console.log(`✅ Found active socket for user ${to}: ${socketId}`);
+                            console.log(`SUCCESS: Found active socket for user ${to}: ${socketId}`);
                             foundSocket = true;
                             foundSocketInfo = connectedSocket;
                             
@@ -1081,13 +1106,9 @@ const initializeSocketHandlers = (io) => {
                                 callId,
                                 type,
                                 offer,
-                                from: from || {
-                                    userId: socket.userId,
-                                    name: socket.user?.fullName || socket.user?.username,
-                                    profilePhoto: socket.user?.avatar
-                                }
+                                from: callerInfo
                             });
-                            console.log(`📞 Incoming call sent to active socket ${socketId}`);
+                            console.log(`CALL: Incoming call sent to active socket ${socketId}`);
                             break;
                         }
                     }
@@ -1182,11 +1203,7 @@ const initializeSocketHandlers = (io) => {
                                 callId,
                                 type,
                                 offer,
-                                from: from || {
-                                    userId: socket.userId,
-                                    name: socket.user?.fullName || socket.user?.username,
-                                    profilePhoto: socket.user?.avatar
-                                }
+                                from: callerInfo
                             };
                             
                             console.log(`📞 Emitting call:incoming to socket ${socketId}:`, {
@@ -1229,7 +1246,7 @@ const initializeSocketHandlers = (io) => {
             try {
                 const { callId, to, answer } = data;
                 
-                console.log(`✅ Call accepted: ${callId} by ${socket.userId}`);
+                console.log(`SUCCESS: Call accepted: ${callId} by ${socket.userId}`);
                 
                 // Notificar al iniciador de la llamada
                 const initiatorConnection = activeUsers.get(to);
@@ -1247,7 +1264,7 @@ const initializeSocketHandlers = (io) => {
                         }
                     });
                     
-                    console.log(`✅ Call acceptance sent to initiator ${to}`);
+                    console.log(`SUCCESS: Call acceptance sent to initiator ${to}`);
                 }
                 
             } catch (error) {
@@ -1319,8 +1336,15 @@ const initializeSocketHandlers = (io) => {
             try {
                 const { callId, to, candidate } = data;
                 
+                console.log('DEBUG: ICE candidate received:', { 
+                    callId, 
+                    to, 
+                    hasCandidate: !!candidate,
+                    candidateType: typeof candidate 
+                });
+                
                 if (!candidate || !to) {
-                    console.warn('Invalid ICE candidate data received');
+                    console.warn('Invalid ICE candidate data received:', { candidate, to });
                     return;
                 }
                 

@@ -58,7 +58,7 @@ class SocketManager {
     
     // Setup WebRTC call signaling listeners
     setupCallSignaling() {
-        console.log('📞 Setting up call signaling listeners...');
+        console.log('CALL: Setting up call signaling listeners...');
         
         // We'll add listeners after socket connection is established
         // in the connect() method's success handler
@@ -68,12 +68,12 @@ class SocketManager {
     setupCallSignalingListeners() {
         if (!this.socket) return;
         
-        console.log('📞 Adding call signaling event listeners...');
+        console.log('CALL: Adding call signaling event listeners...');
         
         // Incoming call request
         this.socket.on('call_request', (data) => {
-            console.log('📞 Incoming call request received:', data);
-            console.log('🎯 Call request details:', {
+            console.log('CALL: Incoming call request received:', data);
+            console.log('SIGNAL: Call request details:', {
                 from: data.from,
                 to: data.to,
                 type: data.type,
@@ -83,13 +83,13 @@ class SocketManager {
             if (window.callManager) {
                 window.callManager.handleIncomingCall(data);
             } else {
-                console.error('❌ CallManager not available to handle incoming call');
+                console.error('ERROR: CallManager not available to handle incoming call');
             }
         });
         
         // Call answer received
         this.socket.on('call_answer', (data) => {
-            console.log('📞 Call answer received:', data);
+            console.log('CALL: Call answer received:', data);
             if (window.callManager) {
                 window.callManager.handleCallAnswer(data);
             }
@@ -97,7 +97,7 @@ class SocketManager {
         
         // Call offer received
         this.socket.on('call_offer', (data) => {
-            console.log('📞 Call offer received:', data);
+            console.log('CALL: Call offer received:', data);
             if (window.callManager) {
                 window.callManager.handleCallOffer(data);
             }
@@ -105,7 +105,7 @@ class SocketManager {
         
         // ICE candidate received
         this.socket.on('ice_candidate', (data) => {
-            console.log('🧊 ICE candidate received:', data);
+            console.log('SIGNAL: ICE candidate received:', data);
             if (window.callManager) {
                 window.callManager.handleIceCandidate(data);
             }
@@ -113,7 +113,7 @@ class SocketManager {
         
         // Call ended by remote peer
         this.socket.on('call_ended', (data) => {
-            console.log('📞 Call ended by remote peer:', data);
+            console.log('CALL: Call ended by remote peer:', data);
             if (window.callManager) {
                 window.callManager.handleCallEnded(data);
             }
@@ -121,7 +121,7 @@ class SocketManager {
         
         // Audio toggle notification
         this.socket.on('audio_toggle', (data) => {
-            console.log('🔇 Audio toggle received:', data);
+            console.log('MUTE: Audio toggle received:', data);
             // Handle remote audio toggle if needed
         });
         
@@ -133,7 +133,7 @@ class SocketManager {
         
         // Call accepted notification
         this.socket.on('call_accepted', (data) => {
-            console.log('✅ Call accepted:', data);
+            console.log('SUCCESS: Call accepted:', data);
             if (window.callManager) {
                 // Stop outgoing sound and start connected sound
                 window.callManager.stopCallSound('outgoing');
@@ -144,7 +144,7 @@ class SocketManager {
         
         // Call declined notification
         this.socket.on('call_declined', (data) => {
-            console.log('❌ Call declined:', data);
+            console.log('ERROR: Call declined:', data);
             if (window.callManager) {
                 window.callManager.stopCallSound('outgoing');
                 window.callManager.playCallSound('ended');
@@ -166,7 +166,7 @@ class SocketManager {
             }
         });
         
-        console.log('✅ Call signaling listeners configured');
+        console.log('SUCCESS: Call signaling listeners configured');
     }
 
     connect() {
@@ -1848,7 +1848,7 @@ class SocketManager {
                 console.log(`⏰ Presence cache EXPIRED for ${userId} (age: ${age}ms)`);
             }
         } else {
-            console.log(`❌ Presence cache MISS for ${userId} - not in cache`);
+            console.log(`ERROR: Presence cache MISS for ${userId} - not in cache`);
         }
         
         // Try to get lastSeen from contact data if available
@@ -1947,7 +1947,7 @@ class SocketManager {
             }, 150);
         });
         
-        console.log(`✅ Updated contact ${userId} status to ${presenceData.status}`);
+        console.log(`SUCCESS: Updated contact ${userId} status to ${presenceData.status}`);
     }
     
     // Instant conversation presence update
@@ -1997,7 +1997,7 @@ class SocketManager {
         // Delegate to Chat manager if available and this is the active conversation
         if (window.Chat && window.Chat.currentConversation) {
             if (recipientId === userId) {
-                console.log(`✅ Socket: Updating active conversation header for ${userId} - status: ${presenceData.status}`);
+                console.log(`SUCCESS: Socket: Updating active conversation header for ${userId} - status: ${presenceData.status}`);
                 // Use the WhatsApp-style instant status update
                 window.Chat.updateConversationHeaderStatusInstant(presenceData);
             } else {

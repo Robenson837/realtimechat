@@ -20,7 +20,7 @@ class CallHistoryManager {
     this.callsListElement = document.getElementById('calls-list');
     this.emptyStateElement = this.callsListElement?.querySelector('.empty-calls-state');
     
-    console.log('📞 Call History Manager initialized');
+    console.log('CALL: Call History Manager initialized');
   }
 
   bindEvents() {
@@ -74,11 +74,11 @@ class CallHistoryManager {
     this.saveCallHistory();
     this.renderCallHistory();
     
-    console.log('📞 Call record added:', record);
+    console.log('CALL: Call record added:', record);
   }
 
   handleCallStarted(callData) {
-    console.log('📞 Call started:', callData);
+    console.log('CALL: Call started:', callData);
     
     // For now, we'll add the record when call ends
     // This is temporary storage for the active call
@@ -93,7 +93,7 @@ class CallHistoryManager {
   }
 
   handleCallEnded(callData) {
-    console.log('📞 Call ended:', callData);
+    console.log('CALL: Call ended:', callData);
     
     if (this.activeCall) {
       const endTime = new Date();
@@ -111,7 +111,7 @@ class CallHistoryManager {
   }
 
   handleCallMissed(callData) {
-    console.log('📞 Call missed:', callData);
+    console.log('CALL: Call missed:', callData);
     
     this.addCallRecord({
       ...callData,
@@ -316,7 +316,7 @@ class CallHistoryManager {
   }
 
   handleCallBack(call) {
-    console.log('📞 Call back:', call);
+    console.log('CALL: Call back:', call);
     
     // Find and open the contact's conversation
     if (window.chatManager && call.contactId) {
@@ -339,7 +339,7 @@ class CallHistoryManager {
   }
 
   handleCallItemClick(call) {
-    console.log('📞 Call item clicked:', call);
+    console.log('CALL: Call item clicked:', call);
     
     // Open the contact's conversation
     if (window.chatManager && call.contactId) {
@@ -426,7 +426,7 @@ class CallHistoryManager {
       this.callHistory = [];
       this.saveCallHistory();
       this.renderCallHistory();
-      console.log('📞 Call history cleared');
+      console.log('CALL: Call history cleared');
     }
   }
 }

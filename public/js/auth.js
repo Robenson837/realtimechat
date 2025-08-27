@@ -376,7 +376,7 @@ class AuthManager {
             // Clear any existing authentication notifications to prevent duplicates
             // Utils.Notifications.clearByType('success');
             // Utils.Notifications.clearByType('error');
-            Utils.Notifications.success('¡Bienvenido de vuelta!', 3000);
+            Utils.TranslatedNotifications.success('notifications.welcome_back');
             
             // Initialize app
             this.showApp();
@@ -473,7 +473,7 @@ class AuthManager {
             // Clear any existing authentication notifications to prevent duplicates
             // Utils.Notifications.clearByType('success');
             // Utils.Notifications.clearByType('error');
-            Utils.Notifications.success('¡Cuenta creada exitosamente!', 3000);
+            Utils.TranslatedNotifications.success('notifications.account_created');
             
             // Initialize app
             this.showApp();
@@ -763,7 +763,7 @@ class AuthManager {
         // Force welcome screen manager to show initial state
         if (window.welcomeScreenManager) {
             window.welcomeScreenManager.forceInitialWelcomeState();
-            console.log('🏠 AuthManager: Welcome screen forced on app start');
+            console.log('INFO: AuthManager: Welcome screen forced on app start');
         }
     }
 
@@ -1252,7 +1252,7 @@ class AuthManager {
         const magicLogin = urlParams.get('magic_login');
 
         if (token && magicLogin === 'success') {
-            console.log('🔐 Processing magic login with JWT token...');
+            console.log('AUTH: Processing magic login with JWT token...');
             try {
                 // Validate that the token looks like a JWT (has 3 parts separated by dots)
                 if (!token.includes('.') || token.split('.').length !== 3) {
@@ -1261,15 +1261,15 @@ class AuthManager {
                 
                 // Store the token and user data
                 Utils.Storage.set('authToken', token);
-                console.log('📝 Magic login - Token stored in localStorage');
+                console.log('AUTH: Magic login - Token stored in localStorage');
                 
                 // Set the token in API for immediate use
-                console.log('🔧 Magic login - Setting token in API client:', token.substring(0, 20) + '...');
+                console.log('AUTH: Magic login - Setting token in API client:', token.substring(0, 20) + '...');
                 if (window.API && window.API.client) {
                     window.API.client.setToken(token);
-                    console.log('✅ Magic login - Token set in API client');
+                    console.log('SUCCESS: Magic login - Token set in API client');
                 } else {
-                    console.warn('❌ Magic login - API not available');
+                    console.warn('ERROR: Magic login - API not available');
                     console.log('Available API properties:', window.API ? Object.keys(window.API) : 'API not found');
                 }
                 
@@ -1277,14 +1277,14 @@ class AuthManager {
                 await new Promise(resolve => setTimeout(resolve, 200));
                 
                 // Get user profile with the token
-                console.log('🚀 Magic login - Making API call to get user profile...');
+                console.log('AUTH: Magic login - Making API call to get user profile...');
                 const response = await API.Users.getProfile();
                 if (response && response.data) {
                     this.currentUser = response.data;
                     Utils.Storage.set('currentUser', this.currentUser);
                     
                     // Show success message
-                    Utils.Notifications.success('¡Inicio de sesión con OTP exitoso!', 3000);
+                    Utils.TranslatedNotifications.success('notifications.otp_login_success');
                     
                     // Clean URL
                     window.history.replaceState({}, document.title, window.location.pathname);
@@ -1303,7 +1303,7 @@ class AuthManager {
                         window.contactsManager.loadUserData();
                     }
                     
-                    console.log('✅ Magic login completed successfully');
+                    console.log('SUCCESS: Magic login completed successfully');
                 } else {
                     throw new Error('No se pudo obtener los datos del usuario');
                 }
@@ -1345,7 +1345,7 @@ class AuthManager {
         }
 
         if (token && googleLogin === 'success') {
-            console.log('🔐 Processing Google login with JWT token...');
+            console.log('AUTH: Processing Google login with JWT token...');
             try {
                 // Validate that the token looks like a JWT (has 3 parts separated by dots)
                 if (!token.includes('.') || token.split('.').length !== 3) {
@@ -1354,15 +1354,15 @@ class AuthManager {
                 
                 // Store the token and user data
                 Utils.Storage.set('authToken', token);
-                console.log('📝 Google login - Token stored in localStorage');
+                console.log('AUTH: Google login - Token stored in localStorage');
                 
                 // Set the token in API for immediate use
-                console.log('🔧 Google login - Setting token in API client:', token.substring(0, 20) + '...');
+                console.log('AUTH: Google login - Setting token in API client:', token.substring(0, 20) + '...');
                 if (window.API && window.API.client) {
                     window.API.client.setToken(token);
-                    console.log('✅ Google login - Token set in API client');
+                    console.log('SUCCESS: Google login - Token set in API client');
                 } else {
-                    console.warn('❌ Google login - API not available');
+                    console.warn('ERROR: Google login - API not available');
                     console.log('Available API properties:', window.API ? Object.keys(window.API) : 'API not found');
                 }
                 
@@ -1370,14 +1370,14 @@ class AuthManager {
                 await new Promise(resolve => setTimeout(resolve, 200));
                 
                 // Get user profile with the token
-                console.log('🚀 Google login - Making API call to get user profile...');
+                console.log('AUTH: Google login - Making API call to get user profile...');
                 const response = await API.Users.getProfile();
                 if (response && response.data) {
                     this.currentUser = response.data;
                     Utils.Storage.set('currentUser', this.currentUser);
                     
                     // Show success message
-                    Utils.Notifications.success('¡Inicio de sesión con Google exitoso!', 3000);
+                    Utils.TranslatedNotifications.success('notifications.google_login_success');
                     
                     // Clean URL
                     window.history.replaceState({}, document.title, window.location.pathname);
@@ -1396,7 +1396,7 @@ class AuthManager {
                         window.contactsManager.loadUserData();
                     }
                     
-                    console.log('✅ Google login completed successfully');
+                    console.log('SUCCESS: Google login completed successfully');
                 } else {
                     throw new Error('No se pudo obtener los datos del usuario');
                 }
@@ -1588,7 +1588,7 @@ class AuthManager {
             window.history.replaceState({}, document.title, url.pathname + url.search);
             
             // Show success and initialize app
-            Utils.Notifications.success('Dispositivo verificado exitosamente', 3000);
+            Utils.TranslatedNotifications.success('notifications.device_verified');
             
             this.showApp();
             

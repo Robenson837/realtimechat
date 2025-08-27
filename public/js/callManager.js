@@ -161,7 +161,7 @@ class CallManager {
       this.callSounds.connected = this.createAudioElement('connected', false);
       this.callSounds.ended = this.createAudioElement('ended', false);
       
-      console.log('📞 Call sounds initialized');
+      console.log('CALL: Call sounds initialized');
     } catch (error) {
       console.error('Error initializing call sounds:', error);
     }
@@ -223,7 +223,7 @@ class CallManager {
           }, totalDuration);
         }
         
-        console.log(`🎵 Playing tone: ${frequencies}Hz`);
+        console.log(`SOUND: Playing tone: ${frequencies}Hz`);
       } catch (error) {
         console.error('Error playing tone:', error);
       }
@@ -249,7 +249,7 @@ class CallManager {
           this.currentOscillators = [];
         }
         
-        console.log('🔇 Stopped tone playback');
+        console.log('MUTE: Stopped tone playback');
       } catch (error) {
         console.error('Error stopping tone:', error);
       }
@@ -288,45 +288,50 @@ class CallManager {
   }
 
   async initiateCall(type) {
-    console.log(`📞 Iniciando llamada ${type}...`);
+    console.log(`CALL: Iniciando llamada ${type}...`);
     
     if (this.isCallActive) {
-      this.showNotification('Ya hay una llamada en curso', 'error');
+      window.Utils?.TranslatedNotifications?.error('notifications.call_already_active') || this.showNotification('Ya hay una llamada en curso', 'error');
       return;
     }
     
     if (!window.chatManager || !window.chatManager.currentConversation) {
-      this.showNotification('Selecciona una conversación primero', 'error');
+      window.Utils?.TranslatedNotifications?.error('notifications.select_conversation') || this.showNotification('Selecciona una conversación primero', 'error');
       return;
     }
 
     this.currentCallType = type;
-    this.currentContact = window.chatManager.currentConversation;
+    const conversation = window.chatManager.currentConversation;
+    this.currentContact = {
+      ...conversation,
+      profilePhoto: conversation.avatar || conversation.profilePhoto || 'images/user-placeholder-40.svg',
+      name: conversation.name || conversation.username || 'Usuario'
+    };
     
     // Verificar estado del contacto antes de llamar
     const recipientId = this.getRecipientId();
     if (recipientId) {
       try {
-        console.log(`🔍 Checking availability for ${this.currentContact.name} before calling...`);
+        console.log(`DEBUG: Checking availability for ${this.currentContact.name} before calling...`);
         
         // Obtener estado actual del contacto en tiempo real
         const contactStatus = await this.checkContactStatus(recipientId);
         
         if (contactStatus) {
-          console.log(`📊 Contact status result:`, contactStatus);
+          console.log(`STATS: Contact status result:`, contactStatus);
           
           if (!contactStatus.isAvailable) {
             if (contactStatus.status === 'recently-active') {
-              this.showNotification(`${this.currentContact.name} estuvo activo recientemente, intentando llamar...`, 'info');
+              window.Utils?.TranslatedNotifications?.info('notifications.user_recently_active', {name: this.currentContact.name}) || this.showNotification(`${this.currentContact.name} estuvo activo recientemente, intentando llamar...`, 'info');
             } else if (contactStatus.status === 'offline') {
-              this.showNotification(`${this.currentContact.name} no está disponible, pero intentando llamar de todos modos...`, 'info');
+              window.Utils?.TranslatedNotifications?.info('notifications.user_not_available', {name: this.currentContact.name}) || this.showNotification(`${this.currentContact.name} no está disponible, pero intentando llamar de todos modos...`, 'info');
             }
           } else {
-            console.log(`✅ ${this.currentContact.name} está disponible para llamadas (${contactStatus.source})`);
-            this.showNotification(`Llamando a ${this.currentContact.name}...`, 'info');
+            console.log(`SUCCESS: ${this.currentContact.name} está disponible para llamadas (${contactStatus.source})`);
+            window.Utils?.TranslatedNotifications?.success('notifications.calling_user', {name: this.currentContact.name}) || this.showNotification(`Llamando a ${this.currentContact.name}...`, 'info');
           }
         } else {
-          console.warn(`⚠️ No se pudo verificar el estado de ${this.currentContact.name}, intentando llamar...`);
+          console.warn(`WARN: No se pudo verificar el estado de ${this.currentContact.name}, intentando llamar...`);
           this.showNotification(`Verificando disponibilidad e intentando llamar...`, 'info');
         }
       } catch (error) {
@@ -352,8 +357,12 @@ class CallManager {
       // Create and set local description (offer)
       const offer = await this.createOffer();
       
-      // Update UI for outgoing call
+      // Update UI for outgoing call with smooth transitions
       this.updateCallInterface('outgoing');
+      this.addRippleEffect();
+      
+      // Show WhatsApp-style connecting animation
+      this.startConnectingAnimation();
       
       // Record call start in history
       if (window.callHistoryManager) {
@@ -400,7 +409,7 @@ class CallManager {
       
     } catch (error) {
       console.error('Error iniciando llamada:', error);
-      this.showNotification('Error al iniciar la llamada', 'error');
+      window.Utils?.TranslatedNotifications?.error('notifications.call_failed_start') || this.showNotification('Error al iniciar la llamada', 'error');
       this.endCall();
     }
   }
@@ -427,7 +436,7 @@ class CallManager {
       this.localVideo.srcObject = this.localStream;
     }
     
-    console.log(`📹 Stream local configurado para llamada ${type}`);
+    console.log(`VIDEO: Stream local configurado para llamada ${type}`);
   }
 
   async setupPeerConnection() {
@@ -443,7 +452,7 @@ class CallManager {
     
     // Handle remote stream
     this.peerConnection.ontrack = (event) => {
-      console.log('🎯 Remote track received');
+      console.log('SIGNAL: Remote track received');
       this.remoteStream = event.streams[0];
       if (this.remoteVideo) {
         this.remoteVideo.srcObject = this.remoteStream;
@@ -463,14 +472,14 @@ class CallManager {
           candidate: event.candidate
         });
       } else {
-        console.log('🧊 ICE gathering completed');
+        console.log('SIGNAL: ICE gathering completed');
       }
     };
     
     // Handle connection state changes with detailed logging
     this.peerConnection.onconnectionstatechange = () => {
       const state = this.peerConnection.connectionState;
-      console.log('🔗 Connection state changed to:', state);
+      console.log('SIGNAL: Connection state changed to:', state);
       this.connectionState = state;
       
       switch (state) {
@@ -498,7 +507,7 @@ class CallManager {
     
     // Handle ICE connection state
     this.peerConnection.oniceconnectionstatechange = () => {
-      console.log('🧊 ICE connection state:', this.peerConnection.iceConnectionState);
+      console.log('SIGNAL: ICE connection state:', this.peerConnection.iceConnectionState);
       
       switch (this.peerConnection.iceConnectionState) {
         case 'checking':
@@ -524,7 +533,7 @@ class CallManager {
     
     // Handle signaling state changes
     this.peerConnection.onsignalingstatechange = () => {
-      console.log('📡 Signaling state:', this.peerConnection.signalingState);
+      console.log('SIGNAL: Signaling state:', this.peerConnection.signalingState);
     };
   }
 
@@ -536,45 +545,100 @@ class CallManager {
     
     const offer = await this.peerConnection.createOffer(offerOptions);
     await this.peerConnection.setLocalDescription(offer);
-    console.log('📤 Offer created and set as local description');
+    console.log('SEND: Offer created and set as local description');
     return offer;
   }
 
   async createAnswer() {
     const answer = await this.peerConnection.createAnswer();
     await this.peerConnection.setLocalDescription(answer);
-    console.log('📤 Answer created and set as local description');
+    console.log('SEND: Answer created and set as local description');
     return answer;
   }
 
   showCallInterface() {
+    console.log('CALL: Showing main call interface');
+    
     if (this.callModal) {
+      // Ensure call modal is visible
       this.callModal.classList.add('active');
+      this.callModal.style.display = 'flex';
+      
+      // Show the main call container and hide incoming interface
+      const callContainer = this.callModal.querySelector('.call-container');
+      if (callContainer) {
+        callContainer.style.display = 'block';
+        console.log('SUCCESS: Main call container shown');
+      }
+      
       document.body.style.overflow = 'hidden';
+      document.body.classList.add('call-active');
     }
     
     // Hide incoming call interface
     if (this.incomingCallInterface) {
-      this.incomingCallInterface.classList.remove('active');
+      this.incomingCallInterface.style.display = 'none';
+      this.incomingCallInterface.style.transform = 'translateY(-100%)';
+      this.incomingCallInterface.style.opacity = '0';
+      
+      setTimeout(() => {
+        this.incomingCallInterface.classList.remove('active');
+      }, 200);
     }
   }
 
   hideCallInterface() {
     if (this.callModal) {
-      this.callModal.classList.remove('active');
+      // Smooth exit animation like WhatsApp
+      this.callModal.style.transition = 'all 0.3s ease-in';
+      this.callModal.style.transform = 'scale(0.9) translateY(50px)';
+      this.callModal.style.opacity = '0';
+      
+      setTimeout(() => {
+        this.callModal.classList.remove('active');
+        this.callModal.style.transform = '';
+        this.callModal.style.opacity = '';
+        this.callModal.style.transition = '';
+      }, 300);
+      
       document.body.style.overflow = '';
+      document.body.classList.remove('call-active');
     }
   }
 
   updateCallInterface(state) {
-    // Update contact info
+    console.log('RENDER: Updating call interface with state:', state);
+    console.log('RENDER: Current contact:', this.currentContact);
+    
+    // Update contact info with smooth animations
     if (this.currentContact) {
-      const contactName = this.currentContact.name || this.currentContact.username || 'Usuario';
-      const contactAvatar = this.currentContact.profilePhoto || 'images/user-placeholder-40.svg';
+      const contactName = this.currentContact.name || this.currentContact.username || window.i18n?.t('common.unknown_user') || 'Usuario';
+      const contactAvatar = this.currentContact.profilePhoto || this.currentContact.avatar || 'images/user-placeholder-40.svg';
       
-      if (this.callContactName) this.callContactName.textContent = contactName;
-      if (this.callContactAvatar) this.callContactAvatar.src = contactAvatar;
-      if (this.audioContactAvatar) this.audioContactAvatar.src = contactAvatar;
+      console.log('RENDER: Contact name:', contactName);
+      console.log('RENDER: Contact avatar:', contactAvatar);
+      console.log('RENDER: Elements check - callContactName:', !!this.callContactName);
+      console.log('RENDER: Elements check - callContactAvatar:', !!this.callContactAvatar);
+      
+      // Force update name directly (skip animation for now)
+      if (this.callContactName) {
+        this.callContactName.textContent = contactName;
+        console.log('SUCCESS: Contact name updated in UI');
+      }
+      
+      // Force update avatar directly 
+      if (this.callContactAvatar) {
+        this.callContactAvatar.src = contactAvatar;
+        this.callContactAvatar.alt = contactName;
+        console.log('SUCCESS: Contact avatar updated in UI');
+      }
+      if (this.audioContactAvatar) {
+        this.audioContactAvatar.src = contactAvatar;
+        this.audioContactAvatar.alt = contactName;
+        console.log('SUCCESS: Audio contact avatar updated in UI');
+      }
+    } else {
+      console.warn('WARN: No currentContact available for UI update');
     }
     
     // Show/hide video elements based on call type
@@ -590,27 +654,132 @@ class CallManager {
       if (this.switchCameraBtn) this.switchCameraBtn.style.display = 'none';
     }
     
-    // Update status based on state
+    // Update status based on state with translations
     switch (state) {
       case 'outgoing':
-        this.updateCallStatus('Llamando...');
+        this.updateCallStatus(window.i18n?.t('calls.outgoing') || 'Llamando...');
         break;
       case 'incoming':
-        this.updateCallStatus('Llamada entrante');
+        this.updateCallStatus(window.i18n?.t('calls.incoming') || 'Llamada entrante');
         break;
       case 'connecting':
-        this.updateCallStatus('Conectando...');
+        this.updateCallStatus(window.i18n?.t('calls.connecting') || 'Conectando...');
         break;
       case 'connected':
-        this.updateCallStatus('Conectado');
+        this.updateCallStatus(window.i18n?.t('calls.connected') || 'Conectado');
+        this.stopConnectingAnimation();
         break;
     }
   }
 
   updateCallStatus(status) {
     if (this.callStatus) {
-      this.callStatus.textContent = status;
+      // Animate status change like WhatsApp
+      this.callStatus.style.transition = 'opacity 0.2s ease';
+      this.callStatus.style.opacity = '0';
+      
+      setTimeout(() => {
+        this.callStatus.textContent = status;
+        this.callStatus.style.opacity = '1';
+      }, 100);
     }
+  }
+  
+  // WhatsApp-style animation methods
+  addRippleEffect() {
+    const buttons = document.querySelectorAll('.call-control-btn');
+    buttons.forEach(btn => {
+      btn.addEventListener('click', this.createRipple.bind(this));
+    });
+  }
+  
+  createRipple(event) {
+    const button = event.currentTarget;
+    const ripple = document.createElement('span');
+    const rect = button.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    const x = event.clientX - rect.left - size / 2;
+    const y = event.clientY - rect.top - size / 2;
+    
+    ripple.style.cssText = `
+      position: absolute;
+      border-radius: 50%;
+      transform: scale(0);
+      animation: ripple 0.6s linear;
+      background-color: rgba(255, 255, 255, 0.3);
+      width: ${size}px;
+      height: ${size}px;
+      left: ${x}px;
+      top: ${y}px;
+      pointer-events: none;
+    `;
+    
+    button.style.position = 'relative';
+    button.style.overflow = 'hidden';
+    button.appendChild(ripple);
+    
+    setTimeout(() => {
+      ripple.remove();
+    }, 600);
+  }
+  
+  startConnectingAnimation() {
+    const avatar = this.audioContactAvatar || this.callContactAvatar;
+    if (avatar) {
+      avatar.style.animation = 'pulse 2s infinite';
+      avatar.classList.add('connecting');
+    }
+    
+    // Add connecting dots animation
+    if (this.callStatus) {
+      this.connectingInterval = setInterval(() => {
+        const text = this.callStatus.textContent;
+        if (text.includes('...')) {
+          this.callStatus.textContent = text.replace('...', '');
+        } else if (text.includes('..')) {
+          this.callStatus.textContent = text + '.';
+        } else if (text.includes('.')) {
+          this.callStatus.textContent = text + '.';
+        } else if (text.includes('Conectando') || text.includes('Connecting')) {
+          this.callStatus.textContent = text + '.';
+        }
+      }, 500);
+    }
+  }
+  
+  stopConnectingAnimation() {
+    const avatar = this.audioContactAvatar || this.callContactAvatar;
+    if (avatar) {
+      avatar.style.animation = '';
+      avatar.classList.remove('connecting');
+    }
+    
+    if (this.connectingInterval) {
+      clearInterval(this.connectingInterval);
+      this.connectingInterval = null;
+    }
+  }
+  
+  animateTextChange(element, newText) {
+    element.style.transition = 'opacity 0.2s ease';
+    element.style.opacity = '0';
+    
+    setTimeout(() => {
+      element.textContent = newText;
+      element.style.opacity = '1';
+    }, 100);
+  }
+  
+  animateAvatarChange(element, newSrc) {
+    element.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+    element.style.opacity = '0';
+    element.style.transform = 'scale(0.9)';
+    
+    setTimeout(() => {
+      element.src = newSrc;
+      element.style.opacity = '1';
+      element.style.transform = 'scale(1)';
+    }, 100);
   }
 
   toggleAudio() {
@@ -625,12 +794,17 @@ class CallManager {
         if (this.isAudioEnabled) {
           this.toggleAudioBtn.classList.remove('muted');
           this.toggleAudioBtn.innerHTML = '<i class="fas fa-microphone"></i>';
-          this.toggleAudioBtn.title = 'Silenciar micrófono';
+          this.toggleAudioBtn.title = window.i18n?.t('calls.mute') || 'Silenciar micrófono';
+          this.toggleAudioBtn.setAttribute('data-i18n-title', 'calls.mute');
         } else {
           this.toggleAudioBtn.classList.add('muted');
           this.toggleAudioBtn.innerHTML = '<i class="fas fa-microphone-slash"></i>';
-          this.toggleAudioBtn.title = 'Activar micrófono';
+          this.toggleAudioBtn.title = window.i18n?.t('calls.unmute') || 'Activar micrófono';
+          this.toggleAudioBtn.setAttribute('data-i18n-title', 'calls.unmute');
         }
+        
+        // Add shake animation for feedback
+        this.toggleAudioBtn.style.animation = 'buttonFeedback 0.2s ease';
       }
       
       // Notify remote peer
@@ -653,12 +827,17 @@ class CallManager {
         if (this.isVideoEnabled) {
           this.toggleVideoBtn.classList.remove('disabled');
           this.toggleVideoBtn.innerHTML = '<i class="fas fa-video"></i>';
-          this.toggleVideoBtn.title = 'Desactivar video';
+          this.toggleVideoBtn.title = window.i18n?.t('calls.video_off') || 'Desactivar video';
+          this.toggleVideoBtn.setAttribute('data-i18n-title', 'calls.video_off');
         } else {
           this.toggleVideoBtn.classList.add('disabled');
           this.toggleVideoBtn.innerHTML = '<i class="fas fa-video-slash"></i>';
-          this.toggleVideoBtn.title = 'Activar video';
+          this.toggleVideoBtn.title = window.i18n?.t('calls.video_on') || 'Activar video';
+          this.toggleVideoBtn.setAttribute('data-i18n-title', 'calls.video_on');
         }
+        
+        // Add visual feedback
+        this.toggleVideoBtn.style.animation = 'buttonFeedback 0.2s ease';
       }
       
       // Show/hide local video
@@ -717,11 +896,17 @@ class CallManager {
         this.localVideo.srcObject = this.localStream;
       }
       
-      console.log(`📹 Cámara cambiada a: ${this.facingMode}`);
+      console.log(`VIDEO: Cámara cambiada a: ${this.facingMode}`);
+      
+      // Show feedback notification
+      const message = this.facingMode === 'user' ? 
+        (window.i18n?.t('calls.camera_front') || 'Cámara frontal activada') :
+        (window.i18n?.t('calls.camera_back') || 'Cámara trasera activada');
+      window.Utils?.TranslatedNotifications?.info('notifications.camera_switched', {mode: this.facingMode}) || this.showNotification(message, 'info');
       
     } catch (error) {
       console.error('Error cambiando cámara:', error);
-      this.showNotification('Error al cambiar cámara', 'error');
+      window.Utils?.TranslatedNotifications?.error('notifications.camera_switch_failed') || this.showNotification('Error al cambiar cámara', 'error');
     }
   }
 
@@ -733,12 +918,17 @@ class CallManager {
       if (this.isSpeakerEnabled) {
         this.toggleSpeakerBtn.classList.add('active');
         this.toggleSpeakerBtn.innerHTML = '<i class="fas fa-volume-up"></i>';
-        this.toggleSpeakerBtn.title = 'Desactivar altavoz';
+        this.toggleSpeakerBtn.title = window.i18n?.t('calls.speaker_off') || 'Desactivar altavoz';
+        this.toggleSpeakerBtn.setAttribute('data-i18n-title', 'calls.speaker_off');
       } else {
         this.toggleSpeakerBtn.classList.remove('active');
         this.toggleSpeakerBtn.innerHTML = '<i class="fas fa-volume-down"></i>';
-        this.toggleSpeakerBtn.title = 'Activar altavoz';
+        this.toggleSpeakerBtn.title = window.i18n?.t('calls.speaker_on') || 'Activar altavoz';
+        this.toggleSpeakerBtn.setAttribute('data-i18n-title', 'calls.speaker_on');
       }
+      
+      // Add visual feedback
+      this.toggleSpeakerBtn.style.animation = 'buttonFeedback 0.2s ease';
     }
     
     // Set audio output (if supported)
@@ -777,7 +967,7 @@ class CallManager {
   }
 
   endCall(reason = 'ended') {
-    console.log('📞 Ending call...', { reason, callId: this.callId });
+    console.log('CALL: Ending call...', { reason, callId: this.callId });
     
     // Emit call ended event before cleanup
     if (this.isCallActive && this.currentContact && reason !== 'remote-ended') {
@@ -813,11 +1003,11 @@ class CallManager {
     // Hide interface
     this.hideCallInterface();
     
-    console.log('✅ Call ended successfully');
+    console.log('SUCCESS: Call ended successfully');
   }
   
   cleanup() {
-    console.log('🧹 Cleaning up call resources...');
+    console.log('CLEANUP: Cleaning up call resources...');
     
     // Stop all media streams
     if (this.localStream) {
@@ -984,10 +1174,10 @@ class CallManager {
       // Actualizar mensaje de llamada
       this.updateCallMessageInConversation('accepted');
       
-      console.log('✅ Call accepted successfully, waiting for connection...');
+      console.log('SUCCESS: Call accepted successfully, waiting for connection...');
       
     } catch (error) {
-      console.error('❌ Error accepting call:', error);
+      console.error('ERROR: Error accepting call:', error);
       this.showNotification(`Error al aceptar llamada: ${error.message}`, 'error');
       this.declineCall();
     }
@@ -1019,10 +1209,10 @@ class CallManager {
         localVideo.srcObject = this.localStream;
       }
       
-      console.log('✅ Local media stream ready for incoming call');
+      console.log('SUCCESS: Local media stream ready for incoming call');
       
     } catch (error) {
-      console.error('❌ Error accessing media devices:', error);
+      console.error('ERROR: Error accessing media devices:', error);
       
       // Mostrar modal de permisos si es necesario
       if (error.name === 'NotAllowedError') {
@@ -1042,7 +1232,7 @@ class CallManager {
     // Establecer descripción remota (oferta del emisor)
     if (this.incomingOffer) {
       await this.peerConnection.setRemoteDescription(new RTCSessionDescription(this.incomingOffer));
-      console.log('✅ Remote description (offer) set successfully');
+      console.log('SUCCESS: Remote description (offer) set successfully');
       
       // Procesar candidatos ICE que puedan haber llegado antes
       while (this.candidatesQueue.length > 0) {
@@ -1096,7 +1286,7 @@ class CallManager {
     this.hideIncomingCallInterface();
     this.resetState();
     
-    console.log('✅ Call declined successfully');
+    console.log('SUCCESS: Call declined successfully');
   }
 
   resetState() {
@@ -1142,10 +1332,16 @@ class CallManager {
   }
 
   getRecipientId() {
-    // Get the current conversation recipient ID
+    // Si es una llamada entrante, el "recipiente" es el emisor (quien nos llamó)
+    if (!this.isInitiator && this.currentContact) {
+      return this.currentContact.userId;
+    }
+    
+    // Si es una llamada saliente, usar el ID del chat actual
     if (window.chatManager && window.chatManager.currentConversation) {
       return window.chatManager.getRecipientId();
     }
+    
     return null;
   }
 
@@ -1153,7 +1349,7 @@ class CallManager {
     const socket = window.SocketManager?.socket || window.socket;
     
     if (!socket || !socket.connected) {
-      console.error('❌ Socket not available for signaling', {
+      console.error('ERROR: Socket not available for signaling', {
         hasSocketManager: !!window.SocketManager,
         hasSocket: !!socket,
         isConnected: socket?.connected
@@ -1195,7 +1391,7 @@ class CallManager {
     const criticalEvents = ['call:initiate', 'call:accept', 'call:decline', 'call:end'];
     if (criticalEvents.includes(event)) {
       setTimeout(() => {
-        console.log(`✅ Signal ${event} sent (callId: ${signalData.callId})`);
+        console.log(`SUCCESS: Signal ${event} sent (callId: ${signalData.callId})`);
       }, 50);
     }
   }
@@ -1214,7 +1410,7 @@ class CallManager {
   }
 
   onCallConnected() {
-    console.log('✅ Call connected successfully');
+    console.log('SUCCESS: Call connected successfully');
     
     if (this.callTimeout) {
       clearTimeout(this.callTimeout);
@@ -1330,20 +1526,28 @@ class CallManager {
     console.log('📞 ===== SHOWING INCOMING CALL INTERFACE =====');
     console.log('📞 Looking for incoming-call-interface element...');
     
-    // Mostrar la interfaz de llamada entrante
+    // Primero mostrar el modal principal de llamada
+    const callModal = document.getElementById('call-modal');
     const incomingInterface = document.getElementById('incoming-call-interface');
-    console.log('📞 Found element:', !!incomingInterface);
     
-    if (incomingInterface) {
-      console.log('📞 Current classes before:', incomingInterface.className);
-      console.log('📞 Current display style:', window.getComputedStyle(incomingInterface).display);
+    console.log('📞 Found call-modal:', !!callModal);
+    console.log('📞 Found incoming-call-interface:', !!incomingInterface);
+    
+    if (callModal && incomingInterface) {
+      // Mostrar el modal principal
+      callModal.classList.add('active');
+      callModal.style.display = 'flex';
       
+      // Mostrar interfaz de llamada entrante
       incomingInterface.classList.add('active');
-      document.body.classList.add('call-active');
+      incomingInterface.style.display = 'flex';
+      
+      // Agregar clase al body para estilos adicionales
+      document.body.classList.add('call-active', 'incoming-call-active');
       
       console.log('📞 Classes after adding active:', incomingInterface.className);
       console.log('📞 Display style after:', window.getComputedStyle(incomingInterface).display);
-      console.log('✅ Incoming call interface shown');
+      console.log('SUCCESS: Incoming call interface shown');
       
       // Force visibility check
       const isVisible = incomingInterface.offsetParent !== null;
@@ -1363,7 +1567,7 @@ class CallManager {
         console.log('📞 Forced visibility with inline styles');
       }
     } else {
-      console.error('❌ incoming-call-interface element not found in DOM');
+      console.error('ERROR: incoming-call-interface element not found in DOM');
       console.log('📞 Available elements with "call" in ID:');
       const callElements = document.querySelectorAll('[id*="call"]');
       callElements.forEach(el => {
@@ -1382,25 +1586,30 @@ class CallManager {
   }
   
   updateIncomingCallUI() {
-    console.log('🎨 Updating incoming call UI with contact info:', this.currentContact);
+    console.log('RENDER: Updating incoming call UI with contact info:', this.currentContact);
     
     // Actualizar nombre del contacto
     const nameElement = document.getElementById('incoming-contact-name');
     if (nameElement && this.currentContact) {
       nameElement.textContent = this.currentContact.name;
-      console.log('✅ Updated contact name:', this.currentContact.name);
+      console.log('SUCCESS: Updated contact name:', this.currentContact.name);
     } else {
-      console.warn('⚠️ Name element or contact info missing');
+      console.warn('WARN: Name element or contact info missing');
+      console.log('WARN: nameElement exists:', !!nameElement);
+      console.log('WARN: currentContact exists:', !!this.currentContact);
     }
     
     // Actualizar avatar del contacto
     const avatarElement = document.getElementById('incoming-contact-avatar');
     if (avatarElement && this.currentContact) {
-      avatarElement.src = this.currentContact.profilePhoto;
+      const avatarSrc = this.currentContact.profilePhoto || this.currentContact.avatar || 'images/user-placeholder-40.svg';
+      avatarElement.src = avatarSrc;
       avatarElement.alt = this.currentContact.name;
-      console.log('✅ Updated contact avatar:', this.currentContact.profilePhoto);
+      console.log('SUCCESS: Updated contact avatar:', avatarSrc);
     } else {
-      console.warn('⚠️ Avatar element or contact info missing');
+      console.warn('WARN: Avatar element or contact info missing');
+      console.log('WARN: avatarElement exists:', !!avatarElement);
+      console.log('WARN: currentContact exists:', !!this.currentContact);
     }
     
     // Actualizar tipo de llamada
@@ -1410,7 +1619,7 @@ class CallManager {
         ? `Videollamada entrante` 
         : `Llamada de voz entrante`;
       typeElement.textContent = callTypeText;
-      console.log('✅ Updated call type:', callTypeText);
+      console.log('SUCCESS: Updated call type:', callTypeText);
     }
   }
   
@@ -1488,10 +1697,10 @@ class CallManager {
         await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
       }
       
-      console.log('✅ Incoming call setup completed');
+      console.log('SUCCESS: Incoming call setup completed');
       
     } catch (error) {
-      console.error('❌ Error setting up incoming call:', error);
+      console.error('ERROR: Error setting up incoming call:', error);
       this.showNotification('Error al configurar la llamada entrante', 'error');
       this.declineCall();
     }
@@ -1536,7 +1745,14 @@ class CallManager {
 
   // Enhanced call event handlers
   async handleCallAccepted(data) {
-    console.log('✅ Call accepted:', data);
+    console.log('SUCCESS: Call accepted:', data);
+    
+    // Cancelar timeout de llamada sin respuesta
+    if (this.callTimeout) {
+      clearTimeout(this.callTimeout);
+      this.callTimeout = null;
+      console.log('SUCCESS: Call timeout cancelled - call was accepted');
+    }
     
     if (!this.peerConnection) {
       console.error('No peer connection available');
@@ -1559,7 +1775,10 @@ class CallManager {
         await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
       }
       
-      this.updateCallInterface('connecting');
+      // Mantener estado conectado si ya se estableció la conexión
+      if (this.connectionState !== 'connected') {
+        this.updateCallInterface('connecting');
+      }
       this.updateCallMessageInConversation('accepted');
       
     } catch (error) {
@@ -1569,7 +1788,7 @@ class CallManager {
   }
 
   handleCallDeclined(data) {
-    console.log('❌ Call declined:', data);
+    console.log('ERROR: Call declined:', data);
     
     // Stop outgoing sound
     this.stopCallSound('outgoing');
@@ -1578,11 +1797,12 @@ class CallManager {
     this.playCallSound('ended');
     
     // Update UI with more descriptive message
-    this.updateCallStatus(`${this.currentContact?.name || 'El usuario'} rechazó la llamada`);
+    const userName = this.currentContact?.name || window.i18n?.t('common.user') || 'El usuario';
+    this.updateCallStatus(window.i18n?.t('calls.call_declined_by', {name: userName}) || `${userName} rechazó la llamada`);
     this.updateCallMessageInConversation('declined');
     
-    // Show notification to user
-    this.showNotification(`${this.currentContact?.name || 'El usuario'} rechazó la llamada`, 'info');
+    // Show WhatsApp-style notification
+    window.Utils?.TranslatedNotifications?.error('notifications.call_declined', {name: userName}) || this.showNotification(`${userName} rechazó la llamada`, 'info');
     
     // Record in history
     this.saveCallToHistory('declined');
@@ -1602,9 +1822,13 @@ class CallManager {
     // Play busy tone
     this.playCallSound('ended');
     
-    // Update UI
-    this.updateCallStatus('Usuario ocupado');
+    // Update UI with translation
+    this.updateCallStatus(window.i18n?.t('calls.user_busy') || 'Usuario ocupado');
     this.updateCallMessageInConversation('busy');
+    
+    // Show notification
+    const userName = this.currentContact?.name || window.i18n?.t('common.user') || 'El usuario';
+    window.Utils?.TranslatedNotifications?.info('notifications.user_busy', {name: userName}) || this.showNotification(`${userName} está ocupado`, 'info');
     
     // End call
     setTimeout(() => {
@@ -1613,30 +1837,42 @@ class CallManager {
   }
 
   async handleIceCandidate(data) {
-    console.log('🧊 ICE candidate received:', data);
+    console.log('DEBUG: ICE candidate received:', {
+      hasCandidate: !!data.candidate,
+      hasPeerConnection: !!this.peerConnection,
+      hasRemoteDescription: !!(this.peerConnection && this.peerConnection.remoteDescription),
+      candidateData: data.candidate
+    });
     
-    if (!data.candidate) return;
+    if (!data.candidate) {
+      console.warn('WARN: No candidate in ICE candidate data');
+      return;
+    }
     
     try {
       if (this.peerConnection && this.peerConnection.remoteDescription) {
         await this.peerConnection.addIceCandidate(new RTCIceCandidate(data.candidate));
-        console.log('ICE candidate added successfully');
+        console.log('SUCCESS: ICE candidate added successfully');
       } else {
         // Queue candidate if remote description not set yet
         this.candidatesQueue.push(data.candidate);
-        console.log('ICE candidate queued (remote description not ready)');
+        console.log('INFO: ICE candidate queued (remote description not ready)');
       }
     } catch (error) {
-      console.error('Error adding ICE candidate:', error);
+      console.error('ERROR: Error adding ICE candidate:', error);
+      console.error('ERROR: Candidate data:', data.candidate);
     }
   }
 
   handleCallEnded(data) {
     console.log('📞 Call ended by remote user:', data);
     
-    // Update status
-    this.updateCallStatus('Llamada terminada');
+    // Update status with translation
+    this.updateCallStatus(window.i18n?.t('calls.call_ended') || 'Llamada terminada');
     this.updateCallMessageInConversation('ended');
+    
+    // Show notification
+    window.Utils?.TranslatedNotifications?.info('notifications.call_ended') || this.showNotification('Llamada terminada', 'info');
     
     // Save to history
     this.saveCallToHistory('ended');
@@ -1659,7 +1895,7 @@ class CallManager {
   // Add call message to conversation
   addCallMessageToConversation(direction, type, status) {
     if (!window.Chat || !window.Chat.currentConversation) {
-      console.log('❌ No chat manager or current conversation available');
+      console.log('ERROR: No chat manager or current conversation available');
       return;
     }
 
@@ -1696,7 +1932,7 @@ class CallManager {
       // Use the chat system directly to render the message
       const messageElement = window.Chat.renderMessage(callMessage);
       if (messageElement) {
-        console.log('✅ Call message rendered successfully');
+        console.log('SUCCESS: Call message rendered successfully');
         
         // Store reference for updates with the actual DOM element
         this.lastCallMessage = {
@@ -1722,7 +1958,7 @@ class CallManager {
 
   updateCallMessageInConversation(status) {
     if (!this.lastCallMessage) {
-      console.log('❌ No last call message to update');
+      console.log('ERROR: No last call message to update');
       return;
     }
 
@@ -1784,9 +2020,9 @@ class CallManager {
         }
       }
 
-      console.log('✅ Call message updated in DOM');
+      console.log('SUCCESS: Call message updated in DOM');
     } else {
-      console.log('❌ Could not find call message element to update');
+      console.log('ERROR: Could not find call message element to update');
     }
   }
 
@@ -1873,7 +2109,7 @@ class CallManager {
             clearTimeout(timeout);
             socket.off('call-availability-response', responseHandler);
             
-            console.log(`✅ Availability response received:`, data);
+            console.log(`SUCCESS: Availability response received:`, data);
             
             resolve({
               status: data.isAvailable ? 'online' : data.status,
@@ -1904,7 +2140,7 @@ class CallManager {
     const socket = window.SocketManager?.socket || window.socket;
     
     if (!socket) {
-      console.error('❌ No socket available for testing');
+      console.error('ERROR: No socket available for testing');
       return;
     }
     
@@ -1966,10 +2202,10 @@ function setupHeaderCallButtons() {
       if (window.callManager) {
         window.callManager.initiateCall('audio');
       } else {
-        console.error('❌ CallManager not available');
+        console.error('ERROR: CallManager not available');
       }
     });
-    console.log('✅ Audio call button listener attached');
+    console.log('SUCCESS: Audio call button listener attached');
   } else {
     console.warn('⚠️ Audio call button not found');
   }
@@ -1982,10 +2218,10 @@ function setupHeaderCallButtons() {
       if (window.callManager) {
         window.callManager.initiateCall('video');
       } else {
-        console.error('❌ CallManager not available');
+        console.error('ERROR: CallManager not available');
       }
     });
-    console.log('✅ Video call button listener attached');
+    console.log('SUCCESS: Video call button listener attached');
   } else {
     console.warn('⚠️ Video call button not found');
   }
@@ -2024,22 +2260,22 @@ function setupCallSocketListeners() {
     console.log('📞 ==========================================');
     
     if (window.callManager) {
-      console.log('✅ Passing call to callManager.handleIncomingCall');
+      console.log('SUCCESS: Passing call to callManager.handleIncomingCall');
       window.callManager.handleIncomingCall(data);
     } else {
-      console.error('❌ window.callManager not available!');
+      console.error('ERROR: window.callManager not available!');
     }
   });
   
   socket.on('call:accepted', (data) => {
-    console.log('✅ Call accepted:', data);
+    console.log('SUCCESS: Call accepted:', data);
     if (window.callManager) {
       window.callManager.handleCallAccepted(data);
     }
   });
   
   socket.on('call:declined', (data) => {
-    console.log('❌ Call declined:', data);
+    console.log('ERROR: Call declined:', data);
     if (window.callManager) {
       window.callManager.handleCallDeclined(data);
     }
@@ -2073,7 +2309,7 @@ function setupCallSocketListeners() {
   });
   
   socket.on('call:failed', (data) => {
-    console.error('❌ Call failed:', data);
+    console.error('ERROR: Call failed:', data);
     if (window.callManager) {
       // Mensajes más específicos según la razón del fallo
       let message = 'Error en la llamada';
@@ -2099,7 +2335,7 @@ function setupCallSocketListeners() {
     }
   });
   
-  console.log('✅ Call socket event listeners configured');
+  console.log('SUCCESS: Call socket event listeners configured');
 }
 
 // Export for global access

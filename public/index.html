@@ -49,25 +49,25 @@
             <div class="auth-header">
                 <div class="logo hover-lift">
                     <i class="fas fa-comments icon-bounce"></i>
-                    <span>VigiChat</span>
+                    <span data-i18n="app_name">VigiChat</span>
                 </div>
-                <h2 class="title-animate">Bienvenido de vuelta</h2>
-                <p class="subtitle-animate">Inicia sesión para continuar con tus conversaciones</p>
+                <h2 class="title-animate" data-i18n="auth.welcome_back">Bienvenido de vuelta</h2>
+                <p class="subtitle-animate" data-i18n="auth.login_subtitle">Inicia sesión para continuar con tus conversaciones</p>
             </div>
             <form id="login-form-element">
                 <div class="form-group">
-                    <input type="email" id="login-email" placeholder="Correo electrónico" required>
+                    <input type="email" id="login-email" data-i18n-placeholder="auth.email_placeholder" placeholder="Correo electrónico" required>
                     <i class="fas fa-envelope"></i>
                 </div>
                 <div class="form-group">
-                    <input type="password" id="login-password" placeholder="Contraseña" required>
+                    <input type="password" id="login-password" data-i18n-placeholder="auth.password_placeholder" placeholder="Contraseña" required>
                     <i class="fas fa-lock"></i>
-                    <button type="button" class="password-toggle" data-target="login-password" title="Mostrar contraseña">
+                    <button type="button" class="password-toggle" data-target="login-password" data-i18n-title="auth.show_password" title="Mostrar contraseña">
                         <i class="fas fa-eye"></i>
                     </button>
                 </div>
                 <button type="submit" class="auth-button btn-enhanced">
-                    <span>Iniciar Sesión</span>
+                    <span data-i18n="auth.login_button">Iniciar Sesión</span>
                     <i class="fas fa-arrow-right icon-slide"></i>
                 </button>
             </form>
@@ -75,23 +75,28 @@
             <!-- Alternative Auth Methods -->
             <div class="auth-alternatives">
                 <div class="divider">
-                    <span>o</span>
+                    <span data-i18n="auth.or">o</span>
                 </div>
                 <div class="alt-auth-buttons">
                     <button type="button" class="alt-auth-btn google-auth-btn" id="google-auth-btn">
-                        <i class="fab fa-google"></i>
-                        <span>Google</span>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" class="google-logo">
+                            <path fill="#4285f4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+                            <path fill="#34a853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+                            <path fill="#fbbc05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+                            <path fill="#ea4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+                        </svg>
+                        <span data-i18n="auth.google_login">Google</span>
                     </button>
                     <button type="button" class="alt-auth-btn magic-link-btn" id="magic-link-btn">
                         <i class="fas fa-key"></i>
-                        <span>Iniciar con OTP</span>
+                        <span data-i18n="auth.otp_login">Iniciar con OTP</span>
                     </button>
                 </div>
             </div>
             
             <div class="auth-footer">
-                <p>¿No tienes cuenta? <a href="#" id="show-register">Regístrate aquí</a></p>
-                <p><a href="#" id="show-forgot-password">¿Olvidaste tu contraseña?</a></p>
+                <p><span data-i18n="auth.no_account">¿No tienes cuenta?</span> <a href="#" id="show-register" data-i18n="auth.register_here">Regístrate aquí</a></p>
+                <p><a href="#" id="show-forgot-password" data-i18n="auth.forgot_password">¿Olvidaste tu contraseña?</a></p>
             </div>
         </div>
 
@@ -100,26 +105,26 @@
             <div class="auth-header">
                 <div class="logo hover-lift">
                     <i class="fas fa-comments icon-bounce"></i>
-                    <span>VigiChat</span>
+                    <span data-i18n="app_name">VigiChat</span>
                 </div>
-                <h2 class="title-animate">Crear cuenta</h2>
-                <p class="subtitle-animate">Únete a la mejor plataforma de mensajería</p>
+                <h2 class="title-animate" data-i18n="auth.create_account">Crear cuenta</h2>
+                <p class="subtitle-animate" data-i18n="auth.register_subtitle">Únete a la mejor plataforma de mensajería</p>
             </div>
             <form id="register-form-element">
                 <div class="form-group">
-                    <input type="text" id="register-fullname" placeholder="Nombre completo" required>
+                    <input type="text" id="register-fullname" data-i18n-placeholder="auth.fullname_placeholder" placeholder="Nombre completo" required>
                     <i class="fas fa-user"></i>
                 </div>
                 <div class="form-group">
-                    <input type="email" id="register-email" placeholder="Correo electrónico" required>
+                    <input type="email" id="register-email" data-i18n-placeholder="auth.email_placeholder" placeholder="Correo electrónico" required>
                     <i class="fas fa-envelope"></i>
                     <div class="validation-indicator" id="email-validation"></div>
                     <div class="field-error" id="email-error"></div>
                 </div>
                 <div class="form-group">
-                    <input type="password" id="register-password" placeholder="Contraseña (mín. 6 caracteres)" required>
+                    <input type="password" id="register-password" data-i18n-placeholder="auth.password_min" placeholder="Contraseña (mín. 6 caracteres)" required>
                     <i class="fas fa-lock"></i>
-                    <button type="button" class="password-toggle" data-target="register-password" title="Mostrar contraseña">
+                    <button type="button" class="password-toggle" data-target="register-password" data-i18n-title="auth.show_password" title="Mostrar contraseña">
                         <i class="fas fa-eye"></i>
                     </button>
                     <div class="password-strength" id="password-strength">
@@ -128,12 +133,12 @@
                     </div>
                 </div>
                 <button type="submit" class="auth-button btn-enhanced">
-                    <span>Crear Cuenta</span>
+                    <span data-i18n="auth.create_button">Crear Cuenta</span>
                     <i class="fas fa-user-plus icon-pulse"></i>
                 </button>
             </form>
             <div class="auth-footer">
-                <p>¿Ya tienes cuenta? <a href="#" id="show-login">Inicia sesión</a></p>
+                <p><span data-i18n="auth.have_account">¿Ya tienes cuenta?</span> <a href="#" id="show-login" data-i18n="auth.login_here">Inicia sesión</a></p>
             </div>
         </div>
 
@@ -142,23 +147,23 @@
             <div class="auth-header">
                 <div class="logo">
                     <i class="fas fa-comments"></i>
-                    <span>VigiChat</span>
+                    <span data-i18n="app_name">VigiChat</span>
                 </div>
-                <h2>Recuperar contraseña</h2>
-                <p>Ingresa tu email y te enviaremos un enlace para restablecer tu contraseña</p>
+                <h2 data-i18n="auth.recover_password">Recuperar contraseña</h2>
+                <p data-i18n="auth.recover_subtitle">Ingresa tu email y te enviaremos un enlace para restablecer tu contraseña</p>
             </div>
             <form id="forgot-password-form-element">
                 <div class="form-group">
-                    <input type="email" id="forgot-email" placeholder="Correo electrónico" required>
+                    <input type="email" id="forgot-email" data-i18n-placeholder="auth.email_placeholder" placeholder="Correo electrónico" required>
                     <i class="fas fa-envelope"></i>
                 </div>
                 <button type="submit" class="auth-button">
-                    <span>Enviar enlace</span>
+                    <span data-i18n="auth.send_link">Enviar enlace</span>
                     <i class="fas fa-paper-plane"></i>
                 </button>
             </form>
             <div class="auth-footer">
-                <p><a href="#" id="back-to-login">← Volver al inicio de sesión</a></p>
+                <p><a href="#" id="back-to-login" data-i18n="auth.back_to_login">← Volver al inicio de sesión</a></p>
             </div>
         </div>
 
@@ -167,18 +172,18 @@
             <div class="auth-header">
                 <div class="logo">
                     <i class="fas fa-comments"></i>
-                    <span>VigiChat</span>
+                    <span data-i18n="app_name">VigiChat</span>
                 </div>
-                <h2>Nueva contraseña</h2>
-                <p>Ingresa tu nueva contraseña</p>
+                <h2 data-i18n="auth.new_password">Nueva contraseña</h2>
+                <p data-i18n="auth.new_password_subtitle">Ingresa tu nueva contraseña</p>
             </div>
             <form id="reset-password-form-element">
                                 <div class="form-group">
                                     <div class="password-flex-group">
                                         <div class="input-row">
                                             <i class="fas fa-lock"></i>
-                                            <input type="password" id="new-password" placeholder="Nueva contraseña (mín. 6 caracteres)" required>
-                                            <button type="button" class="password-toggle" data-target="new-password" title="Mostrar contraseña">
+                                            <input type="password" id="new-password" data-i18n-placeholder="auth.new_password_placeholder" placeholder="Nueva contraseña (mín. 6 caracteres)" required>
+                                            <button type="button" class="password-toggle" data-target="new-password" data-i18n-title="auth.show_password" title="Mostrar contraseña">
                                                 <i class="fas fa-eye"></i>
                                             </button>
                                         </div>
@@ -192,19 +197,19 @@
                                     <div class="password-flex-group">
                                         <div class="input-row">
                                             <i class="fas fa-lock"></i>
-                                            <input type="password" id="confirm-password" placeholder="Confirmar nueva contraseña" required>
-                                            <button type="button" class="password-toggle" data-target="confirm-password" title="Mostrar contraseña">
+                                            <input type="password" id="confirm-password" data-i18n-placeholder="auth.confirm_password_placeholder" placeholder="Confirmar nueva contraseña" required>
+                                            <button type="button" class="password-toggle" data-target="confirm-password" data-i18n-title="auth.show_password" title="Mostrar contraseña">
                                                 <i class="fas fa-eye"></i>
                                             </button>
                                         </div>
                                         <div class="password-match" id="password-match">
                                             <i class="fas fa-check-circle"></i>
-                                            <span>Las contraseñas coinciden</span>
+                                            <span data-i18n="auth.passwords_match">Las contraseñas coinciden</span>
                                         </div>
                                     </div>
                                 </div>
                 <button type="submit" class="auth-button">
-                    <span>Restablecer contraseña</span>
+                    <span data-i18n="auth.reset_password_button">Restablecer contraseña</span>
                     <i class="fas fa-check"></i>
                 </button>
             </form>
@@ -215,16 +220,16 @@
             <div class="auth-header">
                 <div class="logo">
                     <i class="fas fa-comments"></i>
-                    <span>VigiChat</span>
+                    <span data-i18n="app_name">VigiChat</span>
                 </div>
                 <div class="success-icon">
                     <i class="fas fa-check-circle"></i>
                 </div>
-                <h2>¡Contraseña actualizada!</h2>
-                <p>Tu contraseña ha sido restablecida exitosamente</p>
+                <h2 data-i18n="auth.password_updated">¡Contraseña actualizada!</h2>
+                <p data-i18n="auth.password_success_subtitle">Tu contraseña ha sido restablecida exitosamente</p>
             </div>
             <button class="auth-button" id="return-to-login">
-                <span>Iniciar sesión</span>
+                <span data-i18n="auth.return_login">Iniciar sesión</span>
                 <i class="fas fa-arrow-right"></i>
             </button>
         </div>
@@ -234,23 +239,23 @@
             <div class="auth-header">
                 <div class="logo">
                     <i class="fas fa-comments"></i>
-                    <span>VigiChat</span>
+                    <span data-i18n="app_name">VigiChat</span>
                 </div>
-                <h2>Iniciar con OTP</h2>
-                <p>Ingresa tu correo y te enviaremos un código OTP para iniciar sesión sin contraseña</p>
+                <h2 data-i18n="auth.otp_title">Iniciar con OTP</h2>
+                <p data-i18n="auth.otp_subtitle">Ingresa tu correo y te enviaremos un código OTP para iniciar sesión sin contraseña</p>
             </div>
             <form id="magic-link-form-element">
                 <div class="form-group">
-                    <input type="email" id="magic-link-email" placeholder="Correo electrónico" required>
+                    <input type="email" id="magic-link-email" data-i18n-placeholder="auth.email_placeholder" placeholder="Correo electrónico" required>
                     <i class="fas fa-envelope"></i>
                 </div>
                 <button type="submit" class="auth-button">
-                    <span>Enviar OTP</span>
+                    <span data-i18n="auth.send_otp">Enviar OTP</span>
                     <i class="fas fa-paper-plane"></i>
                 </button>
             </form>
             <div class="auth-footer">
-                <p><a href="#" id="back-to-login-from-magic">← Volver al inicio de sesión</a></p>
+                <p><a href="#" id="back-to-login-from-magic" data-i18n="auth.back_to_login_magic">← Volver al inicio de sesión</a></p>
             </div>
         </div>
     </div>
@@ -263,7 +268,7 @@
                 <div class="mobile-logo">
                     <div class="logo-container">
                         <i class="fas fa-comments"></i>
-                        <span class="logo-text">VigiChat</span>
+                        <span class="logo-text" data-i18n="app_name">VigiChat</span>
                     </div>
                 </div>
             </div>
@@ -276,7 +281,7 @@
                 </div>
                 <div class="mobile-sidebar-actions">
                     <div class="mobile-main-menu-container">
-                        <button class="mobile-icon-btn mobile-main-menu-btn" id="mobile-menu-btn" title="Menú principal">
+                        <button class="mobile-icon-btn mobile-main-menu-btn" id="mobile-menu-btn" data-i18n-title="mobile.menu" title="Menú principal">
                             <i class="fas fa-ellipsis-v"></i>
                         </button>
                         <div class="mobile-main-menu-dropdown hidden" id="mobile-menu-dropdown">
@@ -382,25 +387,25 @@
             <!-- Chat Tabs -->
             <div class="chat-tabs">
                 <button class="tab-button active" data-tab="chats">
-                    <span>Chats</span>
+                    <span data-i18n="sidebar.chats">Chats</span>
                     <div class="unread-badge hidden" id="chats-unread"></div>
                 </button>
                 <button class="tab-button" data-tab="contacts">
-                    <span>Contactos</span>
+                    <span data-i18n="sidebar.contacts">Contactos</span>
                 </button>
                 <button class="tab-button" data-tab="requests">
-                    <span>Solicitudes</span>
+                    <span data-i18n="sidebar.requests">Solicitudes</span>
                     <div class="unread-badge hidden" id="requests-unread"></div>
                 </button>
                 <button class="tab-button" data-tab="calls">
-                    <span>Llamadas</span>
+                    <span data-i18n="sidebar.calls">Llamadas</span>
                 </button>
             </div>
 
             <!-- Search -->
             <div class="search-container" id="search-container">
                 <i class="fas fa-search"></i>
-                <input type="text" id="chat-search" placeholder="Buscar chats..." autocomplete="off">
+                <input type="text" id="chat-search" data-i18n-placeholder="sidebar.search_chats" placeholder="Buscar chats..." autocomplete="off">
                 <button class="clear-search hidden" id="clear-search">
                     <i class="fas fa-times"></i>
                 </button>
@@ -421,9 +426,9 @@
                         <div class="contacts-search-row">
                             <div class="contacts-search-container">
                                 <i class="fas fa-search"></i>
-                                <input type="text" id="contacts-search" placeholder="Buscar contactos..." autocomplete="off">
+                                <input type="text" id="contacts-search" data-i18n-placeholder="sidebar.search_contacts" placeholder="Buscar contactos..." autocomplete="off">
                             </div>
-                            <button class="add-contact-btn-small" id="add-contact-btn">
+                            <button class="add-contact-btn-small" id="add-contact-btn" data-i18n-title="sidebar.add_contact">
                                 <i class="fas fa-user-plus"></i>
                             </button>
                         </div>
@@ -446,7 +451,7 @@
                         <div class="calls-stats">
                             <div class="stat-item">
                                 <i class="fas fa-phone-alt"></i>
-                                <span>Llamadas recientes</span>
+                                <span data-i18n="sidebar.recent_calls">Llamadas recientes</span>
                             </div>
                         </div>
                     </div>
@@ -454,8 +459,8 @@
                         <!-- Recent calls will be populated here -->
                         <div class="empty-calls-state">
                             <i class="fas fa-phone-slash"></i>
-                            <h4>No hay llamadas recientes</h4>
-                            <p>Las llamadas que realices o recibas aparecerán aquí</p>
+                            <h4 data-i18n="sidebar.no_recent_calls">No hay llamadas recientes</h4>
+                            <p data-i18n="sidebar.calls_description">Las llamadas que realices o recibas aparecerán aquí</p>
                         </div>
                     </div>
                 </div>
@@ -470,20 +475,20 @@
                     <div class="welcome-icon">
                         <i class="fas fa-comments"></i>
                     </div>
-                    <h2>Bienvenido a VigiChat</h2>
-                    <p>Selecciona un chat para comenzar a conversar</p>
+                    <h2 data-i18n="welcome.title">Bienvenido a VigiChat</h2>
+                    <p data-i18n="welcome.subtitle">Selecciona un chat para comenzar a conversar</p>
                     <div class="feature-list">
                         <div class="feature-item">
                             <i class="fas fa-shield-alt"></i>
-                            <span>Mensajes cifrados</span>
+                            <span data-i18n="welcome.encrypted_messages">Mensajes cifrados</span>
                         </div>
                         <div class="feature-item">
                             <i class="fas fa-bolt"></i>
-                            <span>Tiempo real</span>
+                            <span data-i18n="welcome.real_time">Tiempo real</span>
                         </div>
                         <div class="feature-item">
                             <i class="fas fa-heart"></i>
-                            <span>Reacciones</span>
+                            <span data-i18n="welcome.reactions">Reacciones</span>
                         </div>
                     </div>
                 </div>
@@ -600,16 +605,16 @@
                 </div>
 
                 <div class="input-area">
-                    <button class="attach-btn" id="attach-btn" title="Adjuntos">
+                    <button class="attach-btn" id="attach-btn" data-i18n-title="chat.attachments" title="Adjuntos">
                         <i class="fas fa-plus"></i>
                     </button>
                     <div class="message-input-wrapper">
-                        <div class="input-field" id="message-input" contenteditable="true" data-placeholder="Escribe un mensaje..."></div>
+                        <div class="input-field" id="message-input" contenteditable="true" data-i18n-placeholder="chat.type_message" data-placeholder="Escribe un mensaje..."></div>
                     </div>
-                    <button class="send-btn" id="send-btn" disabled>
+                    <button class="send-btn" id="send-btn" data-i18n-title="chat.send" disabled>
                         <i class="fas fa-paper-plane"></i>
                     </button>
-                    <button class="record-btn hidden" id="record-btn" title="Grabar mensaje de voz">
+                    <button class="record-btn hidden" id="record-btn" data-i18n-title="chat.record_voice" title="Grabar mensaje de voz">
                         <i class="fas fa-microphone"></i>
                     </button>
                 </div>
@@ -662,7 +667,7 @@
         <div class="modal-overlay"></div>
         <div class="modal-content">
             <div class="modal-header">
-                <h3>Agregar contacto</h3>
+                <h3 data-i18n="modal.add_contact_title">Agregar contacto</h3>
                 <button class="close-modal">
                     <i class="fas fa-times"></i>
                 </button>
@@ -670,8 +675,8 @@
             <div class="modal-body">
                 <form id="add-contact-form">
                     <div class="form-group">
-                        <label>Buscar usuario:</label>
-                        <input type="text" id="contact-search" placeholder="Nombre de usuario o correo">
+                        <label data-i18n="modal.search_user">Buscar usuario:</label>
+                        <input type="text" id="contact-search" data-i18n-placeholder="modal.username_or_email" placeholder="Nombre de usuario o correo">
                     </div>
                     <div class="search-results" id="contact-search-results">
                         <!-- Search results will appear here -->
@@ -679,7 +684,7 @@
                 </form>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn-secondary" data-close-modal>Cancelar</button>
+                <button type="button" class="btn-secondary" data-close-modal data-i18n="modal.cancel">Cancelar</button>
             </div>
         </div>
     </div>
@@ -689,7 +694,7 @@
         <div class="modal-overlay"></div>
         <div class="modal-content large">
             <div class="modal-header">
-                <h3>Configuración</h3>
+                <h3 data-i18n="modal.settings_title">Configuración</h3>
                 <button class="close-modal">
                     <i class="fas fa-times"></i>
                 </button>
@@ -698,15 +703,15 @@
                 <div class="settings-tabs">
                     <button class="settings-tab active" data-tab="profile">
                         <i class="fas fa-user"></i>
-                        <span>Perfil</span>
+                        <span data-i18n="modal.profile_tab">Perfil</span>
                     </button>
                     <button class="settings-tab" data-tab="privacy">
                         <i class="fas fa-shield-alt"></i>
-                        <span>Privacidad</span>
+                        <span data-i18n="modal.privacy_tab">Privacidad</span>
                     </button>
                     <button class="settings-tab" data-tab="notifications">
                         <i class="fas fa-bell"></i>
-                        <span>Notificaciones</span>
+                        <span data-i18n="modal.notifications_tab">Notificaciones</span>
                     </button>
                     <button class="settings-tab" data-tab="appearance">
                         <i class="fas fa-palette"></i>
@@ -1445,23 +1450,23 @@
         <div class="attachment-options">
             <button class="attachment-option emoji" data-type="emoji">
                 <i class="fas fa-smile"></i>
-                <span>Emojis</span>
+                <span data-i18n="attachment.emojis">Emojis</span>
             </button>
             <button class="attachment-option camera" data-type="camera">
                 <i class="fas fa-camera"></i>
-                <span>Cámara</span>
+                <span data-i18n="attachment.camera">Cámara</span>
             </button>
             <button class="attachment-option gallery" data-type="gallery">
                 <i class="fas fa-images"></i>
-                <span>Galería</span>
+                <span data-i18n="attachment.gallery">Galería</span>
             </button>
             <button class="attachment-option location" data-type="location">
                 <i class="fas fa-map-marker-alt"></i>
-                <span>Ubicación</span>
+                <span data-i18n="attachment.location">Ubicación</span>
             </button>
             <button class="attachment-option attach-doc-btn mobile-only" id="attach-doc-modal-btn" data-type="document">
                 <i class="fas fa-file"></i>
-                <span>Documento</span>
+                <span data-i18n="attachment.document">Documento</span>
             </button>
         </div>
     </div>
@@ -1478,7 +1483,7 @@
                     </div>
                     <div class="call-details">
                         <h3 class="call-contact-name" id="call-contact-name">Contacto</h3>
-                        <p class="call-status" id="call-status">Llamando...</p>
+                        <p class="call-status" id="call-status" data-i18n="calls.outgoing">Llamando...</p>
                     </div>
                 </div>
                 <div class="call-duration" id="call-duration">00:00</div>
@@ -1508,29 +1513,29 @@
             <div class="call-controls">
                 <div class="call-controls-row">
                     <!-- Mute Audio -->
-                    <button class="call-control-btn audio-btn" id="toggle-audio-btn" title="Silenciar micrófono">
+                    <button class="call-control-btn audio-btn" id="toggle-audio-btn" data-i18n-title="calls.mute" title="Silenciar micrófono">
                         <i class="fas fa-microphone"></i>
                     </button>
                     
                     <!-- Toggle Video -->
-                    <button class="call-control-btn video-btn" id="toggle-video-btn" title="Activar/Desactivar video">
+                    <button class="call-control-btn video-btn" id="toggle-video-btn" data-i18n-title="calls.video" title="Activar/Desactivar video">
                         <i class="fas fa-video"></i>
                     </button>
                     
                     <!-- Switch Camera -->
-                    <button class="call-control-btn switch-btn" id="switch-camera-btn" title="Cambiar cámara">
+                    <button class="call-control-btn switch-btn" id="switch-camera-btn" data-i18n-title="calls.switch_camera" title="Cambiar cámara">
                         <i class="fas fa-sync-alt"></i>
                     </button>
                     
                     <!-- Speaker -->
-                    <button class="call-control-btn speaker-btn" id="toggle-speaker-btn" title="Altavoz">
+                    <button class="call-control-btn speaker-btn" id="toggle-speaker-btn" data-i18n-title="calls.speaker" title="Altavoz">
                         <i class="fas fa-volume-up"></i>
                     </button>
                 </div>
                 
                 <div class="call-action-row">
                     <!-- End Call -->
-                    <button class="call-control-btn end-call-btn" id="end-call-btn" title="Colgar">
+                    <button class="call-control-btn end-call-btn" id="end-call-btn" data-i18n-title="calls.end" title="Colgar">
                         <i class="fas fa-phone-slash"></i>
                     </button>
                 </div>
@@ -1543,7 +1548,7 @@
                         <img src="images/user-placeholder-40.svg" alt="Contact" id="incoming-contact-avatar">
                     </div>
                     <h3 class="incoming-contact-name" id="incoming-contact-name">Contacto</h3>
-                    <p class="incoming-call-type" id="incoming-call-type">Llamada entrante</p>
+                    <p class="incoming-call-type" id="incoming-call-type" data-i18n="calls.incoming">Llamada entrante</p>
                 </div>
                 
                 <div class="incoming-call-actions">

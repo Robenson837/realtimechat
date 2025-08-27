@@ -10,12 +10,18 @@ class VerificationSystem {
             // Agregar más correos verificados aquí manualmente
         ];
         
+        this.processedElements = new WeakSet();
+        this.verificationCache = new Map();
+        this.lastUpdate = 0;
+        this.updateThrottle = 500;
+        this.debounceTimer = null;
+        
         this.init();
     }
     
     init() {
-        console.log('🔵 Sistema de Verificación inicializado');
-        console.log(`📧 Correos verificados: ${this.verifiedEmails.length}`);
+        console.log('INFO: Sistema de Verificación inicializado');
+        console.log(`EMAIL: Correos verificados: ${this.verifiedEmails.length}`);
     }
     
     /**
@@ -23,7 +29,17 @@ class VerificationSystem {
      */
     isVerifiedEmail(email) {
         if (!email) return false;
-        return this.verifiedEmails.includes(email.toLowerCase().trim());
+        
+        const normalizedEmail = email.toLowerCase().trim();
+        
+        if (this.verificationCache.has(normalizedEmail)) {
+            return this.verificationCache.get(normalizedEmail);
+        }
+        
+        const isVerified = this.verifiedEmails.includes(normalizedEmail);
+        this.verificationCache.set(normalizedEmail, isVerified);
+        
+        return isVerified;
     }
     
     /**
@@ -102,8 +118,7 @@ class VerificationSystem {
      * Aplicar verificación a un elemento existente
      */
     applyVerificationToElement(element, user, options = {}) {
-        if (!element || !user) {
-            console.log('⚠️ Elemento o usuario no válido para verificación');
+        if (!element || !user || this.processedElements.has(element)) {
             return;
         }
         
@@ -115,34 +130,28 @@ class VerificationSystem {
         } = options;
         
         const isVerified = this.isUserVerified(user);
-        console.log(`🔍 Usuario ${user.email} verificado: ${isVerified}`);
         
         if (!isVerified) {
-            // Remover clases de verificación si existen
             element.classList.remove('verified-user');
             return;
         }
         
-        // Aplicar verificación
+        this.processedElements.add(element);
         element.classList.add('verified-user');
-        console.log(`✨ Aplicando verificación a elemento para ${user.email}`);
         
         if (replaceContent) {
             const verificationOptions = {
-                showOfficialLabel: true, // SIEMPRE mostrar etiqueta
+                showOfficialLabel: true,
                 isProfileModal,
                 badgeSize
             };
             const verifiedHTML = this.generateVerifiedDisplayName(user, verificationOptions);
-            console.log(`🎨 HTML generado: ${verifiedHTML}`);
             element.innerHTML = verifiedHTML;
         } else {
-            // Solo agregar badge si no existe
             if (!element.querySelector('.verification-badge')) {
                 const badge = this.generateVerificationBadge(badgeSize);
                 element.insertAdjacentHTML('beforeend', ` ${badge}`);
                 
-                // SIEMPRE agregar etiqueta "Oficial" para usuarios verificados
                 if (!element.querySelector('.official-label') && !element.querySelector('.official-label-no-bg')) {
                     const label = this.generateOfficialLabel(!isProfileModal);
                     element.insertAdjacentHTML('beforeend', ` ${label}`);
@@ -152,38 +161,39 @@ class VerificationSystem {
     }
     
     /**
-     * Actualizar todos los elementos de usuario en la página
+     * Actualizar todos los elementos de usuario en la página con throttling
      */
     updateAllUserElements() {
-        console.log('🔄 Actualizando todos los elementos de usuario...');
+        const now = Date.now();
         
-        // Actualizar nombres en sidebar de contactos
+        if (now - this.lastUpdate < this.updateThrottle) {
+            return;
+        }
+        
+        this.lastUpdate = now;
+        
         const contactElements = document.querySelectorAll('[data-user-email]');
-        console.log(`📧 Encontrados ${contactElements.length} elementos con data-user-email`);
+        let verifiedCount = 0;
         
         contactElements.forEach(element => {
             const email = element.getAttribute('data-user-email');
-            console.log(`📧 Verificando email: ${email}`);
             
             if (this.isVerifiedEmail(email)) {
-                console.log(`✅ Email verificado: ${email}`);
+                verifiedCount++;
                 const user = { 
                     email, 
                     fullName: element.textContent.trim() 
                 };
                 this.applyVerificationToElement(element, user, { replaceContent: true });
-            } else {
-                console.log(`❌ Email no verificado: ${email}`);
             }
         });
         
-        // Actualizar elementos de chat
         this.updateChatElements();
-        
-        // Actualizar elementos de perfil
         this.updateProfileElements();
         
-        console.log('✅ Actualización completada');
+        if (verifiedCount > 0) {
+            console.log(`SUCCESS: Actualizados ${verifiedCount} elementos verificados`);
+        }
     }
     
     /**
@@ -257,7 +267,7 @@ class VerificationSystem {
         }
         
         this.verifiedEmails.push(email.toLowerCase().trim());
-        console.log(`✅ Correo agregado a verificados: ${email}`);
+        console.log(`SUCCESS: Correo agregado a verificados: ${email}`);
         return true;
     }
     
@@ -268,7 +278,7 @@ class VerificationSystem {
         const index = this.verifiedEmails.indexOf(email.toLowerCase().trim());
         if (index > -1) {
             this.verifiedEmails.splice(index, 1);
-            console.log(`❌ Correo removido de verificados: ${email}`);
+            console.log(`ERROR: Correo removido de verificados: ${email}`);
             return true;
         }
         return false;
@@ -291,40 +301,16 @@ window.isVerifiedEmail = (email) => window.verificationSystem.isVerifiedEmail(em
 
 // Aplicar verificaciones cuando el DOM esté listo
 document.addEventListener('DOMContentLoaded', () => {
-    // Aplicar inmediatamente
     if (window.verificationSystem) {
         window.verificationSystem.updateAllUserElements();
-    }
-    
-    // Aplicar después de delays para elementos dinámicos
-    setTimeout(() => {
-        if (window.verificationSystem) {
-            window.verificationSystem.updateAllUserElements();
-        }
-    }, 1000);
-    
-    setTimeout(() => {
-        if (window.verificationSystem) {
-            window.verificationSystem.updateAllUserElements();
-        }
-    }, 3000);
-    
-    // Aplicar cada vez que se detecten cambios en el DOM
-    const observer = new MutationObserver(() => {
+        
         setTimeout(() => {
-            if (window.verificationSystem) {
-                window.verificationSystem.updateAllUserElements();
-            }
-        }, 100);
-    });
-    
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true
-    });
+            window.verificationSystem.updateAllUserElements();
+        }, 1000);
+    }
 });
 
-// Observer para aplicar verificación a elementos dinámicos
+// Observer para aplicar verificación a elementos dinámicos con debounce
 if (window.MutationObserver) {
     const observer = new MutationObserver((mutations) => {
         let needsUpdate = false;
@@ -333,7 +319,6 @@ if (window.MutationObserver) {
             if (mutation.type === 'childList') {
                 mutation.addedNodes.forEach((node) => {
                     if (node.nodeType === Node.ELEMENT_NODE) {
-                        // Verificar si hay elementos con data-user-email o nombres de usuario
                         if (node.getAttribute && node.getAttribute('data-user-email') || 
                             node.classList && (node.classList.contains('contact-name') || 
                                              node.classList.contains('chat-header-name'))) {
@@ -344,10 +329,15 @@ if (window.MutationObserver) {
             }
         });
         
-        if (needsUpdate) {
-            setTimeout(() => {
+        if (needsUpdate && window.verificationSystem) {
+            if (window.verificationSystem.debounceTimer) {
+                clearTimeout(window.verificationSystem.debounceTimer);
+            }
+            
+            window.verificationSystem.debounceTimer = setTimeout(() => {
                 window.verificationSystem.updateAllUserElements();
-            }, 100);
+                window.verificationSystem.debounceTimer = null;
+            }, 300);
         }
     });
     
@@ -357,4 +347,4 @@ if (window.MutationObserver) {
     });
 }
 
-console.log('🔵 Sistema de Verificación cargado exitosamente');
+console.log('INFO: Sistema de Verificación cargado exitosamente');

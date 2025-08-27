@@ -405,6 +405,29 @@ const getInitials = (name) => {
         .slice(0, 2);
 };
 
+// Translated Notification Helper
+const TranslatedNotifications = {
+    success(key, params = {}, duration = 3000) {
+        const message = window.i18n ? window.i18n.t(key, params) : key;
+        return Alerts.success(message, duration);
+    },
+    
+    error(key, params = {}, duration = 4000) {
+        const message = window.i18n ? window.i18n.t(key, params) : key;
+        return Alerts.error(message, duration);
+    },
+    
+    info(key, params = {}, duration = 3000) {
+        const message = window.i18n ? window.i18n.t(key, params) : key;
+        return Alerts.info(message, duration);
+    },
+    
+    warning(key, params = {}, duration = 3500) {
+        const message = window.i18n ? window.i18n.t(key, params) : key;
+        return Alerts.warning(message, duration);
+    }
+};
+
 // Notification utilities
 const Alerts = {
     queue: [],
@@ -1523,6 +1546,7 @@ window.Utils = {
     stringToColor, getInitials,
     Alerts: EnhancedAlerts,
     Notifications: EnhancedAlerts, // Alias para compatibilidad
+    TranslatedNotifications,
     Theme,
     copyToClipboard,
     Sound,
