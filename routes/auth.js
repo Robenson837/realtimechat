@@ -10,11 +10,29 @@ const GoogleStrategy = require('passport-google-oauth20').Strategy;
 
 const router = express.Router();
 
-// Configure Google OAuth Strategy
+// Dynamic URL detection based on environment
+const getBaseURL = (req) => {
+    // Check if we're on Railway (production)
+    if (process.env.RAILWAY_ENVIRONMENT || req?.get('host')?.includes('railway.app')) {
+        return 'https://vigichat.up.railway.app';
+    }
+    
+    // Check for other production indicators
+    if (process.env.NODE_ENV === 'production' && req?.get('host')) {
+        const host = req.get('host');
+        const protocol = req.get('x-forwarded-proto') || (req.secure ? 'https' : 'http');
+        return `${protocol}://${host}`;
+    }
+    
+    // Default to localhost for development
+    return process.env.CLIENT_URL || 'http://localhost:3000';
+};
+
+// Configure Google OAuth Strategy with dynamic callback URL
 passport.use(new GoogleStrategy({
     clientID: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    callbackURL: process.env.GOOGLE_CALLBACK_URL || "/api/auth/google/callback"
+    callbackURL: "/api/auth/google/callback" // Relative URL - will use current domain
 }, async (accessToken, refreshToken, profile, done) => {
     try {
         const { User } = getModels();
@@ -187,7 +205,11 @@ const createEmailTransporter = () => {
 };
 
 const sendPasswordResetEmail = async (email, token, fullName = '') => {
-    const resetLink = `${process.env.CLIENT_URL || 'http://localhost:3001'}/?token=${token}`;
+    // Use production URL for password reset emails if available
+    const baseUrl = process.env.RAILWAY_ENVIRONMENT 
+        ? 'https://vigichat.up.railway.app' 
+        : (process.env.CLIENT_URL || 'http://localhost:3000');
+    const resetLink = `${baseUrl}/?token=${token}`;
     
     try {
         const transporter = await createEmailTransporter();
@@ -251,8 +273,10 @@ const sendPasswordResetEmail = async (email, token, fullName = '') => {
 };
 
 const sendMagicLinkEmail = async (email, token, fullName = '') => {
-    // The magic link should point to the backend server, not the frontend
-    const serverUrl = process.env.SERVER_URL || 'http://localhost:3000';
+    // The magic link should point to the backend server - detect environment
+    const serverUrl = process.env.RAILWAY_ENVIRONMENT 
+        ? 'https://vigichat.up.railway.app' 
+        : (process.env.SERVER_URL || 'http://localhost:3000');
     const magicLink = `${serverUrl}/api/auth/magic-login/${token}`;
     
     try {
@@ -758,8 +782,10 @@ router.get('/magic-login/:token', async (req, res) => {
         // Clean up magic link token
         magicLinkTokens.delete(userEmail);
 
-        // Redirect to frontend with token as query parameter
-        const frontendUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+        // Redirect to frontend with token as query parameter - dynamic URL
+        const frontendUrl = process.env.RAILWAY_ENVIRONMENT 
+            ? 'https://vigichat.up.railway.app' 
+            : (process.env.CLIENT_URL || 'http://localhost:3000');
         res.redirect(`${frontendUrl}?token=${jwtToken}&magic_login=success`);
 
     } catch (error) {
@@ -1019,13 +1045,16 @@ router.get('/google/callback',
             // Generate JWT token for the authenticated user
             const token = generateToken(req.user._id);
             
-            // Redirect to frontend with token
-            const frontendUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+            // Get dynamic frontend URL based on current environment
+            const frontendUrl = getBaseURL(req);
+            
+            console.log(`🔐 Google Auth Success - Redirecting to: ${frontendUrl}`);
             res.redirect(`${frontendUrl}?token=${token}&google_login=success`);
             
         } catch (error) {
             console.error('Google callback error:', error);
-            res.redirect(`${process.env.CLIENT_URL || 'http://localhost:3000'}?error=google_auth_failed`);
+            const frontendUrl = getBaseURL(req);
+            res.redirect(`${frontendUrl}?error=google_auth_failed`);
         }
     }
 );
