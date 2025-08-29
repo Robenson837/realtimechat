@@ -12,20 +12,35 @@ const router = express.Router();
 
 // Dynamic URL detection based on environment
 const getBaseURL = (req) => {
-    // Check if we're on Railway (production)
-    if (process.env.RAILWAY_ENVIRONMENT || req?.get('host')?.includes('railway.app')) {
+    // Debug logging
+    console.log('getBaseURL Debug:');
+    console.log('  - RAILWAY_ENVIRONMENT:', process.env.RAILWAY_ENVIRONMENT);
+    console.log('  - NODE_ENV:', process.env.NODE_ENV);
+    console.log('  - Host header:', req?.get('host'));
+    console.log('  - X-Forwarded-Proto:', req?.get('x-forwarded-proto'));
+    
+    // Force Railway URL if we detect Railway environment
+    if (process.env.RAILWAY_ENVIRONMENT || 
+        process.env.NODE_ENV === 'production' || 
+        req?.get('host')?.includes('railway.app') ||
+        req?.get('host')?.includes('vigichat.up.railway.app')) {
+        console.log('Detected Railway/Production environment');
         return 'https://vigichat.up.railway.app';
     }
     
-    // Check for other production indicators
-    if (process.env.NODE_ENV === 'production' && req?.get('host')) {
+    // Check for other production indicators with dynamic host detection
+    if (req?.get('host') && !req.get('host').includes('localhost')) {
         const host = req.get('host');
         const protocol = req.get('x-forwarded-proto') || (req.secure ? 'https' : 'http');
-        return `${protocol}://${host}`;
+        const dynamicUrl = `${protocol}://${host}`;
+        console.log('Using dynamic production URL:', dynamicUrl);
+        return dynamicUrl;
     }
     
     // Default to localhost for development
-    return process.env.CLIENT_URL || 'http://localhost:3000';
+    const defaultUrl = process.env.CLIENT_URL || 'http://localhost:3000';
+    console.log('Using development URL:', defaultUrl);
+    return defaultUrl;
 };
 
 // Configure Google OAuth Strategy with dynamic callback URL
@@ -206,7 +221,7 @@ const createEmailTransporter = () => {
 
 const sendPasswordResetEmail = async (email, token, fullName = '') => {
     // Use production URL for password reset emails if available
-    const baseUrl = process.env.RAILWAY_ENVIRONMENT 
+    const baseUrl = process.env.RAILWAY_ENVIRONMENT || process.env.NODE_ENV === 'production'
         ? 'https://vigichat.up.railway.app' 
         : (process.env.CLIENT_URL || 'http://localhost:3000');
     const resetLink = `${baseUrl}/?token=${token}`;
@@ -274,7 +289,7 @@ const sendPasswordResetEmail = async (email, token, fullName = '') => {
 
 const sendMagicLinkEmail = async (email, token, fullName = '') => {
     // The magic link should point to the backend server - detect environment
-    const serverUrl = process.env.RAILWAY_ENVIRONMENT 
+    const serverUrl = process.env.RAILWAY_ENVIRONMENT || process.env.NODE_ENV === 'production'
         ? 'https://vigichat.up.railway.app' 
         : (process.env.SERVER_URL || 'http://localhost:3000');
     const magicLink = `${serverUrl}/api/auth/magic-login/${token}`;
@@ -783,7 +798,7 @@ router.get('/magic-login/:token', async (req, res) => {
         magicLinkTokens.delete(userEmail);
 
         // Redirect to frontend with token as query parameter - dynamic URL
-        const frontendUrl = process.env.RAILWAY_ENVIRONMENT 
+        const frontendUrl = process.env.RAILWAY_ENVIRONMENT || process.env.NODE_ENV === 'production'
             ? 'https://vigichat.up.railway.app' 
             : (process.env.CLIENT_URL || 'http://localhost:3000');
         res.redirect(`${frontendUrl}?token=${jwtToken}&magic_login=success`);
@@ -1048,7 +1063,7 @@ router.get('/google/callback',
             // Get dynamic frontend URL based on current environment
             const frontendUrl = getBaseURL(req);
             
-            console.log(`🔐 Google Auth Success - Redirecting to: ${frontendUrl}`);
+            console.log(`Google Auth Success - Redirecting to: ${frontendUrl}`);
             res.redirect(`${frontendUrl}?token=${token}&google_login=success`);
             
         } catch (error) {
