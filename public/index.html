@@ -278,40 +278,38 @@
                         <div class="mobile-online-indicator" id="mobile-current-user-online-indicator"></div>
                     </div>
                 </div>
-                <div class="mobile-sidebar-actions">
-                    <div class="mobile-main-menu-container">
-                        <button class="mobile-icon-btn mobile-main-menu-btn" id="mobile-menu-btn" data-i18n-title="mobile.menu" title="Menú principal">
-                            <i class="fas fa-ellipsis-v"></i>
-                        </button>
-                        <div class="mobile-main-menu-dropdown hidden" id="mobile-menu-dropdown">
-                            <div class="menu-item" id="mobile-profile-settings">
-                                <i class="fas fa-user-cog"></i>
-                                <span data-i18n="main_menu.profile_settings">Ajustes de perfil</span>
+                <div class="mobile-actions-container">
+                    <button class="mobile-menu-btn" id="mobile-menu-btn" data-i18n-title="mobile.menu" title="Menú principal">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div class="mobile-menu-dropdown hidden" id="mobile-menu-dropdown">
+                        <div class="menu-item" id="mobile-profile-settings">
+                            <i class="fas fa-user-cog"></i>
+                            <span data-i18n="main_menu.profile_settings">Ajustes de perfil</span>
+                        </div>
+                        <div class="menu-item" id="mobile-add-contact-menu">
+                            <i class="fas fa-user-plus"></i>
+                            <span data-i18n="main_menu.add_contact">Agregar contacto</span>
+                        </div>
+                        <div class="menu-item" id="mobile-blocked-contacts-menu">
+                            <i class="fas fa-ban"></i>
+                            <span data-i18n="main_menu.blocked_contacts">Contactos bloqueados</span>
+                        </div>
+                        <div class="menu-item" id="mobile-language-menu">
+                            <i class="fas fa-globe"></i>
+                            <span data-i18n="main_menu.language">Idioma</span>
+                            <div class="current-language-indicator">
+                                <img id="mobile-current-language-flag" src="https://flagcdn.com/16x12/es.png" alt="ES" class="current-flag">
                             </div>
-                            <div class="menu-item" id="mobile-add-contact-menu">
-                                <i class="fas fa-user-plus"></i>
-                                <span data-i18n="main_menu.add_contact">Agregar contacto</span>
-                            </div>
-                            <div class="menu-item" id="mobile-blocked-contacts-menu">
-                                <i class="fas fa-ban"></i>
-                                <span data-i18n="main_menu.blocked_contacts">Contactos bloqueados</span>
-                            </div>
-                            <div class="menu-item" id="mobile-language-menu">
-                                <i class="fas fa-globe"></i>
-                                <span data-i18n="main_menu.language">Idioma</span>
-                                <div class="current-language-indicator">
-                                    <img id="mobile-current-language-flag" src="https://flagcdn.com/16x12/es.png" alt="ES" class="current-flag">
-                                </div>
-                            </div>
-                            <div class="menu-item" id="mobile-help-menu">
-                                <i class="fas fa-question-circle"></i>
-                                <span data-i18n="main_menu.help">Ayuda</span>
-                            </div>
-                            <div class="menu-divider"></div>
-                            <div class="menu-item" id="mobile-logout-menu">
-                                <i class="fas fa-sign-out-alt"></i>
-                                <span data-i18n="main_menu.logout">Cerrar sesión</span>
-                            </div>
+                        </div>
+                        <div class="menu-item" id="mobile-help-menu">
+                            <i class="fas fa-question-circle"></i>
+                            <span data-i18n="main_menu.help">Ayuda</span>
+                        </div>
+                        <div class="menu-divider"></div>
+                        <div class="menu-item" id="mobile-logout-menu">
+                            <i class="fas fa-sign-out-alt"></i>
+                            <span data-i18n="main_menu.logout">Cerrar sesión</span>
                         </div>
                     </div>
                 </div>
