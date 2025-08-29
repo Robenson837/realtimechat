@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Google Auth - VigiChat</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        .title {
+            color: #4f46e5;
+            margin-bottom: 30px;
+        }
+        .auth-button {
+            background: #4285f4;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            margin: 10px 0;
+            transition: background 0.3s;
+        }
+        .auth-button:hover {
+            background: #3367d6;
+        }
+        .info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        .step {
+            text-align: left;
+            margin: 10px 0;
+        }
+        .success {
+            background: #e8f5e8;
+            color: #2e7d2e;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+        .error {
+            background: #ffebee;
+            color: #c62828;
+            padding: 15px;
+            border-radius: 6px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">🔐 Test Google Authentication</h1>
+        
+        <div class="info">
+            <h3>Steps to fix Google OAuth:</h3>
+            <div class="step">1. Go to <a href="https://console.cloud.google.com/apis/credentials" target="_blank">Google Cloud Console</a></div>
+            <div class="step">2. Find your OAuth 2.0 Client ID: <code>847703838664-91srgfpsr637a137ddqm4vf49g75gdsi.apps.googleusercontent.com</code></div>
+            <div class="step">3. Add these URLs to "Authorized JavaScript origins":</div>
+            <div class="step">   • <code>http://localhost:3000</code></div>
+            <div class="step">4. Add these URLs to "Authorized redirect URIs":</div>
+            <div class="step">   • <code>http://localhost:3000/api/auth/google/callback</code></div>
+            <div class="step">5. Save and wait 5 minutes for changes to take effect</div>
+        </div>
+
+        <a href="/api/auth/google" class="auth-button">
+            🚀 Test Google Sign In
+        </a>
+
+        <div class="info">
+            <strong>Current Configuration:</strong><br>
+            Client ID: 847703838664-91srgfpsr637a137ddqm4vf49g75gdsi.apps.googleusercontent.com<br>
+            Callback URL: http://localhost:3000/api/auth/google/callback<br>
+            Frontend URL: http://localhost:3000
+        </div>
+
+        <!-- Success/Error messages will be shown here -->
+        <div id="messages"></div>
+    </div>
+
+    <script>
+        // Check for authentication results in URL parameters
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const googleLogin = urlParams.get('google_login');
+        const error = urlParams.get('error');
+        
+        const messagesDiv = document.getElementById('messages');
+        
+        if (token && googleLogin === 'success') {
+            messagesDiv.innerHTML = `
+                <div class="success">
+                    ✅ <strong>Google Authentication Successful!</strong><br>
+                    JWT Token: ${token.substring(0, 20)}...<br>
+                    You can now use this token for authenticated requests.
+                </div>
+            `;
+            
+            // Store token in localStorage for testing
+            localStorage.setItem('authToken', token);
+            
+            // Remove URL parameters
+            window.history.replaceState({}, document.title, window.location.pathname);
+        } else if (error) {
+            let errorMessage = 'Unknown error occurred';
+            if (error === 'google_auth_failed') {
+                errorMessage = 'Google authentication failed. Please try again.';
+            }
+            
+            messagesDiv.innerHTML = `
+                <div class="error">
+                    ❌ <strong>Authentication Failed</strong><br>
+                    ${errorMessage}
+                </div>
+            `;
+        }
+
+        // Test function to verify stored token
+        function testStoredToken() {
+            const storedToken = localStorage.getItem('authToken');
+            if (storedToken) {
+                fetch('/api/auth/verify-jwt', {
+                    headers: {
+                        'Authorization': `Bearer ${storedToken}`
+                    }
+                })
+                .then(response => response.json())
+                .then(data => {
+                    console.log('Token verification:', data);
+                    if (data.success) {
+                        messagesDiv.innerHTML += `
+                            <div class="success">
+                                ✅ <strong>Stored Token is Valid!</strong><br>
+                                User: ${data.debug.user ? data.debug.user.fullName : 'Unknown'}<br>
+                                Email: ${data.debug.user ? data.debug.user.email : 'Unknown'}
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Token verification error:', error);
+                });
+            }
+        }
+
+        // Test stored token on page load
+        setTimeout(testStoredToken, 1000);
+    </script>
+</body>
+</html>

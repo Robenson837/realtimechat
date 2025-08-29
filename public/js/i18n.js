@@ -38,10 +38,20 @@ class I18nManager {
     }
     
     async init() {
-        // Cargar idioma guardado del localStorage
+        // Primero detectar idioma del navegador si no hay preferencia guardada
         const savedLanguage = localStorage.getItem('vigichat-language');
         if (savedLanguage && this.supportedLanguages[savedLanguage]) {
             this.currentLanguage = savedLanguage;
+            console.log(`🌐 Using saved language: ${this.currentLanguage}`);
+        } else {
+            // Detectar automáticamente el idioma del navegador
+            const detectedLang = this.detectBrowserLanguage();
+            if (this.supportedLanguages[detectedLang]) {
+                this.currentLanguage = detectedLang;
+                // Guardar la detección automática
+                localStorage.setItem('vigichat-language', detectedLang);
+                console.log(`🌐 Auto-detected browser language: ${this.currentLanguage}`);
+            }
         }
         
         // Cargar traducciones
@@ -805,6 +815,9 @@ class I18nManager {
         });
         document.dispatchEvent(event);
         
+        // Mostrar notificación de cambio de idioma
+        this.showLanguageChangeNotification(this.supportedLanguages[languageCode]);
+        
         console.log(`✅ Language changed to: ${languageCode}`);
         return true;
     }
@@ -812,6 +825,9 @@ class I18nManager {
     // Aplicar traducciones al DOM
     applyTranslations() {
         console.log('🌐 Applying translations...', this.translations);
+        
+        // Actualizar el atributo lang del HTML para accesibilidad
+        document.documentElement.lang = this.currentLanguage;
         
         // Buscar elementos con data-i18n
         const elements = document.querySelectorAll('[data-i18n]');
@@ -881,20 +897,107 @@ class I18nManager {
         return this.currentLanguage;
     }
     
-    // Detectar idioma del navegador
+    // Detectar idioma del navegador de forma más precisa
     detectBrowserLanguage() {
-        const browserLang = navigator.language || navigator.userLanguage;
-        const langCode = browserLang.split('-')[0].toLowerCase();
+        // Obtener todos los idiomas preferidos del navegador
+        const browserLanguages = navigator.languages || [navigator.language || navigator.userLanguage || 'es'];
         
-        // Mapear códigos especiales
-        const langMapping = {
-            'ht': 'ht', // Haitian Creole
-            'fr': 'fr', // French
-            'en': 'en', // English
-            'es': 'es'  // Spanish
+        console.log('🌐 Browser languages detected:', browserLanguages);
+        
+        // Verificar cada idioma preferido
+        for (let browserLang of browserLanguages) {
+            const langCode = browserLang.split('-')[0].toLowerCase();
+            
+            // Mapear códigos de idioma con variantes
+            const langMapping = {
+                'ht': 'ht', // Haitian Creole
+                'fr': 'fr', // French (fr, fr-FR, fr-CA, etc.)
+                'en': 'en', // English (en, en-US, en-GB, etc.)
+                'es': 'es'  // Spanish (es, es-ES, es-MX, etc.)
+            };
+            
+            const mappedLang = langMapping[langCode];
+            
+            // Si encontramos un idioma soportado, usarlo
+            if (mappedLang && this.supportedLanguages[mappedLang]) {
+                console.log(`🌐 Detected supported language: ${mappedLang} from ${browserLang}`);
+                return mappedLang;
+            }
+        }
+        
+        // Fallback: detectar por región si es posible
+        const primaryLang = browserLanguages[0] || 'es';
+        const region = primaryLang.split('-')[1]?.toUpperCase();
+        
+        // Mapeo regional para casos especiales
+        const regionalMapping = {
+            'HT': 'ht',  // Haití -> Creole
+            'CA': 'en',  // Canadá -> English (aunque podría ser francés en Quebec)
+            'US': 'en',  // Estados Unidos -> English
+            'GB': 'en',  // Reino Unido -> English
+            'FR': 'fr',  // Francia -> French
+            'BE': 'fr',  // Bélgica -> French (aunque podría ser holandés)
+            'CH': 'fr',  // Suiza -> French (aunque podría ser alemán o italiano)
         };
         
-        return langMapping[langCode] || 'es'; // Default a español
+        if (region && regionalMapping[region] && this.supportedLanguages[regionalMapping[region]]) {
+            console.log(`🌐 Using regional mapping: ${region} -> ${regionalMapping[region]}`);
+            return regionalMapping[region];
+        }
+        
+        console.log('🌐 No supported language detected, defaulting to Spanish');
+        return 'es'; // Default a español
+    }
+    
+    // Mostrar notificación cuando se cambia el idioma manualmente
+    showLanguageChangeNotification(languageInfo) {
+        // Crear notificación de cambio
+        const notification = document.createElement('div');
+        notification.className = 'language-change-notification';
+        notification.innerHTML = `
+            <div class="lang-change-content">
+                <i class="fas fa-check-circle"></i>
+                <span class="lang-flag">${languageInfo.flag}</span>
+                <span class="lang-text">${this.t('notifications.language_changed', {language: languageInfo.nativeName})}</span>
+            </div>
+        `;
+        
+        // Estilos inline para la notificación
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(34, 197, 94, 0.95);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 10000;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Animar entrada
+        setTimeout(() => {
+            notification.style.opacity = '1';
+            notification.style.transform = 'translateX(0)';
+        }, 100);
+        
+        // Auto-remove después de 3 segundos
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 3000);
     }
     
     // Inicializar con idioma del navegador si no hay preferencia guardada
@@ -915,22 +1018,94 @@ window.i18n = new I18nManager();
 // Auto-inicializar cuando el DOM esté listo
 if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', () => {
-        setTimeout(() => {
-            window.i18n.initWithBrowserLanguage();
-            // Aplicar traducciones después de un pequeño delay
-            setTimeout(() => {
-                window.i18n.applyTranslations();
-            }, 200);
-        }, 100);
+        // Inicializar inmediatamente para el proceso de login
+        initializeI18nForLogin();
     });
 } else {
+    // Si el DOM ya está listo, inicializar inmediatamente
+    initializeI18nForLogin();
+}
+
+// Función para inicializar i18n específicamente para login
+function initializeI18nForLogin() {
+    // Mostrar idioma detectado en consola para debugging
+    const detectedLang = window.i18n.detectBrowserLanguage();
+    console.log(`🌐 Browser language detected: ${detectedLang}`);
+    
+    // Aplicar traducciones inmediatamente para el login
     setTimeout(() => {
-        window.i18n.initWithBrowserLanguage();
-        // Aplicar traducciones después de un pequeño delay
+        window.i18n.applyTranslations();
+        
+        // Aplicar una segunda vez para elementos que se cargan tarde
         setTimeout(() => {
             window.i18n.applyTranslations();
-        }, 200);
-    }, 100);
+            console.log('🌐 Login translations applied');
+            
+            // Mostrar notificación del idioma detectado
+            showLanguageDetectionNotification();
+        }, 300);
+    }, 50);
+}
+
+// Mostrar notificación discreta del idioma detectado
+function showLanguageDetectionNotification() {
+    const currentLang = window.i18n.getCurrentLanguage();
+    const langInfo = window.i18n.getSupportedLanguages()[currentLang];
+    
+    if (langInfo && !localStorage.getItem('vigichat-language-notification-shown')) {
+        // Solo mostrar una vez por sesión
+        localStorage.setItem('vigichat-language-notification-shown', 'true');
+        
+        // Crear notificación temporal
+        const notification = document.createElement('div');
+        notification.className = 'language-detection-notification';
+        notification.innerHTML = `
+            <div class="lang-notification-content">
+                <span class="lang-flag">${langInfo.flag}</span>
+                <span class="lang-text">Idioma detectado: ${langInfo.nativeName}</span>
+                <button class="change-lang-btn" onclick="window.debugI18n.showSupportedLanguages()" title="Cambiar idioma">
+                    <i class="fas fa-cog"></i>
+                </button>
+            </div>
+        `;
+        
+        // Estilos inline para la notificación
+        notification.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(79, 70, 229, 0.95);
+            color: white;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            z-index: 10000;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            opacity: 0;
+            transform: translateX(100%);
+            transition: all 0.3s ease;
+        `;
+        
+        document.body.appendChild(notification);
+        
+        // Animar entrada
+        setTimeout(() => {
+            notification.style.opacity = '1';
+            notification.style.transform = 'translateX(0)';
+        }, 100);
+        
+        // Auto-remove después de 4 segundos
+        setTimeout(() => {
+            notification.style.opacity = '0';
+            notification.style.transform = 'translateX(100%)';
+            setTimeout(() => {
+                if (notification.parentNode) {
+                    notification.parentNode.removeChild(notification);
+                }
+            }, 300);
+        }, 4000);
+    }
 }
 
 // Función de conveniencia global para traducciones
@@ -961,7 +1136,56 @@ window.debugI18n = {
     // Cambiar idioma para testing
     changeLanguage: (lang) => {
         window.i18n.changeLanguage(lang);
+    },
+    
+    // Detectar idioma del navegador
+    detectBrowserLanguage: () => {
+        const detected = window.i18n.detectBrowserLanguage();
+        console.log('🌐 Browser language detection result:', detected);
+        return detected;
+    },
+    
+    // Mostrar idiomas soportados
+    showSupportedLanguages: () => {
+        console.log('🌐 Supported languages:', window.i18n.getSupportedLanguages());
+    },
+    
+    // Resetear idioma (borrar localStorage y redetectar)
+    resetLanguage: () => {
+        localStorage.removeItem('vigichat-language');
+        console.log('🌐 Language preference reset. Reloading page...');
+        window.location.reload();
+    },
+    
+    // Simular diferentes idiomas de navegador
+    simulateBrowserLanguage: (languages) => {
+        // Temporal override para testing
+        const originalLanguages = navigator.languages;
+        Object.defineProperty(navigator, 'languages', {
+            value: languages,
+            configurable: true
+        });
+        
+        const detected = window.i18n.detectBrowserLanguage();
+        console.log(`🌐 Simulated browser languages [${languages.join(', ')}] -> detected: ${detected}`);
+        
+        // Restore original
+        Object.defineProperty(navigator, 'languages', {
+            value: originalLanguages,
+            configurable: true
+        });
+        
+        return detected;
     }
 };
 
 console.log('🌐 I18n system loaded. Use window.debugI18n for debugging.');
+console.log('🌐 Available debug commands:');
+console.log('  - window.debugI18n.detectBrowserLanguage() : Detect browser language');
+console.log('  - window.debugI18n.changeLanguage("en") : Change to English');
+console.log('  - window.debugI18n.changeLanguage("fr") : Change to French'); 
+console.log('  - window.debugI18n.changeLanguage("ht") : Change to Haitian Creole');
+console.log('  - window.debugI18n.changeLanguage("es") : Change to Spanish');
+console.log('  - window.debugI18n.resetLanguage() : Reset language and redetect');
+console.log('  - window.debugI18n.showSupportedLanguages() : Show all supported languages');
+console.log('  - window.debugI18n.simulateBrowserLanguage(["fr-FR", "en"]) : Simulate browser languages');
