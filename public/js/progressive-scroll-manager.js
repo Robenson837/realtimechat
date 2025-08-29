@@ -1,5 +1,5 @@
 /**
- * Progressive Scroll Manager - WhatsApp/Messenger Style
+ * Progressive Scroll Manager - vigichat/Messenger Style
  * Ultra-optimized scroll management with cursor-based pagination
  */
 

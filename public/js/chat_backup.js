@@ -645,7 +645,7 @@ class ChatManager {
         return messageEl;
     }
 
-    // Create a deleted message placeholder element (like WhatsApp)
+    // Create a deleted message placeholder element (like vigichat)
     createDeletedMessageElement(message) {
         const messageEl = Utils.createElement('div', {
             className: 'message deleted-message-placeholder',
@@ -1430,14 +1430,14 @@ class ChatManager {
             // Auto-expand input en móvil y desktop
             this.autoExpandInput();
             
-            // Handle typing indicators with WhatsApp-style responsiveness
+            // Handle typing indicators with vigichat-style responsiveness
             if (this.currentConversation) {
                 const recipientId = this.getRecipientId();
                 
                 // Send typing indicator immediately (throttled internally)
                 window.SocketManager?.sendTypingIndicatorThrottled(this.currentConversation._id, true);
                 
-                // Stop typing after 2 seconds of inactivity (like WhatsApp)
+                // Stop typing after 2 seconds of inactivity (like vigichat)
                 clearTimeout(typingTimer);
                 typingTimer = setTimeout(() => {
                     window.SocketManager?.sendTypingIndicatorThrottled(this.currentConversation._id, false);
@@ -2331,7 +2331,7 @@ class ChatManager {
     }
 
     renderChatIndicators(conversation) {
-        // Solo mostrar estado del mensaje enviado (como WhatsApp)
+        // Solo mostrar estado del mensaje enviado (como vigichat)
         let indicators = '';
         
         // Agregar indicador de último mensaje enviado por el usuario actual
@@ -2815,7 +2815,7 @@ class ChatManager {
             targetContainer.appendChild(messageEl);
         }
 
-        // Para mensajes nuevos (no históricos), asegurar visibilidad inmediata (estilo WhatsApp)
+        // Para mensajes nuevos (no históricos), asegurar visibilidad inmediata (estilo vigichat)
         if (!prepend) {
             console.log(' New message added, executing enhanced auto-scroll');
             // Usar la nueva función ultra-robusta de auto-scroll
@@ -2902,7 +2902,7 @@ class ChatManager {
                                alt="${message.sender.fullName}" class="message-avatar">`;
         }
 
-        // Crear hora y estado en la misma línea (estilo WhatsApp)
+        // Crear hora y estado en la misma línea (estilo vigichat)
         let timeAndStatusHTML = `<div class="message-time-status">`;
         timeAndStatusHTML += `<span class="message-time">${Utils.formatTime(message.createdAt)}</span>`;
         if (isOwn) {
@@ -3050,7 +3050,7 @@ class ChatManager {
                 imageContent += attachmentContent;
             }
             
-            // Layout: Imagen arriba, texto abajo (como WhatsApp)
+            // Layout: Imagen arriba, texto abajo (como vigichat)
             messageContentHTML = imageContent + textContent;
         }
 
@@ -3198,7 +3198,7 @@ class ChatManager {
         // INSTANTANEOUS scroll to show new message
         this.performRobustAutoScroll();
 
-        // Clear input and maintain focus IMMEDIATELY (faster than WhatsApp)
+        // Clear input and maintain focus IMMEDIATELY (faster than vigichat)
         this.messageInput.textContent = '';
         
         // Reset altura del input después de limpiar
@@ -4075,8 +4075,8 @@ class ChatManager {
         });
     }
     
-    // Format last seen in WhatsApp style
-    formatLastSeenWhatsApp(lastSeen) {
+    // Format last seen in vigichat style
+    formatLastSeenvigichat(lastSeen) {
         const now = new Date();
         const lastSeenDate = new Date(lastSeen);
         const timeDiff = now.getTime() - lastSeenDate.getTime();
@@ -5114,7 +5114,7 @@ class ChatManager {
     }
 
     /**
-     * Robust scroll to bottom implementation with multiple fallbacks - WhatsApp style
+     * Robust scroll to bottom implementation with multiple fallbacks - vigichat style
      */
     scrollToBottom() {
         this.isScrolling = true;
@@ -5623,7 +5623,7 @@ class ChatManager {
         this.updateConversationTypingIndicator(conversationId, userId, false);
     }
 
-    // Show typing indicator in chat header (like WhatsApp)
+    // Show typing indicator in chat header (like vigichat)
     showTypingIndicator(userId) {
         const chatHeader = document.querySelector('.chat-header');
         if (!chatHeader) return;
@@ -5774,7 +5774,7 @@ class ChatManager {
             return;
         }
         
-        // WhatsApp-style deletion handling
+        // vigichat-style deletion handling
         if (deletedForEveryone) {
             // Message was deleted for everyone - show permanent placeholder
             const deleterName = deletedByName || 'Alguien';
@@ -6373,7 +6373,7 @@ class ChatManager {
         // this.renderConversations();
     }
     
-    // Ya no necesitamos indicadores en el avatar - estilo WhatsApp
+    // Ya no necesitamos indicadores en el avatar - estilo vigichat
     renderUnreadIndicators(conversation) {
         // Los indicadores ahora están en la estructura principal (badge verde)
         return '';
@@ -7106,7 +7106,7 @@ class ChatManager {
         console.log(` Conversación configurada correctamente: ${conversationId}`);
     }
     
-    // Función para asegurar que el último mensaje sea visible - estilo WhatsApp
+    // Función para asegurar que el último mensaje sea visible - estilo vigichat
     ensureLastMessageVisible() {
         const messages = document.querySelectorAll('.message');
         if (messages.length === 0) return false;
@@ -7176,7 +7176,7 @@ class ChatManager {
     }
     
     // Nueva función para auto-scroll mejorado que se ejecuta después de cada mensaje
-    performWhatsAppStyleAutoScroll() {
+    performvigichatStyleAutoScroll() {
         
         // Ejecutar scroll inmediato múltiple
         this.scrollToBottom();
@@ -7705,7 +7705,7 @@ class ChatManager {
         }
     }
 
-    // Replace message with permanent deletion placeholder (WhatsApp style)
+    // Replace message with permanent deletion placeholder (vigichat style)
     replaceMessageWithDeletionPlaceholder(messageElement, deletedByName) {
         if (!messageElement) return;
         
@@ -7750,8 +7750,8 @@ class ChatManager {
         console.log(`Message ${messageId} replaced with permanent deletion placeholder`);
     }
 
-    // WhatsApp-style deletion modal
-    showWhatsAppStyleDeletionModal(canDeleteForEveryone, messageAgeMinutes) {
+    // vigichat-style deletion modal
+    showvigichatStyleDeletionModal(canDeleteForEveryone, messageAgeMinutes) {
         return new Promise((resolve) => {
             // Create modal overlay
             const overlay = document.createElement('div');
@@ -7921,10 +7921,10 @@ class ChatManager {
         });
     }
 
-    // Advanced function for deleting messages with WhatsApp-style time restrictions
+    // Advanced function for deleting messages with vigichat-style time restrictions
     async deleteMessageAdvanced(messageId, messageObject = null) {
         try {
-            console.log('🗑️ Starting WhatsApp-style deleteMessageAdvanced for:', messageId);
+            console.log('🗑️ Starting vigichat-style deleteMessageAdvanced for:', messageId);
             
             // Find the message to check its timestamp
             const messageElement = document.querySelector(`[data-message-id="${messageId}"]`);
@@ -7953,7 +7953,7 @@ class ChatManager {
             const now = new Date();
             const timeDifference = now - messageDate;
             
-            // WhatsApp-style time limits:
+            // vigichat-style time limits:
             // - 1 hour and 8 minutes (68 minutes) for "eliminar para todos"
             // - Always available: "eliminar solo para mí"
             const sixtyEightMinutes = 68 * 60 * 1000; // 68 minutes in milliseconds
@@ -7962,8 +7962,8 @@ class ChatManager {
             const messageAgeMinutes = Math.floor(timeDifference / (1000 * 60));
             console.log(`Message age: ${messageAgeMinutes} minutes, can delete for everyone: ${canDeleteForEveryone}`);
 
-            // Show WhatsApp-style deletion options
-            const action = await this.showWhatsAppStyleDeletionModal(canDeleteForEveryone, messageAgeMinutes);
+            // Show vigichat-style deletion options
+            const action = await this.showvigichatStyleDeletionModal(canDeleteForEveryone, messageAgeMinutes);
             if (!action) {
                 console.log('User cancelled message deletion');
                 return; // User cancelled
@@ -9500,7 +9500,7 @@ class ChatManager {
             retakePhotoBtn: !!retakePhotoBtn
         });
         
-        // Variables para manejo de presión prolongada estilo WhatsApp
+        // Variables para manejo de presión prolongada estilo vigichat
         let pressTimer = null;
         let isRecording = false;
         let recordingStartTime = null;
@@ -9529,13 +9529,13 @@ class ChatManager {
             });
         }
         
-        // WhatsApp-style capture button behavior
+        // vigichat-style capture button behavior
         const startPressTimer = () => {
             // Inmediatamente cambiar estilo del botón
             captureBtn.classList.add('pressing');
             
             pressTimer = setTimeout(async () => {
-                // Iniciar grabación de video después de 600ms (como WhatsApp)
+                // Iniciar grabación de video después de 600ms (como vigichat)
                 await this.startVideoRecording();
                 isRecording = true;
                 this.startRecordingTimer();
@@ -9577,7 +9577,7 @@ class ChatManager {
                 }
             });
             
-            // Touch events para móviles (más importante para WhatsApp-style)
+            // Touch events para móviles (más importante para vigichat-style)
             // Nota: Estos requieren opciones especiales, pero addCameraEventListener no las maneja
             // Los mantenemos como están pero los guardamos para cleanup
             const touchStartHandler = (e) => {
@@ -9609,7 +9609,7 @@ class ChatManager {
             );
         }
         
-        // Botones de acción después de captura (WhatsApp style)
+        // Botones de acción después de captura (vigichat style)
         if (savePhotoBtn) {
             console.log('Configurando evento para savePhotoBtn');
             this.addCameraEventListener(savePhotoBtn, 'click', () => {
@@ -9695,7 +9695,7 @@ class ChatManager {
         const recordingIndicator = document.getElementById('recording-indicator');
         
         try {
-            // Configurar stream con audio para video (WhatsApp style)
+            // Configurar stream con audio para video (vigichat style)
             const constraints = {
                 video: {
                     facingMode: this.currentFacingMode,
@@ -9728,7 +9728,7 @@ class ChatManager {
             // Iniciar grabación
             this.mediaRecorder.start();
             
-            // Mostrar indicadores de grabación WhatsApp-style
+            // Mostrar indicadores de grabación vigichat-style
             captureBtn.classList.add('recording');
             recordingIndicator.style.display = 'flex';
             
@@ -9954,7 +9954,7 @@ class ChatManager {
         });
         
         // Verificar que los botones estén visibles
-        const previewControls = document.querySelector('.whatsapp-preview-controls');
+        const previewControls = document.querySelector('.vigichat-preview-controls');
         const saveBtn = document.getElementById('save-photo-btn');
         const retakeBtn = document.getElementById('retake-photo-btn');
         
@@ -10990,7 +10990,7 @@ class ChatManager {
 
     // SMOOTH CONVERSATION LOADING SYSTEM
 
-    // Standard message loading like WhatsApp
+    // Standard message loading like vigichat
     async loadConversationMessages(conversationId) {
         console.log(`📥 Loading conversation messages for: ${conversationId}`);
 
@@ -11103,7 +11103,7 @@ class ChatManager {
 
 
 
-    // Standard chat item click handler - Clean like WhatsApp
+    // Standard chat item click handler - Clean like vigichat
     async handleChatItemClick(conversationId, conversationData = null) {
         try {
             // Get conversation data

@@ -791,14 +791,17 @@ class IntelligentPhotoCrop {
             // Enviar al backend
             await this.uploadAvatar(blob);
             
-            // Cerrar modal
-            this.closeCropModal();
-            
+            // Mostrar notificación de éxito
             this.showNotification('success', 'Foto de perfil actualizada exitosamente');
+            
+            // Cerrar modal después de éxito
+            this.closeCropModal();
             
         } catch (error) {
             console.error('Error saving photo:', error);
             this.showNotification('error', 'Error al guardar la foto de perfil');
+            
+            // No cerrar el modal en caso de error para que el usuario pueda reintentar
         }
     }
 
@@ -1006,7 +1009,15 @@ class IntelligentPhotoCrop {
 
     closeCropModal() {
         if (this.modal) {
-            this.modal.classList.add('hidden');
+            // Agregar transición suave
+            this.modal.style.transition = 'opacity 0.3s ease, visibility 0.3s ease';
+            this.modal.style.opacity = '0';
+            
+            setTimeout(() => {
+                this.modal.classList.add('hidden');
+                this.modal.style.opacity = '';
+                this.modal.style.transition = '';
+            }, 300);
         }
         
         // Limpiar estado
@@ -1016,6 +1027,17 @@ class IntelligentPhotoCrop {
         // Reset file input
         if (this.fileInput) {
             this.fileInput.value = '';
+        }
+        
+        // Resetear transformaciones
+        this.resetTransforms();
+        
+        // Limpiar canvas
+        if (this.cropCtx) {
+            this.cropCtx.clearRect(0, 0, this.cropCanvas.width, this.cropCanvas.height);
+        }
+        if (this.previewCtx) {
+            this.previewCtx.clearRect(0, 0, this.previewCanvas.width, this.previewCanvas.height);
         }
     }
 }

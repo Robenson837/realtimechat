@@ -1,0 +1,856 @@
+/* ======================================
+   AUDIO RECORDER STYLES
+   Estilos para funcionalidad de mensajes de voz
+   ====================================== */
+
+/* Botones de acción fuera del input */
+.send-btn,
+.record-btn,
+.stop-record-btn {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+/* Botón de enviar - simple sin background */
+.send-btn {
+    background: transparent !important;
+    color: var(--primary-color);
+    border: none;
+}
+
+.send-btn:hover:not(:disabled) {
+    background: transparent !important;
+    color: var(--primary-dark);
+}
+
+.send-btn:disabled {
+    color: var(--gray-400);
+    cursor: not-allowed;
+    opacity: 0.6;
+}
+
+/* Botón de grabar */
+.record-btn {
+    background: var(--gray-200);
+    color: var(--text-secondary);
+}
+
+.record-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: scale(1.05);
+}
+
+.record-btn:active {
+    transform: scale(0.95);
+}
+
+/* Botón de detener grabación */
+.stop-record-btn {
+    background: #ef4444;
+    color: white;
+    position: relative;
+}
+
+.stop-record-btn.recording {
+    animation: recordingPulse 1.5s infinite;
+}
+
+.stop-record-btn:hover {
+    background: #dc2626;
+    transform: scale(1.05);
+}
+
+.stop-record-btn:active {
+    transform: scale(0.95);
+}
+
+/* Animación de grabación */
+@keyframes recordingPulse {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.7);
+    }
+    50% {
+        box-shadow: 0 0 0 8px rgba(239, 68, 68, 0);
+    }
+}
+
+/* Indicador de grabación en el botón */
+.stop-record-btn.recording::before {
+    content: '';
+    position: absolute;
+    top: -3px;
+    left: -3px;
+    right: -3px;
+    bottom: -3px;
+    border: 2px solid #ef4444;
+    border-radius: 50%;
+    animation: recordingRing 1s infinite;
+}
+
+@keyframes recordingRing {
+    0% {
+        transform: scale(1);
+        opacity: 1;
+    }
+    100% {
+        transform: scale(1.1);
+        opacity: 0;
+    }
+}
+
+/* Estados de visibilidad */
+.hidden {
+    display: none !important;
+}
+
+/* Recording Interface - Reemplaza el input area */
+.recording-interface {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border-radius: 25px;
+    border: 2px solid var(--primary-color);
+    box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.1);
+    animation: slideIn 0.3s ease;
+}
+
+/* Botón eliminar grabación */
+.delete-recording-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: #ef4444;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.delete-recording-btn:hover {
+    background: #dc2626;
+    transform: scale(1.05);
+}
+
+/* Timer de grabación */
+.recording-timer {
+    font-family: 'Courier New', monospace;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--primary-color);
+    min-width: 50px;
+    flex-shrink: 0;
+}
+
+/* Audio Visualizer */
+.audio-visualizer {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+}
+
+.frequency-bars {
+    display: flex;
+    align-items: end;
+    gap: 2px;
+    height: 32px;
+}
+
+.frequency-bar {
+    width: 3px;
+    background: var(--primary-color);
+    border-radius: 2px;
+    transition: height 0.1s ease;
+    min-height: 4px;
+    opacity: 0.3;
+}
+
+.frequency-bar.active {
+    opacity: 1;
+    background: #10b981;
+}
+
+.frequency-bar.recorded {
+    opacity: 0.8;
+    background: var(--primary-color);
+}
+
+/* Animation para las barras */
+.frequency-bar:nth-child(1) { animation-delay: 0ms; }
+.frequency-bar:nth-child(2) { animation-delay: 100ms; }
+.frequency-bar:nth-child(3) { animation-delay: 200ms; }
+.frequency-bar:nth-child(4) { animation-delay: 300ms; }
+.frequency-bar:nth-child(5) { animation-delay: 400ms; }
+.frequency-bar:nth-child(6) { animation-delay: 500ms; }
+.frequency-bar:nth-child(7) { animation-delay: 400ms; }
+.frequency-bar:nth-child(8) { animation-delay: 300ms; }
+.frequency-bar:nth-child(9) { animation-delay: 200ms; }
+.frequency-bar:nth-child(10) { animation-delay: 100ms; }
+
+/* Controles de grabación */
+.recording-controls {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.pause-record-btn,
+.resume-record-btn,
+.finish-record-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+}
+
+.pause-record-btn,
+.resume-record-btn {
+    background: var(--gray-200);
+    color: var(--text-secondary);
+}
+
+.pause-record-btn:hover,
+.resume-record-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: scale(1.05);
+}
+
+.finish-record-btn {
+    background: #10b981;
+    color: white;
+}
+
+.finish-record-btn:hover {
+    background: #059669;
+    transform: scale(1.05);
+}
+
+/* Animación de entrada */
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Audio Preview Interface */
+.audio-preview-interface {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border-radius: 25px;
+    border: 2px solid #10b981;
+    box-shadow: 0 0 0 2px rgba(16, 185, 129, 0.1);
+    animation: slideIn 0.3s ease;
+    position: relative;
+}
+
+/* Botón eliminar preview */
+.delete-preview-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: #ef4444;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.delete-preview-btn:hover {
+    background: #dc2626;
+    transform: scale(1.05);
+}
+
+/* Botón play preview */
+.preview-play-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: #10b981;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.preview-play-btn:hover {
+    background: #059669;
+    transform: scale(1.05);
+}
+
+/* Waveform con overlay de progreso */
+.audio-preview-waveform {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 16px;
+    position: relative;
+    height: 32px;
+}
+
+.preview-frequency-bars {
+    display: flex;
+    align-items: end;
+    gap: 2px;
+    height: 32px;
+    position: relative;
+    z-index: 1;
+}
+
+.preview-frequency-bar {
+    width: 3px;
+    background: #10b981;
+    border-radius: 2px;
+    opacity: 0.7;
+    transition: all 0.1s ease;
+}
+
+.preview-progress-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: rgba(16, 185, 129, 0.3);
+    border-radius: 4px;
+    transition: width 0.1s ease;
+    z-index: 2;
+    pointer-events: none;
+    width: 0%;
+}
+
+/* Duración del preview */
+.preview-duration {
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    color: #10b981;
+    min-width: 50px;
+    flex-shrink: 0;
+}
+
+/* Acciones del preview */
+.preview-actions {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.record-again-btn,
+.send-voice-btn {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 16px;
+}
+
+.record-again-btn {
+    background: var(--gray-200);
+    color: var(--text-secondary);
+}
+
+.record-again-btn:hover {
+    background: var(--primary-color);
+    color: white;
+    transform: scale(1.05);
+}
+
+.send-voice-btn {
+    background: #10b981;
+    color: white;
+}
+
+.send-voice-btn:hover {
+    background: #059669;
+    transform: scale(1.05);
+}
+
+.send-voice-btn:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.send-voice-btn.sending {
+    background: #6366f1;
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+/* Audio Preview Interface */
+.audio-preview-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--bg-secondary);
+    border-radius: 25px;
+    border: 1px solid var(--border-color);
+    animation: slideIn 0.3s ease;
+}
+
+.preview-delete-btn,
+.preview-send-btn {
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: transparent !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 16px;
+    flex-shrink: 0;
+}
+
+.preview-delete-btn {
+    color: #ef4444;
+}
+
+.preview-delete-btn:hover {
+    background: rgba(239, 68, 68, 0.1) !important;
+    transform: scale(1.05);
+}
+
+.preview-send-btn {
+    color: var(--primary-color);
+}
+
+.preview-send-btn:hover {
+    background: rgba(79, 70, 229, 0.1) !important;
+    transform: scale(1.05);
+}
+
+.preview-send-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* Audio Display Center */
+.audio-preview-display {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.preview-play-button {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.preview-play-button:hover {
+    background: rgba(16, 185, 129, 0.25);
+    transform: scale(1.05);
+}
+
+.audio-preview-duration {
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-secondary);
+    min-width: 40px;
+    flex-shrink: 0;
+}
+
+.audio-preview-waveform-simple {
+    flex: 1;
+    display: flex;
+    align-items: end;
+    gap: 2px;
+    height: 20px;
+    padding: 0 8px;
+}
+
+.preview-freq-bar {
+    width: 3px;
+    background: var(--primary-color);
+    border-radius: 2px;
+    opacity: 0.7;
+    min-height: 3px;
+}
+
+/* Layout con botones fuera del input */
+.input-area {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Asegurar que el input tome el espacio disponible */
+.message-input-wrapper {
+    flex: 1;
+}
+
+/* Animación de entrada/salida */
+.send-btn:not(.hidden),
+.record-btn:not(.hidden),
+.stop-record-btn:not(.hidden) {
+    animation: buttonSlideIn 0.2s ease forwards;
+}
+
+@keyframes buttonSlideIn {
+    from {
+        opacity: 0;
+        transform: scale(0.8);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+
+/* Responsive */
+@media (max-width: 768px) {
+    .send-btn,
+    .record-btn,
+    .stop-record-btn {
+        width: 44px;
+        height: 44px;
+        font-size: 18px;
+    }
+    
+    .input-area {
+        gap: 6px;
+    }
+
+    /* Recording interface responsive */
+    .recording-interface {
+        gap: 8px;
+        padding: 10px 14px;
+    }
+
+    .delete-recording-btn,
+    .pause-record-btn,
+    .resume-record-btn,
+    .finish-record-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+    }
+
+    .recording-timer {
+        font-size: 14px;
+        min-width: 45px;
+    }
+
+    .audio-visualizer {
+        padding: 0 12px;
+    }
+
+    .frequency-bars {
+        height: 28px;
+    }
+
+    /* Preview interface responsive */
+    .audio-preview-interface {
+        gap: 8px;
+        padding: 10px 14px;
+    }
+
+    .delete-preview-btn,
+    .preview-play-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+
+    .audio-preview-waveform {
+        padding: 0 12px;
+        height: 28px;
+    }
+
+    .preview-frequency-bars {
+        height: 28px;
+    }
+
+    .preview-duration {
+        font-size: 12px;
+        min-width: 45px;
+    }
+
+    .record-again-btn,
+    .send-voice-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+    }
+
+    /* Audio preview responsive */
+    .audio-preview-container {
+        gap: 10px;
+        padding: 10px 14px;
+    }
+
+    .preview-delete-btn,
+    .preview-send-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+    }
+
+    .audio-preview-display {
+        gap: 10px;
+    }
+
+    .audio-preview-duration {
+        font-size: 13px;
+        min-width: 35px;
+    }
+
+    .audio-preview-waveform-simple {
+        height: 18px;
+        padding: 0 6px;
+    }
+}
+
+@media (max-width: 480px) {
+    .send-btn,
+    .record-btn,
+    .stop-record-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 16px;
+    }
+    
+    .input-area {
+        gap: 4px;
+    }
+
+    /* Recording interface mobile */
+    .recording-interface {
+        gap: 6px;
+        padding: 8px 12px;
+    }
+
+    .delete-recording-btn,
+    .pause-record-btn,
+    .resume-record-btn,
+    .finish-record-btn {
+        width: 36px;
+        height: 36px;
+        font-size: 14px;
+    }
+
+    .recording-timer {
+        font-size: 13px;
+        min-width: 40px;
+    }
+
+    .audio-visualizer {
+        padding: 0 8px;
+    }
+
+    .frequency-bars {
+        height: 24px;
+        gap: 1px;
+    }
+
+    .frequency-bar {
+        width: 2px;
+    }
+
+    /* Preview interface mobile */
+    .audio-preview-interface {
+        gap: 6px;
+        padding: 8px 12px;
+    }
+
+    .delete-preview-btn,
+    .preview-play-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 11px;
+    }
+
+    .audio-preview-waveform {
+        padding: 0 8px;
+        height: 24px;
+    }
+
+    .preview-frequency-bars {
+        height: 24px;
+        gap: 1px;
+    }
+
+    .preview-frequency-bar {
+        width: 2px;
+    }
+
+    .preview-duration {
+        font-size: 11px;
+        min-width: 35px;
+    }
+
+    .record-again-btn,
+    .send-voice-btn {
+        width: 34px;
+        height: 34px;
+        font-size: 12px;
+    }
+
+    /* Audio preview mobile */
+    .audio-preview-container {
+        gap: 8px;
+        padding: 8px 12px;
+    }
+
+    .preview-delete-btn,
+    .preview-send-btn {
+        width: 34px;
+        height: 34px;
+        font-size: 12px;
+    }
+
+    .audio-preview-display {
+        gap: 8px;
+    }
+
+    .audio-preview-duration {
+        font-size: 12px;
+        min-width: 32px;
+    }
+
+    .audio-preview-waveform-simple {
+        height: 16px;
+        padding: 0 4px;
+        gap: 1px;
+    }
+
+    .preview-freq-bar {
+        width: 2px;
+    }
+}
+
+/* Efecto de grabación en toda la interfaz */
+body.recording {
+    --recording-color: #ef4444;
+}
+
+body.recording .message-input-container {
+    border-color: var(--recording-color);
+    box-shadow: 0 0 0 2px rgba(239, 68, 68, 0.1);
+}
+
+/* Indicador visual durante grabación */
+.recording-indicator {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #ef4444;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    animation: slideDown 0.3s ease;
+}
+
+.recording-indicator i {
+    animation: recordingPulse 1s infinite;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateX(-50%) translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+    }
+}
+
+/* Dark theme compatibility */
+[data-theme="dark"] .record-btn {
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .record-btn:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+[data-theme="dark"] .input-field:focus ~ .record-btn {
+    background: var(--primary-color);
+    color: white;
+}

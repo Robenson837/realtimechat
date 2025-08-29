@@ -199,9 +199,11 @@ class ApiClient {
     }
 
     // Upload file
-    async upload(endpoint, file, onProgress, fieldName = 'file') {
-        const formData = new FormData();
-        formData.append(fieldName, file);
+    async upload(endpoint, file, onProgress, fieldName = 'file', existingFormData = null) {
+        const formData = existingFormData || new FormData();
+        if (file && fieldName) {
+            formData.append(fieldName, file);
+        }
 
         return new Promise((resolve, reject) => {
             const xhr = new XMLHttpRequest();
@@ -442,6 +444,10 @@ const Messages = {
 
     async markConversationAsRead(conversationId) {
         return api.post('/messages/mark-conversation-read', { conversationId });
+    },
+
+    async sendFile(formData, onProgress) {
+        return api.upload('/messages/send-file', null, onProgress, null, formData);
     }
 };
 

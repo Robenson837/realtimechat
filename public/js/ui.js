@@ -122,7 +122,7 @@ class UIManager {
             event.preventDefault();
             this.sendMessage();
         }
-        // Shift+Enter permite nueva línea (comportamiento de WhatsApp)
+        // Shift+Enter permite nueva línea (comportamiento de vigichat)
     }
 
     sendMessage() {

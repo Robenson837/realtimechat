@@ -1,6 +1,6 @@
 /**
  * Progressive Message Loader - Carga incremental de mensajes para scroll infinito
- * Compatible con WhatsApp/Messenger behavior
+ * Compatible con vigichat/Messenger behavior
  */
 
 class ProgressiveMessageLoader {

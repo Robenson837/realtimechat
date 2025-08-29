@@ -153,6 +153,7 @@ app.use(helmet({
             scriptSrc: ["'self'", "'unsafe-inline'", "https://cdnjs.cloudflare.com"],
             scriptSrcAttr: ["'unsafe-inline'"], // Allow inline event handlers
             imgSrc: ["'self'", "data:", "https:"],
+            mediaSrc: ["'self'", "data:", "blob:"], // Allow audio/video from data URLs and blobs
             connectSrc: ["'self'", "ws:", "wss:", "https://cdnjs.cloudflare.com", "https://fonts.googleapis.com", "http://localhost:3000", "https://nominatim.openstreetmap.org", "https://maps.googleapis.com", "https://www.google.com"],
             frameSrc: ["'self'", "https://docs.google.com", "https://drive.google.com", "https://view.officeapps.live.com", "https://www.openstreetmap.org"] // Allow Google Docs, Office Online Viewer and OpenStreetMap for location preview
         }

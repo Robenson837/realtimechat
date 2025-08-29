@@ -1676,6 +1676,7 @@ const initializeSocketHandlers = (io) => {
                 console.log(`Broadcasting status ${status} for user ${userId} to ${user.contacts.length} contacts`);
 
                 user.contacts.forEach(contact => {
+                    if (!contact.user) return; // Skip if contact user doesn't exist
                     const contactId = contact.user._id.toString();
                     const contactConnection = activeUsers.get(contactId);
                     

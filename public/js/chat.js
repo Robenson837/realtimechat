@@ -693,7 +693,7 @@ class ChatManager {
     return messageEl;
   }
 
-  // Create a deleted message placeholder element (like WhatsApp)
+  // Create a deleted message placeholder element (like vigichat)
   createDeletedMessageElement(message) {
     const messageEl = Utils.createElement("div", {
       className: "message deleted-message-placeholder",
@@ -1563,7 +1563,7 @@ class ChatManager {
       // Auto-expand input en móvil y desktop
       this.autoExpandInput();
 
-      // Handle typing indicators with WhatsApp-style responsiveness
+      // Handle typing indicators with vigichat-style responsiveness
       if (this.currentConversation) {
         const recipientId = this.getRecipientId();
 
@@ -1573,7 +1573,7 @@ class ChatManager {
           true
         );
 
-        // Stop typing after 2 seconds of inactivity (like WhatsApp)
+        // Stop typing after 2 seconds of inactivity (like vigichat)
         clearTimeout(typingTimer);
         typingTimer = setTimeout(() => {
           window.SocketManager?.sendTypingIndicatorThrottled(
@@ -2050,7 +2050,7 @@ class ChatManager {
                     <div class="empty-state">
                         <i class="fas fa-comments"></i>
                         <p>No hay conversaciones</p>
-                        <button class="btn-primary" id="start-new-chat-btn">
+                        <button class="btn-primary" style="margin-left: 100px; margin-top: 12px;" id="start-new-chat-btn">
                             Iniciar chat
                         </button>
                     </div>
@@ -2542,7 +2542,7 @@ class ChatManager {
   }
 
   renderChatIndicators(conversation) {
-    // Solo mostrar estado del mensaje enviado (como WhatsApp)
+    // Solo mostrar estado del mensaje enviado (como vigichat)
     let indicators = "";
 
     // Agregar indicador de último mensaje enviado por el usuario actual
@@ -3536,7 +3536,7 @@ class ChatManager {
       targetContainer.appendChild(messageEl);
     }
 
-    // Para mensajes nuevos (no históricos), asegurar visibilidad inmediata (estilo WhatsApp)
+    // Para mensajes nuevos (no históricos), asegurar visibilidad inmediata (estilo vigichat)
     if (!prepend) {
       console.log(" New message added, executing enhanced auto-scroll");
       // Usar la nueva función ultra-robusta de auto-scroll
@@ -3649,7 +3649,7 @@ class ChatManager {
                                alt="${sender.fullName || sender.username || 'Usuario'}" class="message-avatar">`;
     }
 
-    // Crear hora y estado en la misma línea (estilo WhatsApp)
+    // Crear hora y estado en la misma línea (estilo vigichat)
     let timeAndStatusHTML = `<div class="message-time-status">`;
     timeAndStatusHTML += `<span class="message-time">${Utils.formatTime(message.createdAt)}</span>`;
     if (isOwn) {
@@ -4094,6 +4094,17 @@ class ChatManager {
           </div>
         </div>
       `;
+    } else if (message.type === 'voice') {
+      // Voice message
+      const audioAttachment = {
+        path: message.content.fileUrl,
+        mimeType: 'audio/webm',
+        originalName: message.content.fileName || 'voice_message.webm',
+        size: message.content.fileSize,
+        duration: message.content.duration,
+        frequencies: message.content.frequencies
+      };
+      messageContentHTML = this.createAudioMessageElement(audioAttachment, message);
     } else {
       // Regular message
       let textContent = "";
@@ -4131,10 +4142,14 @@ class ChatManager {
                                 </video>
                             </div>
                         `;
+            } else if (attachment.mimeType?.startsWith("audio/")) {
+              // Handle audio files (voice messages)
+              return this.createAudioMessageElement(attachment, message);
             } else if (
               attachment.mimeType &&
               !attachment.mimeType.startsWith("image/") &&
-              !attachment.mimeType.startsWith("video/")
+              !attachment.mimeType.startsWith("video/") &&
+              !attachment.mimeType.startsWith("audio/")
             ) {
               // Handle documents and other files
               const fileExtension =
@@ -4265,7 +4280,7 @@ class ChatManager {
         imageContent += attachmentContent;
       }
 
-      // Layout: Imagen arriba, texto abajo (como WhatsApp)
+      // Layout: Imagen arriba, texto abajo (como vigichat)
       messageContentHTML = imageContent + textContent;
     }
 
@@ -4715,7 +4730,7 @@ class ChatManager {
     // INSTANTANEOUS scroll to show new message
     this.performRobustAutoScroll();
 
-    // Clear input and maintain focus IMMEDIATELY (faster than WhatsApp)
+    // Clear input and maintain focus IMMEDIATELY (faster than vigichat)
     this.messageInput.textContent = "";
 
     // Reset altura del input después de limpiar
@@ -5781,8 +5796,8 @@ class ChatManager {
       });
   }
 
-  // Format last seen in WhatsApp style
-  formatLastSeenWhatsApp(lastSeen) {
+  // Format last seen in vigichat style
+  formatLastSeenvigichat(lastSeen) {
     const now = new Date();
     const lastSeenDate = new Date(lastSeen);
     const timeDiff = now.getTime() - lastSeenDate.getTime();
@@ -6962,7 +6977,7 @@ class ChatManager {
   }
 
   /**
-   * Robust scroll to bottom implementation with multiple fallbacks - WhatsApp style
+   * Robust scroll to bottom implementation with multiple fallbacks - vigichat style
    */
   scrollToBottom() {
     this.isScrolling = true;
@@ -7516,7 +7531,7 @@ class ChatManager {
     this.updateConversationTypingIndicator(conversationId, userId, false);
   }
 
-  // Show typing indicator in chat header (like WhatsApp)
+  // Show typing indicator in chat header (like vigichat)
   showTypingIndicator(userId) {
     const chatHeader = document.querySelector(".chat-header");
     if (!chatHeader) return;
@@ -7686,7 +7701,7 @@ class ChatManager {
       return;
     }
 
-    // WhatsApp-style deletion handling
+    // vigichat-style deletion handling
     if (deletedForEveryone) {
       // Message was deleted for everyone - show permanent placeholder
       const deleterName = deletedByName || "Alguien";
@@ -8345,7 +8360,7 @@ class ChatManager {
     // this.renderConversations();
   }
 
-  // Ya no necesitamos indicadores en el avatar - estilo WhatsApp
+  // Ya no necesitamos indicadores en el avatar - estilo vigichat
   renderUnreadIndicators(conversation) {
     // Los indicadores ahora están en la estructura principal (badge verde)
     return "";
@@ -9161,7 +9176,7 @@ class ChatManager {
     console.log(` Conversación configurada correctamente: ${conversationId}`);
   }
 
-  // Función para asegurar que el último mensaje sea visible - estilo WhatsApp
+  // Función para asegurar que el último mensaje sea visible - estilo vigichat
   ensureLastMessageVisible() {
     const messages = document.querySelectorAll(".message");
     if (messages.length === 0) return false;
@@ -9234,7 +9249,7 @@ class ChatManager {
   }
 
   // Nueva función para auto-scroll mejorado que se ejecuta después de cada mensaje
-  performWhatsAppStyleAutoScroll() {
+  performvigichatStyleAutoScroll() {
     // Ejecutar scroll inmediato múltiple
     this.scrollToBottom();
     this.ensureLastMessageVisible();
@@ -9256,6 +9271,315 @@ class ChatManager {
       this.scrollToBottom();
       this.ensureLastMessageVisible();
     }, 500);
+  }
+
+  // Crear elemento de mensaje de audio estilo vigichat
+  createAudioMessageElement(attachment, message = null) {
+    const duration = attachment.duration || "0:00";
+    const audioId = `audio_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    
+    // Convertir duración a formato mm:ss si está en segundos
+    const formattedDuration = this.formatAudioDuration(duration);
+    
+    // Obtener información del remitente para la foto de perfil
+    let senderAvatar = '/images/user-placeholder-40.svg';
+    let senderName = 'Usuario';
+    
+    if (message && message.sender) {
+      if (typeof message.sender === 'object') {
+        senderAvatar = message.sender.avatar || senderAvatar;
+        senderName = message.sender.fullName || message.sender.username || senderName;
+      }
+    }
+    
+    return `
+      <div class="audio-message-whatsapp-complete">
+        <audio id="${audioId}" style="display: none;" preload="metadata">
+          <source src="${attachment.path}" type="${attachment.mimeType}">
+          Tu navegador no soporta la reproducción de audio.
+        </audio>
+        
+        <!-- Foto de perfil del remitente -->
+        <div class="audio-profile-pic">
+          <img src="${senderAvatar}" alt="${senderName}" onerror="this.src='/images/user-placeholder-40.svg'">
+        </div>
+        
+        <!-- Botón de play/pause -->
+        <button class="audio-play-btn-complete" onclick="window.chatManager.toggleAudio('${audioId}', this)">
+          <span class="play-triangle"></span>
+        </button>
+        
+        <!-- Contenedor de progreso -->
+        <div class="audio-progress-container-complete">
+          <span class="audio-current-time" id="current-time-${audioId}">0:00</span>
+          
+          <div class="audio-progress-bar-container">
+            <div class="audio-progress-bar-complete" id="progress-bar-${audioId}" onclick="window.chatManager.seekAudioByClick('${audioId}', event)">
+              <div class="audio-progress-fill" id="progress-fill-${audioId}"></div>
+            </div>
+          </div>
+          
+          <span class="audio-total-time" id="total-time-${audioId}">${formattedDuration}</span>
+        </div>
+      </div>
+    `;
+  }
+
+  // Formatear duración de audio
+  formatAudioDuration(duration) {
+    if (!duration || duration === "0:00") return "0:00";
+    
+    // Si ya está en formato mm:ss, devolverlo tal como está
+    if (typeof duration === 'string' && duration.includes(':')) {
+      return duration;
+    }
+    
+    // Si es un número en segundos, convertir a mm:ss
+    if (typeof duration === 'number') {
+      const minutes = Math.floor(duration / 60);
+      const seconds = Math.floor(duration % 60);
+      return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+    
+    return duration;
+  }
+
+  // Función para buscar en el audio
+  seekAudio(audioId, percentage) {
+    const audioElement = document.getElementById(audioId);
+    if (audioElement && audioElement.duration) {
+      const newTime = (percentage / 100) * audioElement.duration;
+      audioElement.currentTime = newTime;
+    }
+  }
+
+  // Función para buscar en el audio haciendo click en la barra
+  seekAudioByClick(audioId, event) {
+    const audioElement = document.getElementById(audioId);
+    const progressBar = event.currentTarget;
+    
+    if (!audioElement || !audioElement.duration) return;
+    
+    const rect = progressBar.getBoundingClientRect();
+    const clickX = event.clientX - rect.left;
+    const barWidth = rect.width;
+    const percentage = (clickX / barWidth) * 100;
+    
+    // Limitar entre 0 y 100
+    const clampedPercentage = Math.max(0, Math.min(100, percentage));
+    
+    const newTime = (clampedPercentage / 100) * audioElement.duration;
+    audioElement.currentTime = newTime;
+    
+    // Actualizar visualmente el progreso
+    const progressFill = document.getElementById(`progress-fill-${audioId}`);
+    const currentTimeEl = document.getElementById(`current-time-${audioId}`);
+    
+    if (progressFill) {
+      progressFill.style.width = `${clampedPercentage}%`;
+    }
+    
+    if (currentTimeEl) {
+      const minutes = Math.floor(newTime / 60);
+      const seconds = Math.floor(newTime % 60);
+      currentTimeEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+    }
+  }
+
+  // Generar dots de frecuencia por defecto
+  getDefaultFrequencyDots() {
+    const defaultHeights = [8, 12, 6, 15, 9, 18, 7, 14, 10, 16, 11, 8, 13, 5, 17];
+    return defaultHeights.map((height, index) => 
+      `<div class="freq-dot" style="height: ${height}px;" data-index="${index}"></div>`
+    ).join('');
+  }
+
+  // Generar barras de frecuencia por defecto
+  getDefaultFrequencyBars() {
+    const defaultHeights = [12, 8, 16, 6, 14, 10, 18, 7, 13, 9];
+    return defaultHeights.map(height => 
+      `<div class="frequency-bar-static" style="height: ${height}px;"></div>`
+    ).join('');
+  }
+
+  // Controlar reproducción de audio
+  toggleAudio(audioId, button) {
+    const audioElement = document.getElementById(audioId);
+    const playTriangle = button.querySelector('.play-triangle');
+    const progressFill = document.getElementById(`progress-fill-${audioId}`);
+    const currentTimeEl = document.getElementById(`current-time-${audioId}`);
+    const totalTimeEl = document.getElementById(`total-time-${audioId}`);
+    
+    if (!audioElement) return;
+    
+    if (audioElement.paused) {
+      // Pausar otros audios que estén reproduciéndose
+      document.querySelectorAll('audio').forEach(audio => {
+        if (audio.id !== audioId && !audio.paused) {
+          audio.pause();
+          const otherButton = document.querySelector(`button[onclick*="${audio.id}"]`);
+          if (otherButton) {
+            const otherTriangle = otherButton.querySelector('.play-triangle');
+            if (otherTriangle) {
+              // Restaurar icono de play
+              otherTriangle.style.width = '0';
+              otherTriangle.style.height = '0';
+              otherTriangle.style.borderLeft = '12px solid white';
+              otherTriangle.style.borderTop = '7px solid transparent';
+              otherTriangle.style.borderBottom = '7px solid transparent';
+              otherTriangle.style.borderRight = 'none';
+            }
+          }
+          // Reset progress de otros audios
+          const otherProgress = document.getElementById(`progress-fill-${audio.id}`);
+          const otherCurrentTime = document.getElementById(`current-time-${audio.id}`);
+          if (otherProgress) {
+            otherProgress.style.width = '0%';
+          }
+          if (otherCurrentTime) {
+            otherCurrentTime.textContent = '0:00';
+          }
+        }
+      });
+      
+      audioElement.play();
+      
+      // Cambiar a icono de pausa (cuadrado blanco)
+      if (playTriangle) {
+        playTriangle.style.width = '12px';
+        playTriangle.style.height = '12px';
+        playTriangle.style.background = 'white';
+        playTriangle.style.border = 'none';
+        playTriangle.style.borderRadius = '1px';
+      }
+      
+      // Actualizar progreso en tiempo real
+      const updateProgress = () => {
+        if (!audioElement.paused && audioElement.duration) {
+          const progress = (audioElement.currentTime / audioElement.duration) * 100;
+          if (progressFill) {
+            progressFill.style.width = `${progress}%`;
+          }
+          
+          // Mostrar tiempo transcurrido
+          const elapsed = audioElement.currentTime;
+          const minutes = Math.floor(elapsed / 60);
+          const seconds = Math.floor(elapsed % 60);
+          if (currentTimeEl) {
+            currentTimeEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+          }
+          
+          requestAnimationFrame(updateProgress);
+        }
+      };
+      updateProgress();
+      
+    } else {
+      audioElement.pause();
+      
+      // Cambiar de vuelta a icono de play (triángulo)
+      if (playTriangle) {
+        playTriangle.style.width = '0';
+        playTriangle.style.height = '0';
+        playTriangle.style.borderLeft = '12px solid white';
+        playTriangle.style.borderTop = '7px solid transparent';
+        playTriangle.style.borderBottom = '7px solid transparent';
+        playTriangle.style.borderRight = 'none';
+        playTriangle.style.background = 'none';
+        playTriangle.style.borderRadius = '0';
+      }
+    }
+    
+    // Evento cuando termina el audio
+    audioElement.onended = () => {
+      // Restaurar icono de play
+      if (playTriangle) {
+        playTriangle.style.width = '0';
+        playTriangle.style.height = '0';
+        playTriangle.style.borderLeft = '12px solid white';
+        playTriangle.style.borderTop = '7px solid transparent';
+        playTriangle.style.borderBottom = '7px solid transparent';
+        playTriangle.style.borderRight = 'none';
+        playTriangle.style.background = 'none';
+        playTriangle.style.borderRadius = '0';
+      }
+      if (progressFill) {
+        progressFill.style.width = '0%';
+      }
+      // Restaurar duración original
+      audioElement.currentTime = 0;
+      if (currentTimeEl) {
+        currentTimeEl.textContent = '0:00';
+      }
+    };
+  }
+
+  // Controlar reproducción de audio (legacy)
+  toggleAudioPlayback(audioId, button) {
+    const audioElement = document.getElementById(audioId);
+    const icon = button.querySelector('i');
+    
+    if (!audioElement) return;
+    
+    if (audioElement.paused) {
+      // Pausar otros audios que estén reproduciéndose
+      document.querySelectorAll('audio').forEach(audio => {
+        if (audio.id !== audioId && !audio.paused) {
+          audio.pause();
+          const otherButton = document.querySelector(`button[onclick*="${audio.id}"] i`);
+          if (otherButton) {
+            otherButton.className = 'fas fa-play';
+          }
+        }
+      });
+      
+      audioElement.play();
+      icon.className = 'fas fa-pause';
+      
+      // Animar barras durante reproducción
+      this.animateAudioBars(button.parentElement);
+    } else {
+      audioElement.pause();
+      icon.className = 'fas fa-play';
+      this.stopAudioBarsAnimation(button.parentElement);
+    }
+    
+    // Evento cuando termina el audio
+    audioElement.onended = () => {
+      icon.className = 'fas fa-play';
+      this.stopAudioBarsAnimation(button.parentElement);
+    };
+  }
+
+  // Animar barras de frecuencia durante reproducción
+  animateAudioBars(container) {
+    const bars = container.querySelectorAll('.frequency-bar-static');
+    
+    const animateFrame = () => {
+      bars.forEach((bar, index) => {
+        const height = Math.random() * 15 + 5; // 5px a 20px
+        bar.style.height = `${height}px`;
+        bar.style.backgroundColor = '#10b981';
+        bar.style.opacity = '1';
+      });
+      
+      if (container.dataset.animating === 'true') {
+        setTimeout(() => requestAnimationFrame(animateFrame), 100);
+      }
+    };
+    
+    container.dataset.animating = 'true';
+    animateFrame();
+  }
+
+  // Detener animación de barras
+  stopAudioBarsAnimation(container) {
+    container.dataset.animating = 'false';
+    const bars = container.querySelectorAll('.frequency-bar-static');
+    bars.forEach(bar => {
+      bar.style.backgroundColor = 'var(--primary-color)';
+      bar.style.opacity = '0.6';
+    });
   }
 
   // Función robusta de auto-scroll que combina todas las técnicas
@@ -9813,7 +10137,7 @@ class ChatManager {
     }
   }
 
-  // Replace message with permanent deletion placeholder (WhatsApp style)
+  // Replace message with permanent deletion placeholder (vigichat style)
   replaceMessageWithDeletionPlaceholder(messageElement, deletedByName) {
     if (!messageElement) return;
 
@@ -9860,8 +10184,8 @@ class ChatManager {
     );
   }
 
-  // WhatsApp-style deletion modal
-  showWhatsAppStyleDeletionModal(canDeleteForEveryone, messageAgeMinutes) {
+  // vigichat-style deletion modal
+  showvigichatStyleDeletionModal(canDeleteForEveryone, messageAgeMinutes) {
     return new Promise((resolve) => {
       // Create modal overlay
       const overlay = document.createElement("div");
@@ -10035,11 +10359,11 @@ class ChatManager {
     });
   }
 
-  // Advanced function for deleting messages with WhatsApp-style time restrictions
+  // Advanced function for deleting messages with vigichat-style time restrictions
   async deleteMessageAdvanced(messageId, messageObject = null) {
     try {
       console.log(
-        "🗑️ Starting WhatsApp-style deleteMessageAdvanced for:",
+        "🗑️ Starting vigichat-style deleteMessageAdvanced for:",
         messageId
       );
 
@@ -10075,7 +10399,7 @@ class ChatManager {
       const now = new Date();
       const timeDifference = now - messageDate;
 
-      // WhatsApp-style time limits:
+      // vigichat-style time limits:
       // - 1 hour and 8 minutes (68 minutes) for "eliminar para todos"
       // - Always available: "eliminar solo para mí"
       const sixtyEightMinutes = 68 * 60 * 1000; // 68 minutes in milliseconds
@@ -10086,8 +10410,8 @@ class ChatManager {
         `Message age: ${messageAgeMinutes} minutes, can delete for everyone: ${canDeleteForEveryone}`
       );
 
-      // Show WhatsApp-style deletion options
-      const action = await this.showWhatsAppStyleDeletionModal(
+      // Show vigichat-style deletion options
+      const action = await this.showvigichatStyleDeletionModal(
         canDeleteForEveryone,
         messageAgeMinutes
       );
@@ -11963,7 +12287,7 @@ class ChatManager {
       retakePhotoBtn: !!retakePhotoBtn,
     });
 
-    // Variables para manejo de presión prolongada estilo WhatsApp
+    // Variables para manejo de presión prolongada estilo vigichat
     let pressTimer = null;
     let isRecording = false;
     let recordingStartTime = null;
@@ -11998,13 +12322,13 @@ class ChatManager {
       });
     }
 
-    // WhatsApp-style capture button behavior
+    // vigichat-style capture button behavior
     const startPressTimer = () => {
       // Inmediatamente cambiar estilo del botón
       captureBtn.classList.add("pressing");
 
       pressTimer = setTimeout(async () => {
-        // Iniciar grabación de video después de 600ms (como WhatsApp)
+        // Iniciar grabación de video después de 600ms (como vigichat)
         await this.startVideoRecording();
         isRecording = true;
         this.startRecordingTimer();
@@ -12046,7 +12370,7 @@ class ChatManager {
         }
       });
 
-      // Touch events para móviles (más importante para WhatsApp-style)
+      // Touch events para móviles (más importante para vigichat-style)
       // Nota: Estos requieren opciones especiales, pero addCameraEventListener no las maneja
       // Los mantenemos como están pero los guardamos para cleanup
       const touchStartHandler = (e) => {
@@ -12090,7 +12414,7 @@ class ChatManager {
       );
     }
 
-    // Botones de acción después de captura (WhatsApp style)
+    // Botones de acción después de captura (vigichat style)
     if (savePhotoBtn) {
       console.log("Configurando evento para savePhotoBtn");
       this.addCameraEventListener(savePhotoBtn, "click", () => {
@@ -12183,7 +12507,7 @@ class ChatManager {
     const recordingIndicator = document.getElementById("recording-indicator");
 
     try {
-      // Configurar stream con audio para video (WhatsApp style)
+      // Configurar stream con audio para video (vigichat style)
       const constraints = {
         video: {
           facingMode: this.currentFacingMode,
@@ -12216,7 +12540,7 @@ class ChatManager {
       // Iniciar grabación
       this.mediaRecorder.start();
 
-      // Mostrar indicadores de grabación WhatsApp-style
+      // Mostrar indicadores de grabación vigichat-style
       captureBtn.classList.add("recording");
       recordingIndicator.style.display = "flex";
     } catch (error) {
@@ -12443,7 +12767,7 @@ class ChatManager {
 
     // Verificar que los botones estén visibles
     const previewControls = document.querySelector(
-      ".whatsapp-preview-controls"
+      ".vigichat-preview-controls"
     );
     const saveBtn = document.getElementById("save-photo-btn");
     const retakeBtn = document.getElementById("retake-photo-btn");
@@ -14750,7 +15074,7 @@ class ChatManager {
 
   // SMOOTH CONVERSATION LOADING SYSTEM
 
-  // Standard message loading like WhatsApp
+  // Standard message loading like vigichat
   async loadConversationMessages(conversationId) {
     console.log(`📥 Loading conversation messages for: ${conversationId}`);
 
@@ -14862,7 +15186,7 @@ class ChatManager {
     }
   }
 
-  // Standard chat item click handler - Clean like WhatsApp
+  // Standard chat item click handler - Clean like vigichat
   async handleChatItemClick(conversationId, conversationData = null) {
     try {
       // Get conversation data

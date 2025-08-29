@@ -2,8 +2,37 @@ const express = require('express');
 const { body, validationResult } = require('express-validator');
 const { getModels } = require('../models');
 const { auth } = require('../middleware/auth');
+const multer = require('multer');
+const path = require('path');
 
 const router = express.Router();
+
+// Configure multer for audio uploads
+const audioStorage = multer.diskStorage({
+    destination: (req, file, cb) => {
+        cb(null, path.join(__dirname, '../uploads/audio'));
+    },
+    filename: (req, file, cb) => {
+        const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
+        cb(null, `voice_${uniqueSuffix}.webm`);
+    }
+});
+
+const audioUpload = multer({
+    storage: audioStorage,
+    fileFilter: (req, file, cb) => {
+        // Allow audio files
+        if (file.mimetype.startsWith('audio/')) {
+            cb(null, true);
+        } else {
+            cb(new Error('Only audio files are allowed'), false);
+        }
+    },
+    limits: {
+        fileSize: 10 * 1024 * 1024, // 10MB limit
+        files: 1 // Only one file per request
+    }
+});
 
 // @route   GET /api/messages/conversations
 // @desc    Get user conversations
@@ -799,6 +828,128 @@ router.delete('/conversation/:conversationId/clear', auth, async (req, res) => {
             success: false,
             message: 'Server error clearing conversation',
             error: process.env.NODE_ENV === 'development' ? error.message : undefined
+        });
+    }
+});
+
+// @route   POST /api/messages/send-file
+// @desc    Send audio message with file
+// @access  Private
+router.post('/send-file', auth, audioUpload.single('audio'), async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({
+                success: false,
+                message: 'Audio file is required'
+            });
+        }
+
+        const { conversationId, duration, frequencies } = req.body;
+        const { User, Message, Conversation } = getModels();
+
+        if (!conversationId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Conversation ID is required'
+            });
+        }
+
+        // Verify user is part of conversation
+        const conversation = await Conversation.findById(conversationId);
+        if (!conversation || !conversation.participants.includes(req.user._id)) {
+            return res.status(403).json({
+                success: false,
+                message: 'Access denied to this conversation'
+            });
+        }
+
+        // Get recipient (other participant in private conversation)
+        const recipientId = conversation.participants.find(p => 
+            p.toString() !== req.user._id.toString()
+        );
+
+        if (!recipientId) {
+            return res.status(400).json({
+                success: false,
+                message: 'Cannot find recipient'
+            });
+        }
+
+        // Check if recipient has blocked sender
+        const recipient = await User.findById(recipientId);
+        const isBlocked = recipient.contacts.some(contact => 
+            contact.user.toString() === req.user._id.toString() && contact.blocked
+        );
+
+        if (isBlocked) {
+            return res.status(403).json({
+                success: false,
+                message: 'Cannot send message to this user'
+            });
+        }
+
+        // Create audio message
+        const audioPath = `/uploads/audio/${req.file.filename}`;
+        const newMessage = new Message({
+            sender: req.user._id,
+            recipient: recipientId,
+            content: {
+                text: '',
+                fileUrl: audioPath,
+                fileName: req.file.filename,
+                fileSize: req.file.size,
+                duration: duration || '0:00',
+                frequencies: frequencies ? JSON.parse(frequencies) : null,
+                encrypted: false
+            },
+            type: 'voice',
+            status: 'sent',
+            timestamp: new Date()
+        });
+
+        await newMessage.save();
+        await newMessage.populate('sender', 'username fullName avatar');
+
+        // Update conversation
+        await conversation.updateLastActivity(newMessage._id);
+
+        // Send response immediately
+        res.status(201).json({
+            success: true,
+            data: newMessage,
+            message: 'Audio message sent successfully'
+        });
+
+        // Emit socket event asynchronously
+        process.nextTick(() => {
+            const io = req.app.get('io');
+            const activeUsers = req.app.get('activeUsers');
+            
+            if (io && activeUsers && activeUsers.has(recipientId.toString())) {
+                const recipientSocketId = activeUsers.get(recipientId.toString());
+                io.to(recipientSocketId).emit('new_message', {
+                    message: newMessage,
+                    conversation: conversation
+                });
+            }
+        });
+
+    } catch (error) {
+        console.error('Send audio message error:', error);
+        
+        // Clean up uploaded file on error
+        if (req.file) {
+            const fs = require('fs');
+            try {
+                fs.unlinkSync(req.file.path);
+            } catch (unlinkError) {
+                console.error('Failed to cleanup uploaded file:', unlinkError);
+            }
+        }
+        
+        res.status(500).json({
+            success: false,
+            message: 'Server error sending audio message'
         });
     }
 });

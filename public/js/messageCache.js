@@ -1,5 +1,5 @@
 // Ultra-Fast Message Cache for Lightning-Speed Delivery
-// Provides instant message access and optimistic updates like WhatsApp/Messenger
+// Provides instant message access and optimistic updates like vigichat/Messenger
 
 class MessageCache {
     constructor() {

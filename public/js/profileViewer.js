@@ -601,7 +601,7 @@ class ProfileViewer {
             // Usuario está EN LÍNEA: mostrar ÚNICAMENTE "En línea"
             if (this.profileStatus) {
                 this.profileStatus.textContent = 'En línea';
-                this.profileStatus.style.color = '#25D366'; // Verde WhatsApp
+                this.profileStatus.style.color = '#25D366'; // Verde vigichat
                 this.profileStatus.style.fontWeight = '600'; // Negrita
                 this.profileStatus.style.display = 'inline'; // Asegurar que sea visible
             }

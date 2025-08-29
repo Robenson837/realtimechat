@@ -276,7 +276,7 @@ html {
     display: none !important; 
 }
 
-/* WhatsApp-style Message Status Icons */
+/* vigichat-style Message Status Icons */
 .sending-clock {
     animation: spin 1s linear infinite;
 }
@@ -519,7 +519,7 @@ html {
     }
 }
 
-/* WhatsApp-style checkmarks */
+/* vigichat-style checkmarks */
 .checkmark {
     font-family: 'Arial', sans-serif;
     font-weight: bold;
@@ -660,7 +660,7 @@ html {
     }
 }
 
-/* WhatsApp-style status updates */
+/* vigichat-style status updates */
 .message.sending .message-status {
     opacity: 0.7;
 }
@@ -2722,7 +2722,7 @@ html {
 }
 
 .sidebar-header {
-    padding: 1.5rem;
+    padding: 1rem;
     border-bottom: 1px solid var(--border-light);
     display: flex;
     align-items: center;
@@ -2876,12 +2876,12 @@ html {
     color: var(--text-secondary);
 }
 
-/* WhatsApp-style status text colors (sin efectos) */
+/* vigichat-style status text colors (sin efectos) */
 .status-text.online,
 .status.online,
 span.online {
-    color: #25d366 !important; /* Color WhatsApp */
-    font-weight: 400 !important; /* Peso normal como WhatsApp */
+    color: #25d366 !important; /* Color vigichat */
+    font-weight: 400 !important; /* Peso normal como vigichat */
 }
 
 .status-container .status-text {
@@ -2904,13 +2904,13 @@ span.online {
 .contact-status.online,
 .user-status.online {
     color: #25d366 !important;
-    font-weight: 400 !important; /* Normal weight como WhatsApp */
+    font-weight: 400 !important; /* Normal weight como vigichat */
     display: flex !important;
     align-items: center !important;
     gap: 0.3rem !important;
 }
 
-/* Profile modals with WhatsApp styling */
+/* Profile modals with vigichat styling */
 .profile-status-info .status-text.online,
 .profile-status-info span.online {
     color: #25d366 !important;
@@ -2933,7 +2933,7 @@ span.online::before,
     display: inline-block !important;
     width: 5px !important;
     height: 5px !important;
-    background-color: #25d366 !important; /* Color WhatsApp */
+    background-color: #25d366 !important; /* Color vigichat */
     border-radius: 50% !important;
     flex-shrink: 0 !important;
     animation: pulse-green 2s infinite !important; /* Animación suave mantenida */
@@ -4215,9 +4215,9 @@ i[class*="fa-"]:before {
     transition: color 0.3s ease;
 }
 
-/* Badge verde estilo WhatsApp - ahora en bottom-row */
+/* Badge verde estilo vigichat - ahora en bottom-row */
 .unread-badge-messenger {
-    background: #25D366; /* Verde WhatsApp */
+    background: #25D366; /* Verde vigichat */
     color: white;
     font-size: 0.7rem;
     font-weight: 700;
@@ -4277,7 +4277,7 @@ i[class*="fa-"]:before {
     position: relative;
 }
 
-/* Estilo WhatsApp - toda la conversación en negrita cuando hay mensajes sin leer */
+/* Estilo vigichat - toda la conversación en negrita cuando hay mensajes sin leer */
 .chat-item.has-unread .chat-name {
     font-weight: 700;
     color: var(--text-primary);
@@ -4288,9 +4288,9 @@ i[class*="fa-"]:before {
     color: var(--text-primary);
 }
 
-/* Fecha verde estilo WhatsApp */
+/* Fecha verde estilo vigichat */
 .chat-item.has-unread .chat-time {
-    color: #25D366; /* Verde WhatsApp */
+    color: #25D366; /* Verde vigichat */
     font-weight: 600;
 }
 
@@ -4299,7 +4299,7 @@ i[class*="fa-"]:before {
     margin-bottom: 0.15rem; /* Mismo margen compacto que el estado normal */
 }
 
-/* Avatar simple estilo WhatsApp */
+/* Avatar simple estilo vigichat */
 .chat-item-avatar {
     position: relative;
     flex-shrink: 0;
@@ -4650,10 +4650,10 @@ i[class*="fa-"]:before {
     transition: all 0.2s ease !important;
 }
 
-/* WhatsApp-style online status in chat header (con indicador simple) */
+/* vigichat-style online status in chat header (con indicador simple) */
 .chat-header .last-seen.online {
-    color: #25d366 !important; /* Color verde oficial WhatsApp */
-    font-weight: 400 !important; /* Peso normal como WhatsApp */
+    color: #25d366 !important; /* Color verde oficial vigichat */
+    font-weight: 400 !important; /* Peso normal como vigichat */
     font-size: 0.8rem !important;
     display: flex !important;
     align-items: center !important;
@@ -4666,7 +4666,7 @@ i[class*="fa-"]:before {
     display: inline-block !important;
     width: 6px !important;
     height: 6px !important;
-    background-color: #25d366 !important; /* Mismo color WhatsApp */
+    background-color: #25d366 !important; /* Mismo color vigichat */
     border-radius: 50% !important;
     flex-shrink: 0 !important;
     animation: pulse-green 2s infinite !important; /* Animación suave mantenida */
@@ -4685,7 +4685,7 @@ i[class*="fa-"]:before {
     }
 }
 
-/* Minimal transition like WhatsApp - only for smooth color changes */
+/* Minimal transition like vigichat - only for smooth color changes */
 .chat-header .last-seen {
     transition: color 0.15s ease !important; /* Solo transición de color, muy rápida */
 }
@@ -5738,7 +5738,7 @@ i[class*="fa-"]:before {
     }
 }
 
-/* Contenedor de hora y estado en la misma línea (estilo WhatsApp) */
+/* Contenedor de hora y estado en la misma línea (estilo vigichat) */
 .message-time-status {
     display: flex;
     align-items: center;
@@ -7463,7 +7463,7 @@ i[class*="fa-"]:before {
 
 /* Online status improvements - instant green */
 .status-indicator.online {
-    background: #25d366 !important; /* WhatsApp green */
+    background: #25d366 !important; /* vigichat green */
     box-shadow: 0 0 0 2px #25d366;
     border: 2px solid var(--bg-primary) !important;
     animation: online-pulse 2s infinite;
@@ -9456,6 +9456,17 @@ i[class*="fa-"]:before {
         max-height: var(--app-height);
         overflow: hidden;
     }
+
+    .mobile-online-indicator {
+    position: absolute;
+    bottom: -0.5rem;
+    right: 2.3px;
+    width: 12px;
+    height: 12px;
+    background: var(--success-color);
+    border: 2px solid var(--bg-primary);
+    border-radius: var(--radius-full);
+}
     
     /* Fixed chat header positioning for mobile - ALWAYS VISIBLE */
     .chat-header {
@@ -9605,7 +9616,7 @@ i[class*="fa-"]:before {
         max-width: 80% !important;
     }
     
-    /* WhatsApp-style message input container for mobile */
+    /* vigichat-style message input container for mobile */
     .message-input-container {
         position: fixed !important;
         bottom: 0 !important;
@@ -9662,7 +9673,7 @@ i[class*="fa-"]:before {
         transform: scale(1.05) !important;
     }
     
-    /* WhatsApp-style input wrapper */
+    /* vigichat-style input wrapper */
       .message-input-wrapper {
         flex: 1 !important;
         background: var(--bg-secondary) !important;
@@ -9732,7 +9743,7 @@ i[class*="fa-"]:before {
         color: var(--primary-color) !important;
     }
     
-    /* Send button - clean WhatsApp style */
+    /* Send button - clean vigichat style */
     .send-btn {
         width: 40px !important;
         height: 40px !important;
@@ -15559,5 +15570,713 @@ textarea:focus,
     
     .divider {
         margin: 1rem 0;
+    }
+}
+
+/* vigichat Style Audio Message */
+.whatsapp-audio-message {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 280px;
+    margin: 4px 0;
+    padding: 8px 12px;
+    background: #857ff7;
+    border-radius: 18px;
+    color: white;
+}
+
+.whatsapp-play-btn {
+    width: 32px;
+    height: 32px;
+    border: none;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.15);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.whatsapp-play-btn:hover {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.05);
+}
+
+.whatsapp-audio-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.whatsapp-waveform {
+    position: relative;
+    height: 20px;
+    margin-bottom: 4px;
+}
+
+.freq-dots-container {
+    display: flex;
+    align-items: end;
+    gap: 2px;
+    height: 20px;
+}
+
+.freq-dot {
+    width: 3px;
+    background: rgba(255, 255, 255, 0.7);
+    border-radius: 2px;
+    transition: all 0.1s ease;
+}
+
+.audio-progress-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+    width: 0%;
+    transition: width 0.1s ease;
+    pointer-events: none;
+}
+
+.whatsapp-audio-duration {
+    font-family: 'Courier New', monospace;
+    font-size: 11px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 500;
+}
+
+/* Received message audio styles */
+.message.received .whatsapp-audio-message {
+    background: var(--bg-tertiary);
+    color: var(--text-primary);
+}
+
+.message.received .whatsapp-play-btn {
+    background: rgba(0, 0, 0, 0.08);
+    color: var(--primary-color);
+}
+
+.message.received .whatsapp-play-btn:hover {
+    background: rgba(0, 0, 0, 0.12);
+}
+
+.message.received .freq-dot {
+    background: rgba(133, 127, 247, 0.7);
+}
+
+.message.received .audio-progress-bar {
+    background: rgba(133, 127, 247, 0.3);
+}
+
+.message.received .whatsapp-audio-duration {
+    color: var(--text-secondary);
+}
+
+/* Audio Message Styles (Legacy) */
+.message-audio {
+    max-width: 280px;
+    margin: 4px 0;
+}
+
+.audio-player-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    transition: all 0.2s ease;
+}
+
+.audio-player-container:hover {
+    background: rgba(255, 255, 255, 0.08);
+    transform: translateY(-1px);
+}
+
+.audio-play-btn {
+    width: 36px;
+    height: 36px;
+    border: none;
+    border-radius: 50%;
+    background: var(--primary-color);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    flex-shrink: 0;
+}
+
+.audio-play-btn:hover {
+    background: var(--primary-dark);
+    transform: scale(1.05);
+}
+
+.audio-play-btn:active {
+    transform: scale(0.95);
+}
+
+.audio-waveform {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 8px;
+}
+
+.frequency-bars-static {
+    display: flex;
+    align-items: end;
+    gap: 2px;
+    height: 20px;
+}
+
+.frequency-bar-static {
+    width: 3px;
+    background: var(--primary-color);
+    border-radius: 2px;
+    transition: all 0.1s ease;
+    opacity: 0.6;
+}
+
+.audio-duration {
+    font-family: 'Courier New', monospace;
+    font-size: 12px;
+    color: var(--text-secondary);
+    font-weight: 500;
+    min-width: 35px;
+    text-align: right;
+    flex-shrink: 0;
+}
+
+/* Sent message audio styles */
+.message.sent .audio-player-container {
+    background: rgba(133, 127, 247, 0.1);
+    border-color: rgba(133, 127, 247, 0.2);
+}
+
+.message.sent .audio-play-btn {
+    background: white;
+    color: var(--primary-color);
+}
+
+.message.sent .audio-play-btn:hover {
+    background: #f8f9ff;
+}
+
+.message.sent .frequency-bar-static {
+    background: white;
+    opacity: 0.8;
+}
+
+.message.sent .audio-duration {
+    color: rgba(255, 255, 255, 0.9);
+}
+
+/* Dark theme compatibility */
+[data-theme="dark"] .audio-player-container {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(255, 255, 255, 0.1);
+}
+
+[data-theme="dark"] .message.sent .audio-player-container {
+    background: rgba(133, 127, 247, 0.15);
+    border-color: rgba(133, 127, 247, 0.25);
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .message-audio {
+        max-width: 250px;
+    }
+    
+    .audio-player-container {
+        gap: 10px;
+        padding: 10px 14px;
+    }
+    
+    .audio-play-btn {
+        width: 32px;
+        height: 32px;
+        font-size: 12px;
+    }
+    
+    .frequency-bars-static {
+        height: 18px;
+    }
+}
+
+@media (max-width: 480px) {
+    .message-audio {
+        max-width: 220px;
+    }
+    
+    .audio-player-container {
+        gap: 8px;
+        padding: 8px 12px;
+    }
+    
+    .audio-play-btn {
+        width: 30px;
+        height: 30px;
+        font-size: 11px;
+    }
+    
+    .frequency-bars-static {
+        height: 16px;
+        gap: 1px;
+    }
+    
+    .frequency-bar-static {
+        width: 2px;
+    }
+    
+    .audio-duration {
+        font-size: 11px;
+        min-width: 30px;
+    }
+}
+
+/* =============================================================================
+   NUEVO DISEÑO DE AUDIO COMPLETO ESTILO WHATSAPP
+   ============================================================================= */
+
+.audio-message-whatsapp-complete {
+    display: flex;
+    align-items: center;
+    width: 100%;
+    max-width: 500px;
+    padding: 10px 15px;
+    gap: 10px;
+    background: transparent;
+}
+
+/* Foto de perfil del remitente */
+.audio-profile-pic {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    overflow: hidden;
+    flex-shrink: 0;
+}
+
+.audio-profile-pic img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* Botón de play/pause */
+.audio-play-btn-complete {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #047857;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.audio-play-btn-complete:hover {
+    background: #065f46;
+    transform: scale(1.05);
+}
+
+/* Triángulo de play */
+.play-triangle {
+    width: 0;
+    height: 0;
+    border-left: 12px solid white;
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+    margin-left: 2px; /* Centrar visualmente el triángulo */
+}
+
+/* Contenedor de progreso completo */
+.audio-progress-container-complete {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-right: 10px;
+}
+
+/* Tiempos */
+.audio-current-time,
+.audio-total-time {
+    font-size: 12px;
+    color: white;
+    font-weight: 400;
+    min-width: 35px;
+    text-align: center;
+}
+
+/* Para mensajes recibidos, cambiar color del texto */
+.message.received .audio-current-time,
+.message.received .audio-total-time {
+    color: rgba(0, 0, 0, 0.7);
+}
+
+/* Contenedor de la barra de progreso */
+.audio-progress-bar-container {
+    flex: 1;
+    height: 3px;
+    position: relative;
+}
+
+/* Barra de progreso base */
+.audio-progress-bar-complete {
+    width: 100%;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+    position: relative;
+    cursor: pointer;
+}
+
+/* Para mensajes recibidos */
+.message.received .audio-progress-bar-complete {
+    background: rgba(0, 0, 0, 0.15);
+}
+
+/* Relleno de progreso */
+.audio-progress-fill {
+    height: 100%;
+    width: 0%;
+    background: white;
+    border-radius: 2px;
+    transition: width 0.1s linear;
+}
+
+/* Para mensajes recibidos */
+.message.received .audio-progress-fill {
+    background: #047857;
+}
+
+/* Botón de play para mensajes recibidos */
+.message.received .audio-play-btn-complete {
+    background: #e0e0e0;
+}
+
+.message.received .audio-play-btn-complete:hover {
+    background: #d0d0d0;
+}
+
+.message.received .play-triangle {
+    border-left-color: #666;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+    .audio-message-whatsapp-complete {
+        max-width: 420px;
+        padding: 8px 12px;
+        gap: 8px;
+    }
+    
+    .audio-profile-pic {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .audio-play-btn-complete {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .play-triangle {
+        border-left-width: 10px;
+        border-top-width: 6px;
+        border-bottom-width: 6px;
+    }
+    
+    .audio-progress-container-complete {
+        gap: 8px;
+    }
+    
+    .audio-current-time,
+    .audio-total-time {
+        font-size: 11px;
+        min-width: 30px;
+    }
+}
+
+@media (max-width: 480px) {
+    .audio-message-whatsapp-complete {
+        max-width: 320px;
+        padding: 6px 10px;
+        gap: 6px;
+    }
+    
+    .audio-profile-pic {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .audio-play-btn-complete {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .play-triangle {
+        border-left-width: 9px;
+        border-top-width: 5px;
+        border-bottom-width: 5px;
+    }
+    
+    .audio-progress-container-complete {
+        gap: 6px;
+        margin-right: 6px;
+    }
+    
+    .audio-current-time,
+    .audio-total-time {
+        font-size: 10px;
+        min-width: 28px;
+    }
+}
+
+/* =============================================================================
+   ESTILOS PARA PREVIEW DE AUDIO COMPLETO ESTILO WHATSAPP
+   ============================================================================= */
+
+.audio-preview-container-whatsapp {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: #f8f9fa;
+    border-radius: 20px;
+    margin: 8px 0;
+    border: 1px solid #e3e8ef;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.preview-delete-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: #dc3545;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.preview-delete-btn:hover {
+    background: #c82333;
+    transform: scale(1.05);
+}
+
+.preview-delete-btn i {
+    color: white;
+    font-size: 14px;
+}
+
+/* Componente de audio completo para preview */
+.audio-preview-whatsapp-complete {
+    display: flex;
+    align-items: center;
+    flex: 1;
+    background: var(--message-sent);
+    border-radius: 16px;
+    padding: 12px 16px;
+    gap: 10px;
+    min-width: 0;
+}
+
+/* Botón de play para preview */
+.audio-play-btn-complete-preview {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #047857;
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.audio-play-btn-complete-preview:hover {
+    background: #065f46;
+    transform: scale(1.05);
+}
+
+/* Triángulo de play para preview */
+.play-triangle-preview {
+    width: 0;
+    height: 0;
+    border-left: 12px solid white;
+    border-top: 7px solid transparent;
+    border-bottom: 7px solid transparent;
+    margin-left: 2px;
+}
+
+/* Contenedor de progreso para preview */
+.audio-progress-container-complete-preview {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Tiempos para preview */
+.audio-current-time-preview,
+.audio-total-time-preview {
+    font-size: 12px;
+    color: rgba(255, 255, 255, 0.9);
+    font-weight: 400;
+    min-width: 35px;
+    text-align: center;
+}
+
+/* Contenedor de la barra para preview */
+.audio-progress-bar-container-preview {
+    flex: 1;
+    height: 3px;
+    position: relative;
+}
+
+/* Barra de progreso para preview */
+.audio-progress-bar-complete-preview {
+    width: 100%;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+    position: relative;
+    cursor: pointer;
+}
+
+/* Relleno de progreso para preview */
+.audio-progress-fill-preview {
+    height: 100%;
+    width: 0%;
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 2px;
+    transition: width 0.1s linear;
+}
+
+/* Botón enviar */
+.preview-send-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--message-sent);
+    border: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    flex-shrink: 0;
+}
+
+.preview-send-btn:hover {
+    transform: scale(1.05);
+    background: #7c76f4;
+}
+
+.preview-send-btn i {
+    color: white;
+    font-size: 14px;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+    .audio-preview-container-whatsapp {
+        gap: 10px;
+        padding: 10px 12px;
+        margin: 6px 0;
+    }
+    
+    .preview-delete-btn,
+    .preview-send-btn {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .audio-preview-whatsapp-complete {
+        padding: 10px 14px;
+        gap: 8px;
+    }
+    
+    .audio-play-btn-complete-preview {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .play-triangle-preview {
+        border-left-width: 10px;
+        border-top-width: 6px;
+        border-bottom-width: 6px;
+    }
+    
+    .audio-progress-container-complete-preview {
+        gap: 8px;
+    }
+    
+    .audio-current-time-preview,
+    .audio-total-time-preview {
+        font-size: 11px;
+        min-width: 30px;
+    }
+}
+
+@media (max-width: 480px) {
+    .audio-preview-container-whatsapp {
+        gap: 8px;
+        padding: 8px 10px;
+    }
+    
+    .preview-delete-btn,
+    .preview-send-btn {
+        width: 30px;
+        height: 30px;
+    }
+    
+    .audio-preview-whatsapp-complete {
+        padding: 8px 12px;
+        gap: 6px;
+    }
+    
+    .audio-play-btn-complete-preview {
+        width: 32px;
+        height: 32px;
+    }
+    
+    .play-triangle-preview {
+        border-left-width: 9px;
+        border-top-width: 5px;
+        border-bottom-width: 5px;
+    }
+    
+    .audio-progress-container-complete-preview {
+        gap: 6px;
+    }
+    
+    .audio-current-time-preview,
+    .audio-total-time-preview {
+        font-size: 10px;
+        min-width: 28px;
     }
 }

@@ -41,6 +41,12 @@
         </div>
     </div>
 
+    <!-- Recording Indicator -->
+    <div id="recording-indicator" class="recording-indicator hidden">
+        <i class="fas fa-microphone"></i>
+        <span>Grabando mensaje de voz...</span>
+    </div>
+
     <!-- Auth Container -->
     <div id="auth-container" class="auth-container hidden">
         <!-- Login Form -->
@@ -326,8 +332,8 @@
                         <span class="logo-text">VigiChat</span>
                     </div>
                 </div>
-                <div class="user-profile" id="current-user-profile">
-                    <!-- Ícono de notificación a la izquierda del perfil -->
+                <div class="sidebar-header-right">
+                    <!-- Notification icon -->
                     <div class="notification-icon-container" id="notification-container">
                         <button class="icon-btn notification-btn" id="notification-btn" title="Notificaciones">
                             <i class="fas fa-bell"></i>
@@ -337,44 +343,49 @@
                         </button>
                     </div>
                     
-                    <div class="profile-img-container">
-                        <img src="images/user-placeholder-40.svg" alt="Tu perfil" class="profile-img" id="current-user-profile-img">
-                        <div class="online-indicator" id="current-user-online-indicator"></div>
+                    <!-- User profile -->
+                    <div class="user-profile" id="current-user-profile">
+                        <div class="profile-img-container">
+                            <img src="images/user-placeholder-40.svg" alt="Tu perfil" class="profile-img" id="current-user-profile-img">
+                            <div class="online-indicator" id="current-user-online-indicator"></div>
+                        </div>
                     </div>
-                </div>
-                <div class="sidebar-actions">
-                    <div class="main-menu-container">
-                        <button class="icon-btn main-menu-btn" id="main-menu-btn" title="Menú principal">
-                            <i class="fas fa-ellipsis-v"></i>
-                        </button>
-                        <div class="main-menu-dropdown hidden" id="main-menu-dropdown">
-                            <div class="menu-item" id="profile-settings">
-                                <i class="fas fa-user-cog"></i>
-                                <span data-i18n="main_menu.profile_settings">Ajustes de perfil</span>
-                            </div>
-                            <div class="menu-item" id="add-contact-menu">
-                                <i class="fas fa-user-plus"></i>
-                                <span data-i18n="main_menu.add_contact">Agregar contacto</span>
-                            </div>
-                            <div class="menu-item" id="blocked-contacts-menu">
-                                <i class="fas fa-ban"></i>
-                                <span data-i18n="main_menu.blocked_contacts">Contactos bloqueados</span>
-                            </div>
-                            <div class="menu-item" id="language-menu">
-                                <i class="fas fa-globe"></i>
-                                <span data-i18n="main_menu.language">Idioma</span>
-                                <div class="current-language-indicator">
-                                    <img id="current-language-flag" src="https://flagcdn.com/16x12/es.png" alt="ES" class="current-flag">
+                    
+                    <!-- Main menu -->
+                    <div class="sidebar-actions">
+                        <div class="main-menu-container">
+                            <button class="icon-btn main-menu-btn" id="main-menu-btn" title="Menú principal">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <div class="main-menu-dropdown hidden" id="main-menu-dropdown">
+                                <div class="menu-item" id="profile-settings">
+                                    <i class="fas fa-user-cog"></i>
+                                    <span data-i18n="main_menu.profile_settings">Ajustes de perfil</span>
                                 </div>
-                            </div>
-                            <div class="menu-item" id="help-menu">
-                                <i class="fas fa-question-circle"></i>
-                                <span data-i18n="main_menu.help">Ayuda</span>
-                            </div>
-                            <div class="menu-divider"></div>
-                            <div class="menu-item" id="logout-menu">
-                                <i class="fas fa-sign-out-alt"></i>
-                                <span data-i18n="main_menu.logout">Cerrar sesión</span>
+                                <div class="menu-item" id="add-contact-menu">
+                                    <i class="fas fa-user-plus"></i>
+                                    <span data-i18n="main_menu.add_contact">Agregar contacto</span>
+                                </div>
+                                <div class="menu-item" id="blocked-contacts-menu">
+                                    <i class="fas fa-ban"></i>
+                                    <span data-i18n="main_menu.blocked_contacts">Contactos bloqueados</span>
+                                </div>
+                                <div class="menu-item" id="language-menu">
+                                    <i class="fas fa-globe"></i>
+                                    <span data-i18n="main_menu.language">Idioma</span>
+                                    <div class="current-language-indicator">
+                                        <img id="current-language-flag" src="https://flagcdn.com/16x12/es.png" alt="ES" class="current-flag">
+                                    </div>
+                                </div>
+                                <div class="menu-item" id="help-menu">
+                                    <i class="fas fa-question-circle"></i>
+                                    <span data-i18n="main_menu.help">Ayuda</span>
+                                </div>
+                                <div class="menu-divider"></div>
+                                <div class="menu-item" id="logout-menu">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    <span data-i18n="main_menu.logout">Cerrar sesión</span>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -608,12 +619,84 @@
                     <div class="message-input-wrapper">
                         <div class="input-field" id="message-input" contenteditable="true" data-i18n-placeholder="chat.type_message" data-placeholder="Escribe un mensaje..."></div>
                     </div>
-                    <button class="send-btn" id="send-btn" data-i18n-title="chat.send" disabled>
+                    <button class="send-btn hidden" id="send-btn" data-i18n-title="chat.send" title="Enviar mensaje">
                         <i class="fas fa-paper-plane"></i>
                     </button>
-                    <button class="record-btn hidden" id="record-btn" data-i18n-title="chat.record_voice" title="Grabar mensaje de voz">
+                    <button class="record-btn" id="record-btn" data-i18n-title="chat.record_voice" title="Grabar mensaje de voz">
                         <i class="fas fa-microphone"></i>
                     </button>
+                    <button class="stop-record-btn hidden" id="stop-record-btn" title="Detener grabación">
+                        <i class="fas fa-stop"></i>
+                    </button>
+                </div>
+
+                <!-- Recording Interface -->
+                <div class="recording-interface hidden" id="recording-interface">
+                    <button class="delete-recording-btn" id="delete-recording-btn" title="Eliminar grabación">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    
+                    <div class="recording-timer" id="recording-timer">0:00</div>
+                    
+                    <div class="audio-visualizer" id="audio-visualizer">
+                        <div class="frequency-bars">
+                            <div class="frequency-bar"></div>
+                            <div class="frequency-bar"></div>
+                            <div class="frequency-bar"></div>
+                            <div class="frequency-bar"></div>
+                            <div class="frequency-bar"></div>
+                            <div class="frequency-bar"></div>
+                            <div class="frequency-bar"></div>
+                            <div class="frequency-bar"></div>
+                            <div class="frequency-bar"></div>
+                            <div class="frequency-bar"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="recording-controls">
+                        <button class="pause-record-btn" id="pause-record-btn" title="Pausar grabación">
+                            <i class="fas fa-pause"></i>
+                        </button>
+                        <button class="resume-record-btn hidden" id="resume-record-btn" title="Reanudar grabación">
+                            <i class="fas fa-play"></i>
+                        </button>
+                        <button class="finish-record-btn" id="finish-record-btn" title="Finalizar grabación">
+                            <i class="fas fa-stop"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Audio Preview Interface -->
+                <div class="audio-preview-interface hidden" id="audio-preview-interface">
+                    <button class="delete-preview-btn" id="delete-preview-btn" title="Eliminar y volver a grabar">
+                        <i class="fas fa-trash"></i>
+                    </button>
+                    
+                    <button class="preview-play-btn" id="preview-play-btn" title="Reproducir preview">
+                        <i class="fas fa-play"></i>
+                    </button>
+                    
+                    <div class="audio-preview-waveform" id="audio-preview-waveform">
+                        <div class="preview-frequency-bars">
+                            <!-- Se llenarán dinámicamente con las frecuencias grabadas -->
+                        </div>
+                        <div class="preview-progress-overlay" id="preview-progress-overlay"></div>
+                    </div>
+                    
+                    <div class="preview-duration" id="preview-duration">0:00</div>
+                    
+                    <div class="preview-actions">
+                        <button class="record-again-btn" id="record-again-btn" title="Grabar de nuevo">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                        <button class="send-voice-btn" id="send-voice-btn" title="Enviar mensaje de voz">
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </div>
+
+                    <audio id="preview-audio" style="display: none;">
+                        <!-- Se llenará dinámicamente -->
+                    </audio>
                 </div>
 
                 <!-- Emoji Picker -->
@@ -1383,59 +1466,59 @@
     <div class="attachment-modal-overlay" id="attachment-modal-overlay"></div>
     <div class="attachment-modal" id="attachment-modal">
 
-    <!-- Camera Modal - WhatsApp Style -->
-    <div class="whatsapp-camera-overlay" id="camera-modal-overlay">
+    <!-- Camera Modal - vigichat Style -->
+    <div class="vigichat-camera-overlay" id="camera-modal-overlay">
         <!-- Top Controls -->
-        <div class="whatsapp-camera-top">
+        <div class="vigichat-camera-top">
             <div class="left-controls">
-                <button class="whatsapp-close-btn" id="close-camera-btn">
+                <button class="vigichat-close-btn" id="close-camera-btn">
                     <i class="fas fa-times"></i>
                 </button>
-                <button class="whatsapp-fullscreen-btn" id="fullscreen-camera-btn" title="Pantalla completa">
+                <button class="vigichat-fullscreen-btn" id="fullscreen-camera-btn" title="Pantalla completa">
                     <i class="fas fa-expand"></i>
                 </button>
-                <button class="whatsapp-flip-btn" id="switch-camera-btn-top" title="Cambiar cámara">
+                <button class="vigichat-flip-btn" id="switch-camera-btn-top" title="Cambiar cámara">
                     <i class="fas fa-sync-alt"></i>
                 </button>
             </div>
-            <div class="whatsapp-recording-indicator" id="recording-indicator" style="display: none;">
+            <div class="vigichat-recording-indicator" id="recording-indicator" style="display: none;">
                 <div class="recording-dot"></div>
                 <span class="recording-time" id="recording-time">0:00</span>
             </div>
         </div>
 
         <!-- Camera Video -->
-        <video id="camera-video" autoplay playsinline muted class="whatsapp-camera-video"></video>
+        <video id="camera-video" autoplay playsinline muted class="vigichat-camera-video"></video>
         <canvas id="camera-canvas" style="display: none;"></canvas>
 
         <!-- Preview de foto/video capturado -->
-        <div class="whatsapp-capture-preview" id="capture-preview" style="display: none;">
+        <div class="vigichat-capture-preview" id="capture-preview" style="display: none;">
             <img id="captured-image" alt="Captura" style="display: none;">
             <video id="captured-video" controls style="display: none; max-width: 100%; max-height: 100%; object-fit: contain;"></video>
             
             <!-- Controles de preview -->
-            <div class="whatsapp-preview-controls">
-                <button class="whatsapp-preview-btn cancel" id="retake-photo-btn">
+            <div class="vigichat-preview-controls">
+                <button class="vigichat-preview-btn cancel" id="retake-photo-btn">
                     <i class="fas fa-times"></i>
                 </button>
-                <button class="whatsapp-preview-btn send" id="save-photo-btn">
+                <button class="vigichat-preview-btn send" id="save-photo-btn">
                     <i class="fas fa-paper-plane"></i>
                 </button>
             </div>
         </div>
 
         <!-- Bottom Controls -->
-        <div class="whatsapp-camera-bottom">
+        <div class="vigichat-camera-bottom">
             <!-- Gallery Button -->
-            <button class="whatsapp-gallery-btn" id="gallery-access-btn">
+            <button class="vigichat-gallery-btn" id="gallery-access-btn">
                 <div class="gallery-icon">
                     <i class="fas fa-images"></i>
                 </div>
             </button>
 
             <!-- Capture Button -->
-            <div class="whatsapp-capture-container">
-                <button class="whatsapp-capture-btn" id="camera-capture-btn">
+            <div class="vigichat-capture-container">
+                <button class="vigichat-capture-btn" id="camera-capture-btn">
                     <div class="capture-outer-ring">
                         <div class="capture-inner-circle"></div>
                     </div>
@@ -1468,30 +1551,40 @@
         </div>
     </div>
 
-    <!-- Call Interface -->
+    <!-- Modern Call Interface -->
     <div class="call-modal" id="call-modal">
         <div class="call-container">
-            <!-- Call Header -->
+            <!-- Call Header - Contact Info -->
             <div class="call-header">
                 <div class="call-contact-info">
                     <div class="call-avatar">
                         <img src="images/user-placeholder-40.svg" alt="Contact" id="call-contact-avatar">
-                        <div class="call-status-indicator"></div>
                     </div>
                     <div class="call-details">
                         <h3 class="call-contact-name" id="call-contact-name">Contacto</h3>
                         <p class="call-status" id="call-status" data-i18n="calls.outgoing">Llamando...</p>
+                        <div class="call-duration" id="call-duration">00:00</div>
                     </div>
                 </div>
-                <div class="call-duration" id="call-duration">00:00</div>
             </div>
 
             <!-- Video Container -->
             <div class="call-video-container" id="call-video-container">
-                <!-- Remote Video -->
+                <!-- Remote Video (Full Screen) -->
                 <video class="remote-video" id="remote-video" autoplay playsinline></video>
-                <!-- Local Video (Picture in Picture) -->
-                <video class="local-video" id="local-video" autoplay playsinline muted></video>
+                
+                <!-- Local Video Modal (Draggable) -->
+                <div class="local-video-modal" id="local-video-modal">
+                    <video class="local-video" id="local-video" autoplay playsinline muted></video>
+                    <div class="video-modal-controls">
+                        <button class="video-control-btn flip-btn" id="flip-camera-btn" title="Voltear cámara">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <button class="video-control-btn camera-toggle-btn" id="camera-toggle-btn" title="Encender/Apagar cámara">
+                            <i class="fas fa-video"></i>
+                        </button>
+                    </div>
+                </div>
                 
                 <!-- Audio Only Display -->
                 <div class="audio-call-display" id="audio-call-display">
@@ -1506,33 +1599,21 @@
                 </div>
             </div>
 
-            <!-- Call Controls -->
+            <!-- Call Controls (Bottom) -->
             <div class="call-controls">
                 <div class="call-controls-row">
                     <!-- Mute Audio -->
-                    <button class="call-control-btn audio-btn" id="toggle-audio-btn" data-i18n-title="calls.mute" title="Silenciar micrófono">
+                    <button class="call-control-btn audio-btn" id="toggle-audio-btn" title="Silenciar micrófono">
                         <i class="fas fa-microphone"></i>
                     </button>
                     
-                    <!-- Toggle Video -->
-                    <button class="call-control-btn video-btn" id="toggle-video-btn" data-i18n-title="calls.video" title="Activar/Desactivar video">
-                        <i class="fas fa-video"></i>
-                    </button>
-                    
-                    <!-- Switch Camera -->
-                    <button class="call-control-btn switch-btn" id="switch-camera-btn" data-i18n-title="calls.switch_camera" title="Cambiar cámara">
-                        <i class="fas fa-sync-alt"></i>
-                    </button>
-                    
                     <!-- Speaker -->
-                    <button class="call-control-btn speaker-btn" id="toggle-speaker-btn" data-i18n-title="calls.speaker" title="Altavoz">
+                    <button class="call-control-btn speaker-btn" id="toggle-speaker-btn" title="Altavoz">
                         <i class="fas fa-volume-up"></i>
                     </button>
-                </div>
-                
-                <div class="call-action-row">
+                    
                     <!-- End Call -->
-                    <button class="call-control-btn end-call-btn" id="end-call-btn" data-i18n-title="calls.end" title="Colgar">
+                    <button class="call-control-btn end-call-btn" id="end-call-btn" title="Colgar">
                         <i class="fas fa-phone-slash"></i>
                     </button>
                 </div>
@@ -1564,10 +1645,14 @@
     <link rel="stylesheet" href="css/camera-recording.css">
     <link rel="stylesheet" href="css/simple-camera.css">
     <link rel="stylesheet" href="css/document-preview.css">
+    <link rel="stylesheet" href="css/modern-call-interface.css">
+    <link rel="stylesheet" href="css/audio-recorder.css">
     
     <script src="js/contacts.js"></script>
     <script src="js/emojiPicker.js"></script>
     <script src="js/chat.js"></script>
+    <script src="js/modern-call-interface.js"></script>
+    <script src="js/audio-recorder.js"></script>
     <script src="js/callManager.js"></script>
     <script src="js/callHistory.js"></script>
     <script src="js/callMessagesRenderer.js"></script>

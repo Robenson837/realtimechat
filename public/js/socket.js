@@ -1998,7 +1998,7 @@ class SocketManager {
         if (window.Chat && window.Chat.currentConversation) {
             if (recipientId === userId) {
                 console.log(`SUCCESS: Socket: Updating active conversation header for ${userId} - status: ${presenceData.status}`);
-                // Use the WhatsApp-style instant status update
+                // Use the vigichat-style instant status update
                 window.Chat.updateConversationHeaderStatusInstant(presenceData);
             } else {
                 console.log(`⚠️ Socket: User ${userId} not in active conversation (current: ${recipientId})`);
@@ -2024,7 +2024,7 @@ class SocketManager {
             clearTimeout(this.typingTimeouts.get(timeoutKey));
         }
         
-        // Set new timeout (3 seconds - faster like WhatsApp)
+        // Set new timeout (3 seconds - faster like vigichat)
         const timeout = setTimeout(() => {
             this.handleUserStoppedTyping(userId, conversationId);
         }, 3000);
@@ -2290,13 +2290,13 @@ class SocketManager {
         }, 1000);
     }
     
-    // Ultra-responsive typing like WhatsApp - reduced throttling
+    // Ultra-responsive typing like vigichat - reduced throttling
     sendTypingIndicatorThrottled(conversationId, isTyping = true) {
         const now = Date.now();
         const throttleKey = `${conversationId}-${isTyping}`;
         const lastSent = this.typingThrottleCache?.get(throttleKey) || 0;
         
-        // More responsive throttling - WhatsApp-style
+        // More responsive throttling - vigichat-style
         const throttleMs = isTyping ? 300 : 100; // Faster for stopping, slower for starting
         
         if (now - lastSent < throttleMs) {

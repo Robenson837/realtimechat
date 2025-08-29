@@ -1,0 +1,503 @@
+/* ======================================
+   MODERN CALL INTERFACE
+   Clean, intuitive, and responsive design
+   ====================================== */
+
+/* Call Modal - Full Screen */
+.call-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: #1a1a1a;
+    z-index: 10000;
+    display: none;
+}
+
+.call-modal.show {
+    display: flex;
+}
+
+.call-container {
+    width: 100%;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+    position: relative;
+}
+
+/* ======================================
+   CALL HEADER - CONTACT INFO
+   ====================================== */
+
+.call-header {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 100;
+    padding: 40px 30px 20px;
+    background: linear-gradient(180deg, rgba(0,0,0,0.8) 0%, rgba(0,0,0,0.4) 70%, transparent 100%);
+}
+
+.call-contact-info {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.call-avatar {
+    position: relative;
+}
+
+.call-avatar img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: 3px solid rgba(255,255,255,0.3);
+    object-fit: cover;
+}
+
+.call-details {
+    color: white;
+}
+
+.call-contact-name {
+    font-size: 1.5rem;
+    font-weight: 600;
+    margin: 0 0 5px 0;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.call-status {
+    font-size: 0.95rem;
+    margin: 0 0 5px 0;
+    color: rgba(255,255,255,0.8);
+}
+
+.call-duration {
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.7);
+    font-family: 'Courier New', monospace;
+}
+
+/* ======================================
+   VIDEO CONTAINER
+   ====================================== */
+
+.call-video-container {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: #000;
+}
+
+.remote-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    background: #1a1a1a;
+}
+
+/* ======================================
+   LOCAL VIDEO MODAL (DRAGGABLE)
+   ====================================== */
+
+.local-video-modal {
+    position: absolute;
+    top: 100px;
+    right: 20px;
+    width: 150px;
+    height: 200px;
+    border-radius: 12px;
+    overflow: hidden;
+    background: #000;
+    border: 2px solid rgba(255,255,255,0.3);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+    cursor: move;
+    z-index: 200;
+    transition: transform 0.2s ease;
+}
+
+.local-video-modal:hover {
+    transform: scale(1.05);
+    border-color: rgba(255,255,255,0.5);
+}
+
+.local-video-modal:active {
+    cursor: grabbing;
+}
+
+.local-video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.video-modal-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8));
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 8px;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+}
+
+.local-video-modal:hover .video-modal-controls {
+    opacity: 1;
+}
+
+.video-control-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.2);
+    color: white;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.video-control-btn:hover {
+    background: rgba(255,255,255,0.3);
+    transform: scale(1.1);
+}
+
+.video-control-btn:active {
+    transform: scale(0.95);
+}
+
+/* ======================================
+   AUDIO CALL DISPLAY
+   ====================================== */
+
+.audio-call-display {
+    display: none;
+    width: 100%;
+    height: 100%;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+}
+
+.audio-call-display.show {
+    display: flex;
+}
+
+.audio-avatar {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.audio-avatar img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    border: 4px solid rgba(255,255,255,0.2);
+    object-fit: cover;
+    margin-bottom: 20px;
+}
+
+.audio-wave-animation {
+    display: flex;
+    gap: 3px;
+}
+
+.wave {
+    width: 4px;
+    height: 20px;
+    background: rgba(255,255,255,0.6);
+    border-radius: 2px;
+    animation: wave 1.5s infinite ease-in-out;
+}
+
+.wave:nth-child(2) { animation-delay: 0.2s; }
+.wave:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes wave {
+    0%, 40%, 100% { transform: scaleY(0.4); }
+    20% { transform: scaleY(1); }
+}
+
+/* ======================================
+   CALL CONTROLS (BOTTOM)
+   ====================================== */
+
+.call-controls {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    padding: 30px;
+    background: linear-gradient(transparent, rgba(0,0,0,0.8) 30%, rgba(0,0,0,0.9) 100%);
+    z-index: 100;
+}
+
+.call-controls-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 25px;
+}
+
+.call-control-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    border: none;
+    color: white;
+    font-size: 1.2rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+}
+
+.call-control-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+.call-control-btn:active {
+    transform: translateY(0);
+}
+
+.audio-btn {
+    background: rgba(255,255,255,0.2);
+}
+
+.audio-btn:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+.audio-btn.muted {
+    background: #ef4444;
+}
+
+.speaker-btn {
+    background: rgba(255,255,255,0.2);
+}
+
+.speaker-btn:hover {
+    background: rgba(255,255,255,0.3);
+}
+
+.speaker-btn.active {
+    background: #10b981;
+}
+
+.end-call-btn {
+    background: #ef4444;
+    width: 70px;
+    height: 70px;
+}
+
+.end-call-btn:hover {
+    background: #dc2626;
+}
+
+/* ======================================
+   INCOMING CALL INTERFACE
+   ====================================== */
+
+.incoming-call-interface {
+    display: none;
+    width: 100%;
+    height: 100vh;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+    padding: 40px;
+    text-align: center;
+}
+
+.incoming-call-interface.show {
+    display: flex;
+}
+
+.incoming-call-info {
+    margin-bottom: 60px;
+}
+
+.incoming-call-avatar {
+    margin-bottom: 30px;
+}
+
+.incoming-call-avatar img {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    border: 4px solid rgba(255,255,255,0.3);
+    object-fit: cover;
+}
+
+.incoming-contact-name {
+    font-size: 2rem;
+    font-weight: 600;
+    color: white;
+    margin: 0 0 10px 0;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.incoming-call-type {
+    font-size: 1.1rem;
+    color: rgba(255,255,255,0.8);
+    margin: 0;
+}
+
+.incoming-call-actions {
+    display: flex;
+    gap: 80px;
+    align-items: center;
+}
+
+.incoming-call-btn {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+.decline-btn {
+    background: #ef4444;
+}
+
+.decline-btn:hover {
+    background: #dc2626;
+    transform: scale(1.1);
+}
+
+.accept-btn {
+    background: #10b981;
+}
+
+.accept-btn:hover {
+    background: #059669;
+    transform: scale(1.1);
+}
+
+/* ======================================
+   RESPONSIVE DESIGN
+   ====================================== */
+
+@media (max-width: 768px) {
+    .call-header {
+        padding: 30px 20px 15px;
+    }
+    
+    .call-contact-name {
+        font-size: 1.3rem;
+    }
+    
+    .call-avatar img {
+        width: 50px;
+        height: 50px;
+    }
+    
+    .local-video-modal {
+        width: 120px;
+        height: 160px;
+        top: 80px;
+        right: 15px;
+    }
+    
+    .call-controls {
+        padding: 20px;
+    }
+    
+    .call-controls-row {
+        gap: 20px;
+    }
+    
+    .call-control-btn {
+        width: 55px;
+        height: 55px;
+        font-size: 1.1rem;
+    }
+    
+    .end-call-btn {
+        width: 65px;
+        height: 65px;
+    }
+    
+    .incoming-call-actions {
+        gap: 60px;
+    }
+    
+    .incoming-call-btn {
+        width: 70px;
+        height: 70px;
+        font-size: 1.3rem;
+    }
+    
+    .incoming-contact-name {
+        font-size: 1.7rem;
+    }
+    
+    .audio-avatar img {
+        width: 100px;
+        height: 100px;
+    }
+}
+
+@media (max-width: 480px) {
+    .call-header {
+        padding: 25px 15px 10px;
+    }
+    
+    .local-video-modal {
+        width: 100px;
+        height: 130px;
+        top: 70px;
+        right: 10px;
+    }
+    
+    .call-controls-row {
+        gap: 15px;
+    }
+    
+    .call-control-btn {
+        width: 50px;
+        height: 50px;
+        font-size: 1rem;
+    }
+    
+    .end-call-btn {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .incoming-call-actions {
+        gap: 40px;
+    }
+    
+    .incoming-call-btn {
+        width: 65px;
+        height: 65px;
+    }
+}

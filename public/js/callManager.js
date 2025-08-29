@@ -401,7 +401,7 @@ class CallManager {
       this.updateCallInterface('outgoing');
       this.addRippleEffect();
       
-      // Show WhatsApp-style connecting animation
+      // Show vigichat-style connecting animation
       this.startConnectingAnimation();
       
       // Record call start in history
@@ -577,7 +577,7 @@ class CallManager {
 
   hideCallInterface() {
     if (this.callModal) {
-      // Smooth exit animation like WhatsApp
+      // Smooth exit animation like vigichat
       this.callModal.style.transition = 'all 0.3s ease-in';
       this.callModal.style.transform = 'scale(0.9) translateY(50px)';
       this.callModal.style.opacity = '0';
@@ -662,7 +662,7 @@ class CallManager {
 
   updateCallStatus(status) {
     if (this.callStatus) {
-      // Animate status change like WhatsApp
+      // Animate status change like vigichat
       this.callStatus.style.transition = 'opacity 0.2s ease';
       this.callStatus.style.opacity = '0';
       
@@ -673,7 +673,7 @@ class CallManager {
     }
   }
   
-  // WhatsApp-style animation methods
+  // vigichat-style animation methods
   addRippleEffect() {
     const buttons = document.querySelectorAll('.call-control-btn');
     buttons.forEach(btn => {
@@ -1806,7 +1806,7 @@ class CallManager {
     this.updateCallStatus(window.i18n?.t('calls.call_declined_by', {name: userName}) || `${userName} rechazó la llamada`);
     this.updateCallMessageInConversation('declined');
     
-    // Show WhatsApp-style notification
+    // Show vigichat-style notification
     window.Utils?.TranslatedNotifications?.error('notifications.call_declined', {name: userName}) || this.showNotification(`${userName} rechazó la llamada`, 'info');
     
     // Record in history
