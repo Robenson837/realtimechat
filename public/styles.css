@@ -1940,7 +1940,7 @@ html {
 }
 
 .call-message.received {
-    background: var(--message-received-bg);
+    background: white;
     border-color: var(--border-light);
     margin-left: 16px;
     margin-right: auto;
@@ -3521,7 +3521,7 @@ i[class*="fa-"]:before {
 
 /* Contenido de mensajes recibidos - COLOR BLANCO ORIGINAL */
 .message.received .message-content {
-    background: var(--message-received) !important;
+    background: white !important;
     color: var(--text-primary) !important;
     border-radius: 8px 8px 8px 0 !important
 }
@@ -5002,7 +5002,7 @@ i[class*="fa-"]:before {
 }
 
 .message-content {
-    background: var(--message-received);
+    background: white;
     border-radius: 0.85rem;
     padding: 0.25rem 0.5rem;
     position: relative;
@@ -5089,7 +5089,7 @@ i[class*="fa-"]:before {
 }
 
 .message.emoji-only.received .message-time-status {
-    background: var(--message-received);
+    background: white;
 }
 
 .message.emoji-only.sent .message-time {
@@ -15931,40 +15931,76 @@ textarea:focus,
     color: rgba(0, 0, 0, 0.7);
 }
 
-/* Contenedor de la barra de progreso */
-.audio-progress-bar-container {
+/* Contenedor de las barras de frecuencia */
+.audio-waveform-container {
     flex: 1;
-    height: 3px;
-    position: relative;
-}
-
-/* Barra de progreso base */
-.audio-progress-bar-complete {
-    width: 100%;
-    height: 3px;
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 2px;
+    height: 22px;
     position: relative;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Contenedor de las barras de frecuencia */
+.audio-frequency-bars {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    height: 100%;
+    width: 100%;
+    position: relative;
+}
+
+/* Barras individuales de frecuencia */
+.frequency-bar {
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 1px;
+    width: 2px;
+    min-height: 2px;
+    transition: background-color 0.2s ease;
 }
 
 /* Para mensajes recibidos */
-.message.received .audio-progress-bar-complete {
-    background: rgba(0, 0, 0, 0.15);
+.message.received .frequency-bar {
+    background: rgba(0, 0, 0, 0.25);
 }
 
-/* Relleno de progreso */
-.audio-progress-fill {
+/* Overlay de progreso sobre las barras */
+.audio-progress-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
     height: 100%;
     width: 0%;
-    background: white;
+    background: linear-gradient(to right, 
+        rgba(255, 255, 255, 0.9) 0%,
+        rgba(255, 255, 255, 0.9) 98%,
+        transparent 100%
+    );
     border-radius: 2px;
+    pointer-events: none;
     transition: width 0.1s linear;
+    overflow: hidden;
 }
 
 /* Para mensajes recibidos */
-.message.received .audio-progress-fill {
-    background: #047857;
+.message.received .audio-progress-overlay {
+    background: linear-gradient(to right, 
+        #047857 0%,
+        #047857 98%,
+        transparent 100%
+    );
+}
+
+/* Efecto hover en las barras */
+.audio-waveform-container:hover .frequency-bar {
+    background: rgba(255, 255, 255, 0.6);
+}
+
+.message.received .audio-waveform-container:hover .frequency-bar {
+    background: rgba(0, 0, 0, 0.4);
 }
 
 /* Botón de play para mensajes recibidos */
@@ -15979,6 +16015,7 @@ textarea:focus,
 .message.received .play-triangle {
     border-left-color: #666;
 }
+
 
 /* Responsive para móviles */
 @media (max-width: 768px) {
@@ -16150,30 +16187,58 @@ textarea:focus,
     text-align: center;
 }
 
-/* Contenedor de la barra para preview */
-.audio-progress-bar-container-preview {
+/* Contenedor de barras de frecuencia para preview */
+.audio-waveform-container-preview {
     flex: 1;
-    height: 3px;
-    position: relative;
-}
-
-/* Barra de progreso para preview */
-.audio-progress-bar-complete-preview {
-    width: 100%;
-    height: 3px;
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 2px;
+    height: 22px;
     position: relative;
     cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* Relleno de progreso para preview */
-.audio-progress-fill-preview {
+/* Barras de frecuencia para preview */
+.audio-frequency-bars-preview {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 1px;
+    height: 100%;
+    width: 100%;
+    position: relative;
+}
+
+/* Barras individuales para preview */
+.frequency-bar-preview {
+    background: rgba(255, 255, 255, 0.4);
+    border-radius: 1px;
+    width: 2px;
+    min-height: 2px;
+    transition: background-color 0.2s ease;
+}
+
+/* Overlay de progreso para preview */
+.audio-progress-overlay-preview {
+    position: absolute;
+    top: 0;
+    left: 0;
     height: 100%;
     width: 0%;
-    background: rgba(255, 255, 255, 0.9);
+    background: linear-gradient(to right, 
+        rgba(255, 255, 255, 0.9) 0%,
+        rgba(255, 255, 255, 0.9) 98%,
+        transparent 100%
+    );
     border-radius: 2px;
+    pointer-events: none;
     transition: width 0.1s linear;
+    overflow: hidden;
+}
+
+/* Efecto hover en preview */
+.audio-waveform-container-preview:hover .frequency-bar-preview {
+    background: rgba(255, 255, 255, 0.6);
 }
 
 /* Botón enviar */
@@ -16279,4 +16344,102 @@ textarea:focus,
         font-size: 10px;
         min-width: 28px;
     }
+}
+
+/* === AUDIO BUBBLE - DISEÑO EXACTO DEL EJEMPLO HTML === */
+.chat-bubble-audio {
+  max-width: 600px;
+  display: flex;
+  align-items: center;
+  background: var(--message-sent);
+  padding: 10px 15px;
+  border-radius: 15px;
+  margin: 8px 0;
+  color: white;
+  position: relative;
+}
+
+.chat-bubble-audio .profile-pic {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  margin-right: 10px;
+}
+
+.chat-bubble-audio .profile-pic img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.chat-bubble-audio .play-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #047857; /* verde */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  margin-right: 10px;
+  border: none;
+}
+
+.chat-bubble-audio .play-btn span {
+  width: 0;
+  height: 0;
+  border-left: 12px solid white;
+  border-top: 7px solid transparent;
+  border-bottom: 7px solid transparent;
+}
+
+.chat-bubble-audio .progress-container {
+  flex: 1;
+  position: relative;
+  margin-right: 10px;
+}
+
+.chat-bubble-audio .progress-bar {
+  width: 100%;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+  position: relative;
+}
+
+.chat-bubble-audio .progress {
+  height: 100%;
+  width: 0%;
+  background: white;
+  border-radius: 2px;
+  transition: width 0.1s ease;
+}
+
+.chat-bubble-audio .time {
+  font-size: 12px;
+  margin-top: 5px;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+/* Mensajes recibidos */
+.message.received .chat-bubble-audio {
+  background: #f0f0f0;
+  color: #333;
+}
+
+.message.received .chat-bubble-audio .play-btn {
+  background: #047857;
+}
+
+.message.received .chat-bubble-audio .progress-bar {
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.message.received .chat-bubble-audio .progress {
+  background: #047857;
+}
+
+.message.received .chat-bubble-audio .time {
+  color: rgba(0, 0, 0, 0.7);
 }

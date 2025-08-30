@@ -9273,7 +9273,7 @@ class ChatManager {
     }, 500);
   }
 
-  // Crear elemento de mensaje de audio estilo vigichat
+  // Crear elemento de mensaje de audio estilo WhatsApp con barras de frecuencia
   createAudioMessageElement(attachment, message = null) {
     const duration = attachment.duration || "0:00";
     const audioId = `audio_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
@@ -9293,8 +9293,8 @@ class ChatManager {
     }
     
     return `
-      <div class="audio-message-whatsapp-complete">
-        <audio id="${audioId}" style="display: none;" preload="metadata">
+      <div class="audio-message-whatsapp-complete" data-audio-id="${audioId}">
+        <audio id="${audioId}" preload="metadata" volume="1.0">
           <source src="${attachment.path}" type="${attachment.mimeType}">
           Tu navegador no soporta la reproducción de audio.
         </audio>
@@ -9309,18 +9309,20 @@ class ChatManager {
           <span class="play-triangle"></span>
         </button>
         
-        <!-- Contenedor de progreso -->
+        <!-- Contenedor de progreso con barras de frecuencia -->
         <div class="audio-progress-container-complete">
           <span class="audio-current-time" id="current-time-${audioId}">0:00</span>
           
-          <div class="audio-progress-bar-container">
-            <div class="audio-progress-bar-complete" id="progress-bar-${audioId}" onclick="window.chatManager.seekAudioByClick('${audioId}', event)">
-              <div class="audio-progress-fill" id="progress-fill-${audioId}"></div>
+          <div class="audio-waveform-container" onclick="window.chatManager.seekAudioByClick('${audioId}', event)">
+            <div class="audio-frequency-bars" id="frequency-bars-${audioId}">
+              ${this.generateFrequencyBars(attachment)}
             </div>
+            <div class="audio-progress-overlay" id="progress-overlay-${audioId}"></div>
           </div>
           
           <span class="audio-total-time" id="total-time-${audioId}">${formattedDuration}</span>
         </div>
+        
       </div>
     `;
   }
@@ -9353,17 +9355,75 @@ class ChatManager {
     }
   }
 
-  // Función para buscar en el audio haciendo click en la barra
+  // Generar barras de frecuencia para el audio
+  generateFrequencyBars(attachment) {
+    let frequencies = [];
+    
+    // Intentar usar frecuencias reales del attachment
+    if (attachment.frequencies) {
+      try {
+        if (typeof attachment.frequencies === 'string') {
+          frequencies = JSON.parse(attachment.frequencies);
+        } else {
+          frequencies = attachment.frequencies;
+        }
+      } catch (e) {
+        console.warn('Error parsing frequencies:', e);
+        frequencies = [];
+      }
+    }
+    
+    // Si no hay frecuencias, generar patrón por defecto
+    if (!frequencies.length) {
+      frequencies = this.generateDefaultFrequencies();
+    }
+    
+    // Limitar a máximo 60 barras para mejor rendimiento
+    if (frequencies.length > 60) {
+      const step = Math.ceil(frequencies.length / 60);
+      frequencies = frequencies.filter((_, index) => index % step === 0);
+    }
+    
+    // Generar HTML de las barras
+    return frequencies.map((freq, index) => {
+      const height = Math.max(2, Math.min(20, (freq / 255) * 18 + 2));
+      return `<div class="frequency-bar" data-index="${index}" style="height: ${height}px;"></div>`;
+    }).join('');
+  }
+
+  // Generar frecuencias por defecto que simulan audio real
+  generateDefaultFrequencies() {
+    const bars = 45; // Número de barras
+    const frequencies = [];
+    
+    for (let i = 0; i < bars; i++) {
+      // Crear patrón más realista que simula frecuencias de voz
+      const baseHeight = 60 + Math.random() * 120; // Base entre 60-180
+      const wave = Math.sin(i * 0.3) * 40; // Onda suave
+      const randomness = (Math.random() - 0.5) * 60; // Variación aleatoria
+      
+      let frequency = baseHeight + wave + randomness;
+      
+      // Asegurar que esté en rango válido
+      frequency = Math.max(30, Math.min(255, frequency));
+      
+      frequencies.push(Math.round(frequency));
+    }
+    
+    return frequencies;
+  }
+
+  // Función para buscar en el audio haciendo click en la barra de frecuencias
   seekAudioByClick(audioId, event) {
     const audioElement = document.getElementById(audioId);
-    const progressBar = event.currentTarget;
+    const waveformContainer = event.currentTarget;
     
     if (!audioElement || !audioElement.duration) return;
     
-    const rect = progressBar.getBoundingClientRect();
+    const rect = waveformContainer.getBoundingClientRect();
     const clickX = event.clientX - rect.left;
-    const barWidth = rect.width;
-    const percentage = (clickX / barWidth) * 100;
+    const containerWidth = rect.width;
+    const percentage = (clickX / containerWidth) * 100;
     
     // Limitar entre 0 y 100
     const clampedPercentage = Math.max(0, Math.min(100, percentage));
@@ -9372,11 +9432,11 @@ class ChatManager {
     audioElement.currentTime = newTime;
     
     // Actualizar visualmente el progreso
-    const progressFill = document.getElementById(`progress-fill-${audioId}`);
+    const progressOverlay = document.getElementById(`progress-overlay-${audioId}`);
     const currentTimeEl = document.getElementById(`current-time-${audioId}`);
     
-    if (progressFill) {
-      progressFill.style.width = `${clampedPercentage}%`;
+    if (progressOverlay) {
+      progressOverlay.style.width = `${clampedPercentage}%`;
     }
     
     if (currentTimeEl) {
@@ -9402,15 +9462,23 @@ class ChatManager {
     ).join('');
   }
 
-  // Controlar reproducción de audio
+  // Controlar reproducción de audio - diseño WhatsApp con sonido funcionando
   toggleAudio(audioId, button) {
     const audioElement = document.getElementById(audioId);
     const playTriangle = button.querySelector('.play-triangle');
-    const progressFill = document.getElementById(`progress-fill-${audioId}`);
+    const progressOverlay = document.getElementById(`progress-overlay-${audioId}`);
     const currentTimeEl = document.getElementById(`current-time-${audioId}`);
     const totalTimeEl = document.getElementById(`total-time-${audioId}`);
     
-    if (!audioElement) return;
+    console.log('Toggle audio:', audioId, audioElement);
+    if (!audioElement) {
+      console.error('Audio element not found:', audioId);
+      return;
+    }
+    
+    // Configurar volumen para asegurar que se escuche
+    audioElement.volume = 1.0;
+    audioElement.muted = false;
     
     if (audioElement.paused) {
       // Pausar otros audios que estén reproduciéndose
@@ -9428,54 +9496,55 @@ class ChatManager {
               otherTriangle.style.borderTop = '7px solid transparent';
               otherTriangle.style.borderBottom = '7px solid transparent';
               otherTriangle.style.borderRight = 'none';
+              otherTriangle.style.background = 'none';
+              otherTriangle.style.borderRadius = '0';
             }
-          }
-          // Reset progress de otros audios
-          const otherProgress = document.getElementById(`progress-fill-${audio.id}`);
-          const otherCurrentTime = document.getElementById(`current-time-${audio.id}`);
-          if (otherProgress) {
-            otherProgress.style.width = '0%';
-          }
-          if (otherCurrentTime) {
-            otherCurrentTime.textContent = '0:00';
           }
         }
       });
       
-      audioElement.play();
-      
-      // Cambiar a icono de pausa (cuadrado blanco)
-      if (playTriangle) {
-        playTriangle.style.width = '12px';
-        playTriangle.style.height = '12px';
-        playTriangle.style.background = 'white';
-        playTriangle.style.border = 'none';
-        playTriangle.style.borderRadius = '1px';
-      }
-      
-      // Actualizar progreso en tiempo real
-      const updateProgress = () => {
-        if (!audioElement.paused && audioElement.duration) {
-          const progress = (audioElement.currentTime / audioElement.duration) * 100;
-          if (progressFill) {
-            progressFill.style.width = `${progress}%`;
-          }
-          
-          // Mostrar tiempo transcurrido
-          const elapsed = audioElement.currentTime;
-          const minutes = Math.floor(elapsed / 60);
-          const seconds = Math.floor(elapsed % 60);
-          if (currentTimeEl) {
-            currentTimeEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-          }
-          
-          requestAnimationFrame(updateProgress);
+      // Reproducir audio
+      console.log('Starting audio playback, src:', audioElement.src);
+      audioElement.play().then(() => {
+        console.log('Audio playing successfully');
+        
+        // Cambiar a icono de pausa (cuadrado blanco)
+        if (playTriangle) {
+          playTriangle.style.width = '12px';
+          playTriangle.style.height = '12px';
+          playTriangle.style.background = 'white';
+          playTriangle.style.border = 'none';
+          playTriangle.style.borderRadius = '1px';
         }
-      };
-      updateProgress();
+        
+        // Actualizar progreso en tiempo real
+        const updateProgress = () => {
+          if (!audioElement.paused && audioElement.duration) {
+            const progress = (audioElement.currentTime / audioElement.duration) * 100;
+            if (progressOverlay) {
+              progressOverlay.style.width = `${progress}%`;
+            }
+            
+            // Mostrar tiempo transcurrido
+            const elapsed = audioElement.currentTime;
+            const minutes = Math.floor(elapsed / 60);
+            const seconds = Math.floor(elapsed % 60);
+            if (currentTimeEl) {
+              currentTimeEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+            }
+            
+            requestAnimationFrame(updateProgress);
+          }
+        };
+        updateProgress();
+        
+      }).catch(error => {
+        console.error('Error al reproducir audio:', error);
+      });
       
     } else {
       audioElement.pause();
+      console.log('Audio paused');
       
       // Cambiar de vuelta a icono de play (triángulo)
       if (playTriangle) {
@@ -9492,6 +9561,7 @@ class ChatManager {
     
     // Evento cuando termina el audio
     audioElement.onended = () => {
+      console.log('Audio ended');
       // Restaurar icono de play
       if (playTriangle) {
         playTriangle.style.width = '0';
@@ -9503,8 +9573,8 @@ class ChatManager {
         playTriangle.style.background = 'none';
         playTriangle.style.borderRadius = '0';
       }
-      if (progressFill) {
-        progressFill.style.width = '0%';
+      if (progressOverlay) {
+        progressOverlay.style.width = '0%';
       }
       // Restaurar duración original
       audioElement.currentTime = 0;

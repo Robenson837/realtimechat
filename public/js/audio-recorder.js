@@ -321,14 +321,16 @@ class AudioRecorder {
     }
 
     async sendAudioMessage(audioBlob) {
+        // Obtener la duración real del archivo de audio
+        const realDuration = await this.getAudioRealDuration(audioBlob);
+        
         // Crear FormData para envío
         const formData = new FormData();
         formData.append('audio', audioBlob, `voice_message_${Date.now()}.webm`);
         formData.append('type', 'audio');
         
-        // Agregar duración calculada
-        const duration = this.getRecordingDuration();
-        formData.append('duration', duration);
+        // Agregar duración real del archivo
+        formData.append('duration', realDuration);
         
         // Agregar frecuencias para mostrar en el mensaje
         if (this.recordedFrequencies.length > 0) {
@@ -343,7 +345,45 @@ class AudioRecorder {
         
         formData.append('conversationId', activeConversation);
 
+        // Crear ID temporal fuera del try para que esté disponible en el catch
+        const tempId = `temp_${Date.now()}_${Math.random()}`;
+        
         try {
+            // Crear mensaje temporal para mostrar inmediatamente en la conversación
+            const tempMessage = {
+                _id: tempId,
+                type: 'voice',
+                content: {
+                    fileUrl: URL.createObjectURL(audioBlob), // URL temporal para preview
+                    fileName: `voice_message_${Date.now()}.webm`,
+                    fileSize: audioBlob.size,
+                    duration: realDuration,
+                    frequencies: this.recordedFrequencies.length > 0 ? this.getAverageFrequencies() : []
+                },
+                sender: window.currentUser || { _id: 'temp_user', fullName: 'Tú' },
+                createdAt: new Date().toISOString(),
+                status: 'sending',
+                // Asegurar que se procese como mensaje enviado
+                isSent: true,
+                isReceived: false
+            };
+            
+            // Agregar mensaje inmediatamente a la conversación usando el ChatManager
+            if (window.chatManager) {
+                // Usar renderMessage que maneja automáticamente el appendChild y scroll
+                const messageEl = window.chatManager.renderMessage(tempMessage, false);
+                
+                // Agregar clases y atributos para el estado temporal
+                if (messageEl) {
+                    messageEl.classList.add("sending");
+                    messageEl.dataset.messageId = tempId;
+                    messageEl.dataset.clientId = tempId;
+                    messageEl.setAttribute("data-client-id", tempId);
+                    
+                    console.log('Audio message rendered and added to chat:', tempId);
+                }
+            }
+            
             // Usar el sistema API existente
             if (typeof API !== 'undefined' && API.Messages) {
                 const response = await API.Messages.sendFile(formData);
@@ -351,20 +391,48 @@ class AudioRecorder {
                 if (response.success) {
                     this.showNotification('success', 'Mensaje de voz enviado');
                     
-                    // Restaurar UI normal
+                    // Actualizar el mensaje temporal con los datos reales del servidor
+                    if (response.message && window.chatManager) {
+                        const messageEl = document.querySelector(`[data-client-id="${tempId}"]`);
+                        if (messageEl) {
+                            messageEl.classList.remove("sending");
+                            messageEl.classList.add("sent");
+                            messageEl.dataset.messageId = response.message._id;
+                        }
+                    }
+                    
+                    // Restaurar UI normal - ocultar preview y volver al estado inicial
+                    this.hidePreviewInterface();
+                    this.resetToIdle();
+                    
                     setTimeout(() => {
                         this.checkInputContent();
                     }, 100);
                     
                 } else {
+                    // Si hay error, remover el mensaje temporal
+                    const messageEl = document.querySelector(`[data-client-id="${tempId}"]`);
+                    if (messageEl) {
+                        messageEl.remove();
+                    }
                     throw new Error(response.message || 'Error al enviar mensaje de voz');
                 }
             } else {
+                // Si no hay API, remover mensaje temporal
+                const messageEl = document.querySelector(`[data-client-id="${tempId}"]`);
+                if (messageEl) {
+                    messageEl.remove();
+                }
                 throw new Error('Sistema de API no disponible');
             }
             
         } catch (error) {
             console.error('Error in sendAudioMessage:', error);
+            // Asegurar que se remueva el mensaje temporal en caso de error
+            const messageEl = document.querySelector(`[data-client-id="${tempId}"]`);
+            if (messageEl) {
+                messageEl.remove();
+            }
             throw error;
         }
     }
@@ -400,6 +468,53 @@ class AudioRecorder {
         return `${minutes}:${seconds.toString().padStart(2, '0')}`;
     }
 
+    // Obtener la duración real del archivo de audio
+    async getAudioRealDuration(audioBlob) {
+        return new Promise((resolve) => {
+            const tempAudio = document.createElement('audio');
+            
+            // Crear URL temporal para el blob
+            const blobUrl = URL.createObjectURL(audioBlob);
+            tempAudio.src = blobUrl;
+            
+            tempAudio.addEventListener('loadedmetadata', () => {
+                // Obtener duración real del archivo
+                const duration = tempAudio.duration;
+                
+                // Limpiar URL temporal
+                URL.revokeObjectURL(blobUrl);
+                
+                if (isFinite(duration)) {
+                    const minutes = Math.floor(duration / 60);
+                    const seconds = Math.floor(duration % 60);
+                    const formattedDuration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                    console.log(`Duración real del audio: ${formattedDuration} (${duration} segundos)`);
+                    resolve(formattedDuration);
+                } else {
+                    // Fallback a duración calculada
+                    console.warn('No se pudo obtener la duración real del audio, usando duración calculada');
+                    resolve(this.getRecordingDuration());
+                }
+            });
+
+            tempAudio.addEventListener('error', () => {
+                console.error('Error al cargar el audio para obtener duración');
+                URL.revokeObjectURL(blobUrl);
+                // Fallback a duración calculada
+                resolve(this.getRecordingDuration());
+            });
+
+            // Timeout por si no se carga
+            setTimeout(() => {
+                if (tempAudio.readyState === 0) {
+                    console.warn('Timeout al cargar audio, usando duración calculada');
+                    URL.revokeObjectURL(blobUrl);
+                    resolve(this.getRecordingDuration());
+                }
+            }, 5000);
+        });
+    }
+
     // Helper para convertir blob a data URL (compatible con CSP)
     blobToDataURL(blob) {
         return new Promise((resolve, reject) => {
@@ -430,43 +545,7 @@ class AudioRecorder {
     }
 
     // Métodos para controles de preview
-    async togglePreviewPlayback() {
-        const audio = document.getElementById('audio-preview-element');
-        const playBtn = document.querySelector('.preview-play-button');
-        
-        if (!audio || !playBtn) {
-            console.error('Audio element or play button not found');
-            return;
-        }
-        
-        try {
-            if (audio.paused) {
-                // Intentar reproducir
-                await audio.play();
-                playBtn.querySelector('i').className = 'fas fa-pause';
-                
-                // Eventos para manejar el final
-                audio.onended = () => {
-                    playBtn.querySelector('i').className = 'fas fa-play';
-                };
-                
-                // Evento para manejar errores
-                audio.onerror = (e) => {
-                    console.error('Error playing preview audio:', e);
-                    playBtn.querySelector('i').className = 'fas fa-play';
-                    this.showNotification('error', 'Error al reproducir el audio');
-                };
-                
-            } else {
-                audio.pause();
-                playBtn.querySelector('i').className = 'fas fa-play';
-            }
-        } catch (error) {
-            console.error('Error toggling preview playback:', error);
-            playBtn.querySelector('i').className = 'fas fa-play';
-            this.showNotification('error', 'No se pudo reproducir el audio');
-        }
-    }
+    // Método obsoleto eliminado - usar solo la versión actualizada más abajo
 
     updatePreviewProgress() {
         if (!this.previewAudio || !this.previewProgressOverlay) return;
@@ -654,32 +733,33 @@ class AudioRecorder {
         currentTime.id = 'preview-current-time';
         currentTime.textContent = '0:00';
         
-        // Container de la barra
-        const progressBarContainer = document.createElement('div');
-        progressBarContainer.className = 'audio-progress-bar-container-preview';
+        // Contenedor de barras de frecuencia
+        const waveformContainer = document.createElement('div');
+        waveformContainer.className = 'audio-waveform-container-preview';
+        waveformContainer.onclick = (e) => this.seekPreviewByClick(e);
         
-        // Barra de progreso
-        const progressBar = document.createElement('div');
-        progressBar.className = 'audio-progress-bar-complete-preview';
-        progressBar.id = 'preview-progress-bar-complete';
-        progressBar.onclick = (e) => this.seekPreviewByClick(e);
+        // Barras de frecuencia
+        const frequencyBars = document.createElement('div');
+        frequencyBars.className = 'audio-frequency-bars-preview';
+        frequencyBars.id = 'preview-frequency-bars';
+        frequencyBars.innerHTML = this.generatePreviewFrequencyBars();
         
-        // Relleno de progreso
-        const progressFill = document.createElement('div');
-        progressFill.className = 'audio-progress-fill-preview';
-        progressFill.id = 'preview-progress-fill';
+        // Overlay de progreso
+        const progressOverlay = document.createElement('div');
+        progressOverlay.className = 'audio-progress-overlay-preview';
+        progressOverlay.id = 'preview-progress-overlay';
         
-        progressBar.appendChild(progressFill);
-        progressBarContainer.appendChild(progressBar);
+        waveformContainer.appendChild(frequencyBars);
+        waveformContainer.appendChild(progressOverlay);
         
-        // Duración total
+        // Duración total - inicialmente usar duración calculada, luego actualizar con exacta
         const totalTime = document.createElement('span');
         totalTime.className = 'audio-total-time-preview';
         totalTime.id = 'preview-total-time';
         totalTime.textContent = this.formatDuration(this.getRecordingDuration());
         
         progressContainer.appendChild(currentTime);
-        progressContainer.appendChild(progressBarContainer);
+        progressContainer.appendChild(waveformContainer);
         progressContainer.appendChild(totalTime);
         
         audioWhatsApp.appendChild(playBtn);
@@ -696,6 +776,23 @@ class AudioRecorder {
         if (this.recordedAudioBlob) {
             this.blobToDataURL(this.recordedAudioBlob).then(dataUrl => {
                 audioElement.src = dataUrl;
+                
+                // Una vez que se carga el audio, obtener la duración real
+                audioElement.addEventListener('loadedmetadata', () => {
+                    if (audioElement.duration && isFinite(audioElement.duration)) {
+                        const minutes = Math.floor(audioElement.duration / 60);
+                        const seconds = Math.floor(audioElement.duration % 60);
+                        const realDuration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                        
+                        // Actualizar la duración mostrada
+                        const totalTimeEl = document.getElementById('preview-total-time');
+                        if (totalTimeEl) {
+                            totalTimeEl.textContent = realDuration;
+                        }
+                        
+                        console.log(`Duración real del audio: ${realDuration}`);
+                    }
+                });
             }).catch(error => {
                 console.error('Error converting audio blob to data URL:', error);
             });
@@ -1091,17 +1188,56 @@ class AudioRecorder {
         }
     }
 
+    // Generar barras de frecuencia para el preview
+    generatePreviewFrequencyBars() {
+        // Usar frecuencias calculadas de la grabación actual o generar por defecto
+        let frequencies = [];
+        
+        if (this.recordedFrequencies && this.recordedFrequencies.length > 0) {
+            frequencies = this.getAverageFrequencies();
+        }
+        
+        if (!frequencies.length) {
+            frequencies = this.generateDefaultPreviewFrequencies();
+        }
+        
+        // Generar HTML de las barras
+        return frequencies.map((freq, index) => {
+            const height = Math.max(2, Math.min(20, (freq / 255) * 18 + 2));
+            return `<div class="frequency-bar-preview" data-index="${index}" style="height: ${height}px;"></div>`;
+        }).join('');
+    }
+
+    // Generar frecuencias por defecto para preview
+    generateDefaultPreviewFrequencies() {
+        const bars = 40; // Menos barras para el preview
+        const frequencies = [];
+        
+        for (let i = 0; i < bars; i++) {
+            const baseHeight = 80 + Math.random() * 100;
+            const wave = Math.sin(i * 0.4) * 30;
+            const randomness = (Math.random() - 0.5) * 50;
+            
+            let frequency = baseHeight + wave + randomness;
+            frequency = Math.max(40, Math.min(255, frequency));
+            
+            frequencies.push(Math.round(frequency));
+        }
+        
+        return frequencies;
+    }
+
     // Función para buscar en el preview haciendo click
     seekPreviewByClick(event) {
         const audio = document.getElementById('audio-preview-element');
-        const progressBar = event.currentTarget;
+        const waveformContainer = event.currentTarget;
         
         if (!audio || !audio.duration) return;
         
-        const rect = progressBar.getBoundingClientRect();
+        const rect = waveformContainer.getBoundingClientRect();
         const clickX = event.clientX - rect.left;
-        const barWidth = rect.width;
-        const percentage = (clickX / barWidth) * 100;
+        const containerWidth = rect.width;
+        const percentage = (clickX / containerWidth) * 100;
         
         // Limitar entre 0 y 100
         const clampedPercentage = Math.max(0, Math.min(100, percentage));
@@ -1110,11 +1246,11 @@ class AudioRecorder {
         audio.currentTime = newTime;
         
         // Actualizar visualmente el progreso
-        const progressFill = document.getElementById('preview-progress-fill');
+        const progressOverlay = document.getElementById('preview-progress-overlay');
         const currentTimeEl = document.getElementById('preview-current-time');
         
-        if (progressFill) {
-            progressFill.style.width = `${clampedPercentage}%`;
+        if (progressOverlay) {
+            progressOverlay.style.width = `${clampedPercentage}%`;
         }
         
         if (currentTimeEl) {
@@ -1129,7 +1265,7 @@ class AudioRecorder {
         const audio = document.getElementById('audio-preview-element');
         const playBtn = document.querySelector('.audio-play-btn-complete-preview');
         const playTriangle = playBtn?.querySelector('.play-triangle-preview');
-        const progressFill = document.getElementById('preview-progress-fill');
+        const progressOverlay = document.getElementById('preview-progress-overlay');
         const currentTimeEl = document.getElementById('preview-current-time');
         const totalTimeEl = document.getElementById('preview-total-time');
         
@@ -1139,7 +1275,21 @@ class AudioRecorder {
         }
         
         try {
+            // Configurar volumen
+            audio.volume = 1.0;
+            console.log('Preview audio src:', audio.src, 'readyState:', audio.readyState);
+            
             if (audio.paused) {
+                // Verificar que el audio esté listo antes de reproducir
+                if (audio.readyState < 2) {
+                    console.log('Preview audio no está listo, esperando...');
+                    audio.load();
+                    await new Promise((resolve) => {
+                        audio.addEventListener('canplay', resolve, { once: true });
+                    });
+                }
+                
+                console.log('Starting preview playback...');
                 await audio.play();
                 
                 // Cambiar a icono de pausa (cuadrado blanco)
@@ -1155,8 +1305,8 @@ class AudioRecorder {
                 const updateProgress = () => {
                     if (!audio.paused && audio.duration) {
                         const progress = (audio.currentTime / audio.duration) * 100;
-                        if (progressFill) {
-                            progressFill.style.width = `${progress}%`;
+                        if (progressOverlay) {
+                            progressOverlay.style.width = `${progress}%`;
                         }
                         
                         // Mostrar tiempo transcurrido
@@ -1185,8 +1335,8 @@ class AudioRecorder {
                         playTriangle.style.background = 'none';
                         playTriangle.style.borderRadius = '0';
                     }
-                    if (progressFill) {
-                        progressFill.style.width = '0%';
+                    if (progressOverlay) {
+                        progressOverlay.style.width = '0%';
                     }
                     // Restaurar duración original
                     audio.currentTime = 0;
