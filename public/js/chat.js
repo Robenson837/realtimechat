@@ -54,7 +54,7 @@ window.clearNotifications = function () {
 
 // FUNCIÓN GLOBAL PARA CORRECCIÓN INMEDIATA DE POSICIONAMIENTO
 window.fixMessagePositioning = function () {
-  console.log("🔧 Aplicando corrección manual de posicionamiento...");
+  console.log("Aplicando corrección manual de posicionamiento...");
   if (
     window.chatManager &&
     typeof window.chatManager.enforceMessagePositioningImmediate === "function"
@@ -121,7 +121,7 @@ window.resetAllUnread = function () {
 // DEPRECATED: Use real database data instead of simulations
 window.simulateUnread = function (count = 2) {
   console.warn(
-    "⚠️ simulateUnread is deprecated - system now uses real database data"
+    "simulateUnread is deprecated - system now uses real database data"
   );
 };
 
@@ -193,7 +193,7 @@ window.testErrorHandling = function () {
 class ChatManager {
   constructor() {
     try {
-      console.log("🔧 ChatManager constructor started");
+      console.log("ChatManager constructor started");
 
       this.currentUser = null;
       this.currentConversation = null;
@@ -243,13 +243,13 @@ class ChatManager {
         return;
       }
 
-      console.log("🔧 Utils available, setting up elements...");
+      console.log("Utils available, setting up elements...");
       this.setupElements();
       this.init();
 
       console.log("SUCCESS: ChatManager constructor completed successfully");
     } catch (error) {
-      console.error("❌ Error in ChatManager constructor:", error);
+      console.error("Error in ChatManager constructor:", error);
       throw error;
     }
   }
@@ -1393,6 +1393,21 @@ class ChatManager {
   }
 
   async loadConversations() {
+    // Prevent multiple simultaneous calls
+    if (this._loadingConversations) {
+      console.log("loadConversations already in progress, skipping");
+      return;
+    }
+    
+    // Debounce rapid calls
+    if (this._lastLoadTime && (Date.now() - this._lastLoadTime) < 1000) {
+      console.log("loadConversations called too frequently, debouncing");
+      return;
+    }
+    
+    this._loadingConversations = true;
+    this._lastLoadTime = Date.now();
+    
     try {
       console.log("Loading conversations from API...");
 
@@ -1474,12 +1489,12 @@ class ChatManager {
           // The API should provide the actual unread count from the database
           if (!conversation.hasOwnProperty("unreadCount")) {
             console.warn(
-              `⚠️ Conversation ${conversation._id} missing unreadCount from API`
+              `Conversation ${conversation._id} missing unreadCount from API`
             );
             conversation.unreadCount = 0; // Only fallback if completely missing
           } else {
             console.log(
-              `📊 Real unread count for ${conversation.name}: ${conversation.unreadCount}`
+              `Real unread count for ${conversation.name}: ${conversation.unreadCount}`
             );
           }
 
@@ -1514,6 +1529,8 @@ class ChatManager {
     } catch (error) {
       console.error("Error loading conversations:", error);
       // Don't throw error here to allow app to continue working
+    } finally {
+      this._loadingConversations = false;
     }
   }
 
@@ -1898,11 +1915,90 @@ class ChatManager {
     return null;
   }
 
+  // ============================  
+  // EVENT HANDLER REINITIALIZATION FOR MOBILE FIX
+  // ============================
+  
+  reinitializeEventHandlers() {
+    console.log('Reinitializing event handlers for clickable elements');
+    
+    // Re-attach event listeners to chat items
+    setTimeout(() => {
+      const chatItems = document.querySelectorAll('.chat-item');
+      chatItems.forEach(item => {
+        if (!item._eventHandlerAttached) {
+          const conversationId = item.dataset.conversationId;
+          if (conversationId) {
+            // Remove any existing handlers first
+            const existingHandler = item._clickHandler;
+            if (existingHandler) {
+              item.removeEventListener('click', existingHandler);
+            }
+            
+            // Create new handler
+            const clickHandler = (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('Chat item clicked:', conversationId);
+              this.handleChatItemClick(conversationId);
+            };
+            
+            // Attach new handler
+            item.addEventListener('click', clickHandler);
+            item._clickHandler = clickHandler;
+            item._eventHandlerAttached = true;
+            
+            // Also add touch handlers for better mobile support
+            item.addEventListener('touchend', (e) => {
+              e.preventDefault();
+              clickHandler(e);
+            }, { passive: false });
+          }
+        }
+      });
+      
+      // Re-attach contact event handlers
+      const contactItems = document.querySelectorAll('.contact-item');
+      contactItems.forEach(item => {
+        if (!item._contactEventHandlerAttached) {
+          const userId = item.dataset.contactId || item.dataset.userId;
+          if (userId) {
+            const clickHandler = (e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              console.log('Contact item clicked:', userId);
+              this.startOrOpenConversationFromContact(userId);
+            };
+            
+            item.addEventListener('click', clickHandler);
+            item._contactClickHandler = clickHandler;
+            item._contactEventHandlerAttached = true;
+            
+            // Touch support
+            item.addEventListener('touchend', (e) => {
+              e.preventDefault();
+              clickHandler(e);
+            }, { passive: false });
+          }
+        }
+      });
+      
+      console.log(`Reinitialized handlers for ${chatItems.length} chat items and ${contactItems.length} contacts`);
+    }, 100);
+  }
+
   renderConversations() {
     console.log(
       "renderConversations called, conversations count:",
       this.conversations.size
     );
+
+    // Prevent rendering if already in progress
+    if (this._renderingInProgress) {
+      console.log("Render already in progress, queuing request");
+      this._renderQueued = true;
+      return;
+    }
 
     // Throttle rendering to prevent flickering from multiple rapid calls
     if (this.renderThrottleTimeout) {
@@ -1912,35 +2008,50 @@ class ChatManager {
     this.renderThrottleTimeout = setTimeout(() => {
       this.doRenderConversations();
       this.renderThrottleTimeout = null;
+      
+      // Handle queued render if any
+      if (this._renderQueued) {
+        this._renderQueued = false;
+        setTimeout(() => this.renderConversations(), 100);
+      }
     }, 50); // Small delay to batch multiple render calls
   }
 
   doRenderConversations() {
+    // Set rendering flag
+    this._renderingInProgress = true;
+    
     console.log(
       "Actually rendering conversations, count:",
       this.conversations.size
     );
 
-    // Clear status cache since we're doing a full re-render
-    this.clearConversationStatusCache();
+    try {
+      // Clear status cache since we're doing a full re-render
+      this.clearConversationStatusCache();
 
-    const chatList = Utils.$("#chat-list");
-    if (!chatList) {
-      console.error("chat-list element not found");
-      return;
+      const chatList = Utils.$("#chat-list");
+      if (!chatList) {
+        console.error("chat-list element not found");
+        return;
+      }
+
+      // Check if we need to re-render by comparing with last render state
+      const currentRenderSignature = this.generateRenderSignature();
+      if (this.lastRenderSignature === currentRenderSignature) {
+        console.log(
+          "Conversations unchanged, skipping re-render to prevent flicker"
+        );
+        return;
+      }
+
+      // Use smooth rendering for better UX
+      this.renderConversationsSmooth(chatList);
+      
+    } finally {
+      // Clear rendering flag
+      this._renderingInProgress = false;
     }
-
-    // Check if we need to re-render by comparing with last render state
-    const currentRenderSignature = this.generateRenderSignature();
-    if (this.lastRenderSignature === currentRenderSignature) {
-      console.log(
-        "Conversations unchanged, skipping re-render to prevent flicker"
-      );
-      return;
-    }
-
-    // Use smooth rendering for better UX
-    this.renderConversationsSmooth(chatList);
   }
 
   renderConversationsSmooth(chatList) {
@@ -2125,6 +2236,9 @@ class ChatManager {
 
     // Actualizar contador global después de renderizar todas las conversaciones
     this.updateGlobalUnreadCounter();
+    
+    // Reinitialize event handlers after rendering content
+    this.reinitializeEventHandlers();
   }
 
   // ============================
@@ -2277,7 +2391,7 @@ class ChatManager {
 
             if (!hasSentClass || hasReceivedClass) {
               console.log(
-                "🛡️ PROTECTOR: Corrigiendo mensaje enviado que perdió su posición"
+                "PROTECTOR: Corrigiendo mensaje enviado que perdió su posición"
               );
 
               // Corregir inmediatamente
@@ -2324,13 +2438,13 @@ class ChatManager {
 
       if (shouldBeSent && !messageEl.classList.contains("sent")) {
         // Corregir mensaje que debería ser enviado pero está como recibido
-        console.log(`🔧 Correcting message ${messageId}: received → sent`);
+        console.log(`Correcting message ${messageId}: received → sent`);
         messageEl.classList.remove("received");
         messageEl.classList.add("sent");
         this.applyInstantSentStyles(messageEl);
       } else if (!shouldBeSent && !messageEl.classList.contains("received")) {
         // Corregir mensaje que debería ser recibido pero está como enviado
-        console.log(`🔧 Correcting message ${messageId}: sent → received`);
+        console.log(`Correcting message ${messageId}: sent → received`);
         messageEl.classList.remove("sent");
         messageEl.classList.add("received");
         this.applyInstantReceivedStyles(messageEl);
@@ -2740,7 +2854,7 @@ class ChatManager {
       // Update status with persistent display - always show En línea OR última conexión
       if (recipientId) {
         console.log(
-          `🔍 updateActiveConversation: Updating header persistente para recipientId: ${recipientId}`
+          `updateActiveConversation: Updating header persistente para recipientId: ${recipientId}`
         );
 
         // Clear any previous timeout to avoid conflicts
@@ -2751,20 +2865,20 @@ class ChatManager {
         // Get live presence data from socket manager first
         const presenceData = window.SocketManager?.getUserPresence(recipientId);
         console.log(
-          `🔍 updateActiveConversation: Got presence data:`,
+          `updateActiveConversation: Got presence data:`,
           presenceData
         );
 
         if (presenceData) {
           // Use socket presence data for typing and persistent status
           console.log(
-            `✅ updateActiveConversation: Using socket presence data`
+            `updateActiveConversation: Using socket presence data`
           );
           this.updateConversationHeaderStatusInstant(presenceData);
         } else {
           // No socket data - use persistent updater with contact data or fetch fresh data
           console.log(
-            `⚠️ updateActiveConversation: No socket data, using persistent updater`
+            `updateActiveConversation: No socket data, using persistent updater`
           );
           this.updateConversationHeaderPersistent(
             recipientId,
@@ -4456,10 +4570,10 @@ class ChatManager {
     
     // Validate recipient ID format (MongoDB ObjectId should be 24 hex characters)
     if (recipientId && typeof recipientId === 'string' && recipientId.length !== 24) {
-      console.warn('⚠️ Recipient ID length is not 24 characters:', recipientId.length, recipientId);
+      console.warn('Recipient ID length is not 24 characters:', recipientId.length, recipientId);
     }
     if (recipientId && !/^[0-9a-fA-F]{24}$/.test(recipientId)) {
-      console.warn('⚠️ Recipient ID is not valid MongoDB ObjectId format:', recipientId);
+      console.warn('Recipient ID is not valid MongoDB ObjectId format:', recipientId);
     }
 
     // Create temporary message ID
@@ -5652,7 +5766,7 @@ class ChatManager {
 
   // ULTRA-INSTANTANEOUS PRESENCE SYSTEM UI UPDATES
   handlePresenceUpdate(userId, presenceData, statusChanged = false) {
-    console.log(`⚡ INSTANT presence update for ${userId}:`, presenceData);
+    console.log(`INSTANT presence update for ${userId}:`, presenceData);
 
     // Ensure current user always shows online when active
     if (userId === this.currentUser._id) {
@@ -5688,19 +5802,19 @@ class ChatManager {
     }
 
     console.log(
-      `✅ Presence update completed for ${userId}: ${presenceData.status}`
+      `Presence update completed for ${userId}: ${presenceData.status}`
     );
   }
 
   updateConversationHeaderStatusInstant(presenceData) {
     console.log(
-      "🔍 DEBUG: updateConversationHeaderStatusInstant called with:",
+      "DEBUG: updateConversationHeaderStatusInstant called with:",
       presenceData
     );
     const statusElement = document.querySelector("#last-seen");
     const typingIndicator = document.querySelector("#typing-indicator");
     if (!statusElement) {
-      console.error("❌ Status element #last-seen not found in DOM");
+      console.error("Status element #last-seen not found in DOM");
       return;
     }
 
@@ -5773,7 +5887,7 @@ class ChatManager {
 
     // If still no valid data, try to get contact info from API as last resort
     console.log(
-      `⚠️ No hay datos de presencia válidos, buscando en API de contactos...`
+      `No hay datos de presencia válidos, buscando en API de contactos...`
     );
     this.loadContactData(recipientId)
       .then((contactData) => {
@@ -6202,7 +6316,7 @@ class ChatManager {
     }
 
     console.log(
-      `📱 Showing presence change notification: ${oldStatus} → ${newStatus}`
+      `Showing presence change notification: ${oldStatus} → ${newStatus}`
     );
 
     let notificationText = "";
@@ -6644,7 +6758,7 @@ class ChatManager {
       // Limpiar cualquier fondo verde problemático
       chatItem.style.backgroundColor = "";
       console.log(
-        `✅ Badge actualizado para ${conversation.name}: ${conversation.unreadCount} mensajes`
+        `Badge actualizado para ${conversation.name}: ${conversation.unreadCount} mensajes`
       );
     } else {
       // Ocultar badge cuando no hay mensajes no leídos
@@ -6663,7 +6777,7 @@ class ChatManager {
   updateConversationBadgeInstant(conversationId, unreadCount = null) {
     const conversation = this.conversations.get(conversationId);
     if (!conversation) {
-      console.warn(`⚠️ Conversación no encontrada: ${conversationId}`);
+      console.warn(`Conversación no encontrada: ${conversationId}`);
       return;
     }
 
@@ -6677,7 +6791,7 @@ class ChatManager {
       );
     } else {
       console.log(
-        `✅ Badge actualizado: ${conversation.name} → ${finalUnreadCount} mensajes`
+        `Badge actualizado: ${conversation.name} → ${finalUnreadCount} mensajes`
       );
     }
   }
@@ -7412,7 +7526,7 @@ class ChatManager {
       this.updateConversationItemSmart(conversationId, conversation);
 
       console.log(
-        `✅ Notification decremented: ${previousUnread} → 0 for conversation ${conversation.name}`
+        `Notification decremented: ${previousUnread} → 0 for conversation ${conversation.name}`
       );
     }
 
@@ -7943,7 +8057,7 @@ class ChatManager {
         statusElement.style.fontWeight = "500";
         statusElement.style.display = "block";
         console.log(
-          `✅ Header: EN LÍNEA después de API para ${recipientId} (dentro de 5 min)`
+          `Header: EN LÍNEA después de API para ${recipientId} (dentro de 5 min)`
         );
       } else {
         // Show last seen time - ALWAYS show if not online
@@ -7956,7 +8070,7 @@ class ChatManager {
         statusElement.style.fontWeight = "400";
         statusElement.style.display = "block";
         console.log(
-          `❌ Header: ${lastSeenText} después de API para ${recipientId}`
+          `Header: ${lastSeenText} después de API para ${recipientId}`
         );
       }
     } catch (error) {
@@ -8192,7 +8306,7 @@ class ChatManager {
 
     const conversation = this.conversations.get(conversationId);
     if (!conversation) {
-      console.warn("⚠️ Conversation not found:", conversationId);
+      console.warn("Conversation not found:", conversationId);
       return;
     }
 
@@ -8231,11 +8345,11 @@ class ChatManager {
       }
 
       console.log(
-        `✅ Conversation marked as read: ${conversation.name} (${previousUnread} → 0)`
+        `Conversation marked as read: ${conversation.name} (${previousUnread} → 0)`
       );
     } catch (error) {
       console.error(
-        `❌ Failed to mark conversation as read (attempt ${retryCount + 1}):`,
+        `Failed to mark conversation as read (attempt ${retryCount + 1}):`,
         error
       );
 
@@ -8254,12 +8368,12 @@ class ChatManager {
               retryCount + 1
             );
           } catch (retryError) {
-            console.error(`❌ Retry ${retryCount + 1} failed:`, retryError);
+            console.error(`Retry ${retryCount + 1} failed:`, retryError);
           }
         }, retryDelay);
       } else {
         console.error(
-          "❌ Max retries exceeded for marking conversation as read"
+          "Max retries exceeded for marking conversation as read"
         );
         // Don't show notification for final failure to avoid spam
       }
@@ -8276,7 +8390,7 @@ class ChatManager {
     try {
       if (window.API && API.Messages) {
         console.log(
-          `🔍 Verificando estado de lectura en el servidor para: ${conversationId}`
+          `Verificando estado de lectura en el servidor para: ${conversationId}`
         );
 
         // Volver a cargar las conversaciones para verificar el estado
@@ -8310,7 +8424,7 @@ class ChatManager {
                 this.updateGlobalUnreadCounter();
 
                 console.log(
-                  `✅ Estado sincronizado para ${localConversation.name}`
+                  `Estado sincronizado para ${localConversation.name}`
                 );
               }
             }
@@ -8400,7 +8514,7 @@ class ChatManager {
   calculateTotalUnreadCount() {
     let totalUnread = 0;
     console.log(
-      `📊 Calculating total unread count from ${this.conversations.size} conversations`
+      `Calculating total unread count from ${this.conversations.size} conversations`
     );
 
     this.conversations.forEach((conversation, id) => {
@@ -8502,7 +8616,7 @@ class ChatManager {
   // Inicializar sistema de notificaciones mejorado
   initializeUnreadCounterSystem() {
     console.log(
-      "🔔 Inicializando sistema de contadores de mensajes no leídos..."
+      "Inicializando sistema de contadores de mensajes no leídos..."
     );
 
     // Verificar que todos los elementos necesarios existan
@@ -8517,7 +8631,7 @@ class ChatManager {
       if (element) {
         console.log(`SUCCESS: ${name}: encontrado`);
       } else {
-        console.warn(`⚠️ ${name}: no encontrado`);
+        console.warn(`${name}: no encontrado`);
       }
     });
 
@@ -8710,7 +8824,7 @@ class ChatManager {
       // También actualizar el titulo de la página
       document.title = "(3) VigiChat - Chat en Tiempo Real";
     } else {
-      console.error("❌ Counter elements not found!");
+      console.error("Counter elements not found!");
 
       // Buscar elementos en todo el documento
       const allElements = document.querySelectorAll('[id*="global"]');
@@ -8722,7 +8836,7 @@ class ChatManager {
   // DEPRECATED - Use real database data instead
   simulateUnreadMessages() {
     console.warn(
-      "⚠️ simulateUnreadMessages is deprecated - using real database data"
+      "simulateUnreadMessages is deprecated - using real database data"
     );
     return;
     console.log("=== SIMULATING UNREAD MESSAGES ===");
@@ -9083,7 +9197,7 @@ class ChatManager {
 
   // Add conversation to sidebar if not already there
   addConversationToSidebar(conversation) {
-    console.log("🔧 Adding conversation to sidebar:", conversation._id);
+    console.log("Adding conversation to sidebar:", conversation._id);
 
     // Check if conversation is already in the conversations map
     if (this.conversations.has(conversation._id)) {
@@ -9150,7 +9264,7 @@ class ChatManager {
   // Función común para setup completo de conversación - optimizada
   async setupConversationView(conversationId, isNewChat = false) {
     console.log(
-      `🔧 Setting up conversation view for: ${conversationId}, isNewChat: ${isNewChat}`
+      `Setting up conversation view for: ${conversationId}, isNewChat: ${isNewChat}`
     );
 
     // Inicializar gestión del scroll
@@ -9462,8 +9576,8 @@ class ChatManager {
     ).join('');
   }
 
-  // Controlar reproducción de audio - diseño WhatsApp con sonido funcionando
-  toggleAudio(audioId, button) {
+  // Controlar reproducción de audio - diseño WhatsApp con sonido funcionando mejorado
+  async toggleAudio(audioId, button) {
     const audioElement = document.getElementById(audioId);
     const playTriangle = button.querySelector('.play-triangle');
     const progressOverlay = document.getElementById(`progress-overlay-${audioId}`);
@@ -9475,113 +9589,196 @@ class ChatManager {
       console.error('Audio element not found:', audioId);
       return;
     }
+
+    // Validar que el audio tiene una fuente válida
+    if (!audioElement.src && !audioElement.currentSrc) {
+      console.error('Audio element has no source:', audioId);
+      this.showNotification?.('error', 'Audio no disponible');
+      return;
+    }
     
-    // Configurar volumen para asegurar que se escuche
-    audioElement.volume = 1.0;
-    audioElement.muted = false;
-    
-    if (audioElement.paused) {
-      // Pausar otros audios que estén reproduciéndose
-      document.querySelectorAll('audio').forEach(audio => {
-        if (audio.id !== audioId && !audio.paused) {
-          audio.pause();
-          const otherButton = document.querySelector(`button[onclick*="${audio.id}"]`);
-          if (otherButton) {
-            const otherTriangle = otherButton.querySelector('.play-triangle');
-            if (otherTriangle) {
-              // Restaurar icono de play
-              otherTriangle.style.width = '0';
-              otherTriangle.style.height = '0';
-              otherTriangle.style.borderLeft = '12px solid white';
-              otherTriangle.style.borderTop = '7px solid transparent';
-              otherTriangle.style.borderBottom = '7px solid transparent';
-              otherTriangle.style.borderRight = 'none';
-              otherTriangle.style.background = 'none';
-              otherTriangle.style.borderRadius = '0';
-            }
-          }
+    try {
+      if (audioElement.paused) {
+        // Pausar otros audios que estén reproduciéndose
+        this.pauseOtherAudios(audioId);
+        
+        // Configurar volumen para asegurar que se escuche
+        audioElement.volume = 1.0;
+        audioElement.muted = false;
+
+        // Verificar que el audio esté listo antes de reproducir
+        if (audioElement.readyState < 2) {
+          console.log('Audio not ready, waiting...');
+          audioElement.load();
+          await this.waitForAudioReady(audioElement);
         }
-      });
-      
-      // Reproducir audio
-      console.log('Starting audio playback, src:', audioElement.src);
-      audioElement.play().then(() => {
+        
+        // Reproducir audio
+        console.log('Starting audio playback, src:', audioElement.src || audioElement.currentSrc);
+        await audioElement.play();
         console.log('Audio playing successfully');
         
         // Cambiar a icono de pausa (cuadrado blanco)
-        if (playTriangle) {
-          playTriangle.style.width = '12px';
-          playTriangle.style.height = '12px';
-          playTriangle.style.background = 'white';
-          playTriangle.style.border = 'none';
-          playTriangle.style.borderRadius = '1px';
-        }
+        this.setPlayButtonToPause(playTriangle);
         
         // Actualizar progreso en tiempo real
-        const updateProgress = () => {
-          if (!audioElement.paused && audioElement.duration) {
-            const progress = (audioElement.currentTime / audioElement.duration) * 100;
-            if (progressOverlay) {
-              progressOverlay.style.width = `${progress}%`;
-            }
-            
-            // Mostrar tiempo transcurrido
-            const elapsed = audioElement.currentTime;
-            const minutes = Math.floor(elapsed / 60);
-            const seconds = Math.floor(elapsed % 60);
-            if (currentTimeEl) {
-              currentTimeEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-            }
-            
-            requestAnimationFrame(updateProgress);
-          }
-        };
-        updateProgress();
+        this.startAudioProgressTracking(audioElement, progressOverlay, currentTimeEl);
         
-      }).catch(error => {
-        console.error('Error al reproducir audio:', error);
-      });
+      } else {
+        audioElement.pause();
+        console.log('Audio paused');
+        
+        // Cambiar de vuelta a icono de play (triángulo)
+        this.setPlayButtonToPlay(playTriangle);
+      }
       
-    } else {
-      audioElement.pause();
-      console.log('Audio paused');
+      // Configurar evento cuando termina el audio (solo una vez)
+      if (!audioElement.dataset.endHandlerSet) {
+        audioElement.addEventListener('ended', () => {
+          this.onAudioEnded(playTriangle, progressOverlay, currentTimeEl, audioElement);
+        });
+        audioElement.dataset.endHandlerSet = 'true';
+      }
+
+      // Manejar errores de reproducción
+      if (!audioElement.dataset.errorHandlerSet) {
+        audioElement.addEventListener('error', (e) => {
+          console.error('Audio playback error:', e);
+          this.setPlayButtonToPlay(playTriangle);
+          this.showNotification?.('error', 'Error al reproducir audio');
+        });
+        audioElement.dataset.errorHandlerSet = 'true';
+      }
       
-      // Cambiar de vuelta a icono de play (triángulo)
-      if (playTriangle) {
-        playTriangle.style.width = '0';
-        playTriangle.style.height = '0';
-        playTriangle.style.borderLeft = '12px solid white';
-        playTriangle.style.borderTop = '7px solid transparent';
-        playTriangle.style.borderBottom = '7px solid transparent';
-        playTriangle.style.borderRight = 'none';
-        playTriangle.style.background = 'none';
-        playTriangle.style.borderRadius = '0';
+    } catch (error) {
+      console.error('Error al reproducir audio:', error);
+      this.setPlayButtonToPlay(playTriangle);
+      
+      // Mostrar mensaje de error específico
+      if (error.name === 'NotSupportedError') {
+        this.showNotification?.('error', 'Formato de audio no compatible');
+      } else if (error.name === 'NotAllowedError') {
+        this.showNotification?.('warning', 'Se requiere interacción del usuario para reproducir audio');
+      } else {
+        this.showNotification?.('error', 'Error al reproducir audio');
       }
     }
-    
-    // Evento cuando termina el audio
-    audioElement.onended = () => {
-      console.log('Audio ended');
-      // Restaurar icono de play
-      if (playTriangle) {
-        playTriangle.style.width = '0';
-        playTriangle.style.height = '0';
-        playTriangle.style.borderLeft = '12px solid white';
-        playTriangle.style.borderTop = '7px solid transparent';
-        playTriangle.style.borderBottom = '7px solid transparent';
-        playTriangle.style.borderRight = 'none';
-        playTriangle.style.background = 'none';
-        playTriangle.style.borderRadius = '0';
+  }
+
+  // Pausar otros audios activos
+  pauseOtherAudios(currentAudioId) {
+    document.querySelectorAll('audio').forEach(audio => {
+      if (audio.id !== currentAudioId && !audio.paused) {
+        audio.pause();
+        const otherButton = document.querySelector(`button[onclick*="${audio.id}"]`);
+        if (otherButton) {
+          const otherTriangle = otherButton.querySelector('.play-triangle');
+          if (otherTriangle) {
+            this.setPlayButtonToPlay(otherTriangle);
+          }
+        }
       }
-      if (progressOverlay) {
-        progressOverlay.style.width = '0%';
+    });
+  }
+
+  // Esperar a que el audio esté listo
+  waitForAudioReady(audioElement) {
+    return new Promise((resolve, reject) => {
+      if (audioElement.readyState >= 2) {
+        resolve();
+        return;
       }
-      // Restaurar duración original
-      audioElement.currentTime = 0;
-      if (currentTimeEl) {
-        currentTimeEl.textContent = '0:00';
+
+      const onCanPlay = () => {
+        audioElement.removeEventListener('canplay', onCanPlay);
+        audioElement.removeEventListener('error', onError);
+        resolve();
+      };
+
+      const onError = (e) => {
+        audioElement.removeEventListener('canplay', onCanPlay);
+        audioElement.removeEventListener('error', onError);
+        reject(e);
+      };
+
+      audioElement.addEventListener('canplay', onCanPlay);
+      audioElement.addEventListener('error', onError);
+
+      // Timeout de seguridad
+      setTimeout(() => {
+        audioElement.removeEventListener('canplay', onCanPlay);
+        audioElement.removeEventListener('error', onError);
+        reject(new Error('Timeout waiting for audio to be ready'));
+      }, 5000);
+    });
+  }
+
+  // Cambiar botón a estado de pausa
+  setPlayButtonToPause(playTriangle) {
+    if (playTriangle) {
+      playTriangle.style.width = '12px';
+      playTriangle.style.height = '12px';
+      playTriangle.style.background = 'white';
+      playTriangle.style.border = 'none';
+      playTriangle.style.borderRadius = '1px';
+      playTriangle.style.borderLeft = 'none';
+      playTriangle.style.borderTop = 'none';
+      playTriangle.style.borderBottom = 'none';
+      playTriangle.style.borderRight = 'none';
+    }
+  }
+
+  // Cambiar botón a estado de play
+  setPlayButtonToPlay(playTriangle) {
+    if (playTriangle) {
+      playTriangle.style.width = '0';
+      playTriangle.style.height = '0';
+      playTriangle.style.borderLeft = '12px solid white';
+      playTriangle.style.borderTop = '7px solid transparent';
+      playTriangle.style.borderBottom = '7px solid transparent';
+      playTriangle.style.borderRight = 'none';
+      playTriangle.style.background = 'none';
+      playTriangle.style.borderRadius = '0';
+    }
+  }
+
+  // Seguimiento de progreso del audio
+  startAudioProgressTracking(audioElement, progressOverlay, currentTimeEl) {
+    const updateProgress = () => {
+      if (!audioElement.paused && audioElement.duration && isFinite(audioElement.duration)) {
+        const progress = (audioElement.currentTime / audioElement.duration) * 100;
+        if (progressOverlay) {
+          progressOverlay.style.width = `${progress}%`;
+        }
+        
+        // Mostrar tiempo transcurrido
+        const elapsed = audioElement.currentTime;
+        const minutes = Math.floor(elapsed / 60);
+        const seconds = Math.floor(elapsed % 60);
+        if (currentTimeEl) {
+          currentTimeEl.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        }
+        
+        requestAnimationFrame(updateProgress);
       }
     };
+    updateProgress();
+  }
+
+  // Manejar cuando termina el audio
+  onAudioEnded(playTriangle, progressOverlay, currentTimeEl, audioElement) {
+    console.log('Audio ended');
+    // Restaurar icono de play
+    this.setPlayButtonToPlay(playTriangle);
+    
+    if (progressOverlay) {
+      progressOverlay.style.width = '0%';
+    }
+    // Restaurar tiempo
+    audioElement.currentTime = 0;
+    if (currentTimeEl) {
+      currentTimeEl.textContent = '0:00';
+    }
   }
 
   // Controlar reproducción de audio (legacy)
@@ -10433,7 +10630,7 @@ class ChatManager {
   async deleteMessageAdvanced(messageId, messageObject = null) {
     try {
       console.log(
-        "🗑️ Starting vigichat-style deleteMessageAdvanced for:",
+        "Starting vigichat-style deleteMessageAdvanced for:",
         messageId
       );
 
@@ -11208,7 +11405,7 @@ class ChatManager {
   }
 
   setupAttachmentModal() {
-    console.log("🔧 Configurando attachment modal...");
+    console.log("Configurando attachment modal...");
 
     // Limpiar eventos anteriores primero
     this.cleanupAttachmentModalEvents();
@@ -11217,7 +11414,7 @@ class ChatManager {
     const modal = Utils.$("#attachment-modal");
 
     if (!overlay || !modal) {
-      console.error("❌ Elementos del attachment modal no encontrados");
+      console.error("Elementos del attachment modal no encontrados");
       return;
     }
 
@@ -11252,14 +11449,14 @@ class ChatManager {
     // Handle attachment options - con prevención de eventos duplicados
     const attachmentOptions = document.querySelectorAll(".attachment-option");
     console.log(
-      `🔧 Configurando ${attachmentOptions.length} opciones de adjunto`
+      `Configurando ${attachmentOptions.length} opciones de adjunto`
     );
 
     attachmentOptions.forEach((option) => {
       const handler = (e) => {
         e.stopPropagation(); // Prevenir propagación
         const type = option.dataset.type;
-        console.log(`🎯 Opción seleccionada: ${type}`);
+        console.log(`Opción seleccionada: ${type}`);
 
         // Cerrar el modal de adjuntos primero
         this.hideAttachmentModal();
@@ -11281,7 +11478,7 @@ class ChatManager {
   }
 
   handleAttachmentType(type) {
-    console.log(`🎯 handleAttachmentType llamado con tipo: ${type}`);
+    console.log(`handleAttachmentType llamado con tipo: ${type}`);
 
     switch (type) {
       case "emoji":
@@ -12270,7 +12467,7 @@ class ChatManager {
       this.setupCameraEventListeners();
       console.log("📷 Event listeners configurados");
     } catch (error) {
-      console.error("❌ Error en initializeCamera:", error);
+      console.error("Error en initializeCamera:", error);
       overlay.classList.remove("active");
       setTimeout(() => {
         overlay.style.display = "none";
@@ -14791,7 +14988,7 @@ class ChatManager {
     const totalUnread = this.calculateTotalUnreadCount();
 
     console.log(
-      `🔔 updateGlobalUnreadCounterImmediate called - Total unread: ${totalUnread}`
+      `updateGlobalUnreadCounterImmediate called - Total unread: ${totalUnread}`
     );
 
     // Use the correct elements - only manipulate the badge, not the container
@@ -14806,7 +15003,7 @@ class ChatManager {
     });
 
     if (!globalUnreadBadge || !globalUnreadCount) {
-      console.error("❌ Global notification elements not found");
+      console.error("Global notification elements not found");
       return;
     }
 
@@ -14822,7 +15019,7 @@ class ChatManager {
       globalUnreadCount.textContent = displayCount;
 
       console.log(
-        `✅ Badge updated - Classes: ${globalUnreadBadge.className}, Display: ${globalUnreadBadge.style.display}`
+        `Badge updated - Classes: ${globalUnreadBadge.className}, Display: ${globalUnreadBadge.style.display}`
       );
     } else {
       // Hide badge immediately without animations
@@ -14833,12 +15030,12 @@ class ChatManager {
       globalUnreadBadge.style.animation = "none";
 
       console.log(
-        `✅ Badge hidden - Classes: ${globalUnreadBadge.className}, Display: ${globalUnreadBadge.style.display}`
+        `Badge hidden - Classes: ${globalUnreadBadge.className}, Display: ${globalUnreadBadge.style.display}`
       );
     }
 
     console.log(
-      `✅ Global counter update completed: ${totalUnread} unread messages`
+      `Global counter update completed: ${totalUnread} unread messages`
     );
   }
 
@@ -15184,7 +15381,7 @@ class ChatManager {
 
       console.log(`SUCCESS: Message loading completed for: ${conversationId}`);
     } catch (error) {
-      console.error(`❌ Error loading messages:`, error);
+      console.error(`Error loading messages:`, error);
       this.handleLoadingError(error, conversationId);
     }
   }
@@ -15377,7 +15574,7 @@ class ChatManager {
         console.warn("No conversation states received from API");
       }
     } catch (error) {
-      console.error("❌ Error loading conversation states:", error);
+      console.error("Error loading conversation states:", error);
       // Fallback: keep existing conversation data without simulation
     }
   }
@@ -15400,11 +15597,11 @@ class ChatManager {
         console.log("SUCCESS: Unread count sent via socket");
         return true;
       } else {
-        console.warn("⚠️ Socket not connected, unread count not saved");
+        console.warn("Socket not connected, unread count not saved");
         return false;
       }
     } catch (error) {
-      console.error("❌ Failed to save unread count to database:", error);
+      console.error("Failed to save unread count to database:", error);
       // Continue operation even if DB save fails - better user experience
     }
   }
@@ -15445,7 +15642,7 @@ class ChatManager {
         console.log(`SUCCESS: Badge hidden (no unread messages)`);
       }
     } else {
-      console.warn("❌ Global notification elements not found", {
+      console.warn("Global notification elements not found", {
         badgeSelector: "#global-unread-badge",
         countSelector: "#global-unread-count",
       });
@@ -15489,15 +15686,15 @@ class ChatManager {
 
         if (messages && messages.length > 0) {
           console.log(
-            `✅ Messages loaded successfully: ${messages.length} messages`
+            `Messages loaded successfully: ${messages.length} messages`
           );
           return true;
         } else if (attempt === maxRetries) {
-          console.warn(`⚠️ No messages found after ${maxRetries} attempts`);
+          console.warn(`No messages found after ${maxRetries} attempts`);
           return true; // Might be a new conversation with no messages
         }
       } catch (error) {
-        console.error(`❌ Message loading attempt ${attempt} failed:`, error);
+        console.error(`Message loading attempt ${attempt} failed:`, error);
         if (attempt === maxRetries) {
           return false;
         }
@@ -15531,7 +15728,7 @@ class ChatManager {
           console.log("SUCCESS: Read status sent to server");
         } catch (serverError) {
           console.warn(
-            "⚠️ Server update failed, but local update succeeded:",
+            "Server update failed, but local update succeeded:"
             serverError
           );
         }
@@ -15541,10 +15738,10 @@ class ChatManager {
       this.updateBrowserTitleNotification();
 
       console.log(
-        `✅ Conversation marked as read: ${previousUnread} → 0 messages`
+        `Conversation marked as read: ${previousUnread} → 0 messages`
       );
     } catch (error) {
-      console.error("❌ Error marking conversation as read:", error);
+      console.error("Error marking conversation as read:", error);
     }
   }
 
@@ -15556,7 +15753,7 @@ class ChatManager {
       // Get recipient info
       const recipientId = this.getRecipientId();
       if (!recipientId) {
-        console.warn("⚠️ No recipient ID found");
+        console.warn("No recipient ID found");
         return;
       }
 
@@ -15573,7 +15770,7 @@ class ChatManager {
         );
       }
     } catch (error) {
-      console.error("❌ Error updating contact status:", error);
+      console.error("Error updating contact status:", error);
     }
   }
 
@@ -15608,7 +15805,7 @@ class ChatManager {
 
       console.log("SUCCESS: Final UI updates completed");
     } catch (error) {
-      console.error("❌ Error in final UI updates:", error);
+      console.error("Error in final UI updates:", error);
     }
   }
 
@@ -15631,7 +15828,7 @@ class ChatManager {
         }
       }
     } catch (error) {
-      console.error("❌ Error updating chat item active state:", error);
+      console.error("Error updating chat item active state:", error);
     }
   }
 
@@ -15648,14 +15845,14 @@ class ChatManager {
         }
       });
     } catch (error) {
-      console.error("❌ Error updating conversation highlight:", error);
+      console.error("Error updating conversation highlight:", error);
     }
   }
 
   // Helper method: Recovery from click errors
   async recoverFromClickError(conversationId) {
     try {
-      console.log(`🔧 Attempting recovery for conversation: ${conversationId}`);
+      console.log(`Attempting recovery for conversation: ${conversationId}`);
 
       // Basic recovery: ensure UI is in consistent state
       this.isProcessingConversationClick = null;
@@ -15672,7 +15869,7 @@ class ChatManager {
 
       console.log("SUCCESS: Recovery completed");
     } catch (error) {
-      console.error("❌ Recovery failed:", error);
+      console.error("Recovery failed:", error);
     }
   }
 
@@ -15779,7 +15976,7 @@ class ChatManager {
   // DEPRECATED - Use real database data instead
   simulateUnreadMessages(count = 2) {
     console.warn(
-      "⚠️ simulateUnreadMessages is deprecated - using real database data"
+      "simulateUnreadMessages is deprecated - using real database data"
     );
     return;
     console.log(`🧪 Simulating ${count} unread messages...`);
@@ -16048,13 +16245,32 @@ class ChatManager {
 }
 
 // Initialize chat manager when Utils is available
-const initChatManager = () => {
-  try {
-    if (typeof Utils !== "undefined") {
-      console.log("EMIT: Initializing ChatManager...");
-      window.Chat = new ChatManager();
-      window.chatManager = window.Chat; // For compatibility with contacts.js
-      console.log("SUCCESS: ChatManager created successfully");
+const initChatManager = (() => {
+  let isInitializing = false;
+  let isInitialized = false;
+  
+  return () => {
+    // Prevent multiple initializations
+    if (isInitialized || isInitializing) {
+      console.log("ChatManager already initialized or initializing, skipping");
+      return;
+    }
+    
+    try {
+      if (typeof Utils !== "undefined") {
+        // Check if ChatManager already exists
+        if (window.Chat || window.chatManager) {
+          console.log("ChatManager already exists, skipping initialization");
+          isInitialized = true;
+          return;
+        }
+        
+        isInitializing = true;
+        console.log("EMIT: Initializing ChatManager...");
+        window.Chat = new ChatManager();
+        window.chatManager = window.Chat; // For compatibility with contacts.js
+        console.log("SUCCESS: ChatManager created successfully");
+        isInitialized = true;
 
       // Initialize with current user if available
       const currentUser = window.AuthManager
@@ -16078,13 +16294,16 @@ const initChatManager = () => {
       }
     } else {
       console.log("⏳ Waiting for Utils to be available...");
+      isInitializing = false;
       setTimeout(initChatManager, 10);
     }
   } catch (error) {
-    console.error("❌ Error initializing ChatManager:", error);
+    console.error("Error initializing ChatManager:", error);
+    isInitializing = false;
     setTimeout(initChatManager, 100); // Retry after longer delay
   }
 };
+})();
 
 initChatManager();
 

@@ -18,7 +18,7 @@
                                null;
             
             if (chatManager) {
-                console.log('✅ Found chat manager:', chatManager.constructor?.name || 'Unknown');
+                console.log('Found chat manager:', chatManager.constructor?.name || 'Unknown');
                 // Store globally for consistent access
                 if (!window.chatManager) {
                     window.chatManager = chatManager;
@@ -33,7 +33,7 @@
                 });
                 setTimeout(check, 200);
             } else {
-                console.warn('⚠️ Chat manager not available, initializing progressive scroll anyway');
+                console.warn('Chat manager not available, initializing progressive scroll anyway');
                 // Initialize without chat manager - basic functionality
                 callback();
             }
@@ -81,10 +81,10 @@
         if (chatManager) {
             integration.messageRenderer = chatManager;
             integrateWithChatManager(integration);
-            console.log('✅ Progressive scroll integrated with chat manager');
+            console.log('Progressive scroll integrated with chat manager');
         } else {
             // Use basic integration without specific chat manager
-            console.log('ℹ️ Using basic progressive scroll integration');
+            console.log('Using basic progressive scroll integration');
             setupBasicIntegration(integration);
         }
 

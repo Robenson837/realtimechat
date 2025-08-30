@@ -4,11 +4,11 @@
  */
 
 document.addEventListener('DOMContentLoaded', () => {
-    console.log('🌐 Initializing i18n system...');
+    console.log('Initializing i18n system...');
     
     // Escuchar eventos de cambio de idioma
     document.addEventListener('languageChanged', (event) => {
-        console.log('🌐 Language changed event received:', event.detail);
+        console.log('Language changed event received:', event.detail);
         
         // Actualizar elementos específicos que no tienen data-i18n
         updateSpecificElements(event.detail.language);
@@ -23,20 +23,47 @@ document.addEventListener('DOMContentLoaded', () => {
         reinitializeLanguageDependentComponents();
     });
     
-    // Aplicar traducciones iniciales después de un pequeño delay
-    setTimeout(() => {
-        if (window.i18n) {
-            console.log('🌐 Force applying translations on DOM ready');
-            window.i18n.applyTranslations();
-            updateCurrentLanguageElements();
-            
-            // Aplicar de nuevo después de otro delay por si algunos elementos se cargan tarde
-            setTimeout(() => {
-                window.i18n.applyTranslations();
-                console.log('🌐 Second translation pass completed');
-            }, 1000);
+    // Apply translations with debouncing to prevent loops
+    let translationTimeout = null;
+    let translationInProgress = false;
+    let lastTranslationTime = 0;
+    
+    const applyTranslationsDebounced = () => {
+        const now = Date.now();
+        
+        // Prevent too frequent applications
+        if (now - lastTranslationTime < 2000) {
+            console.log('Translation called too frequently, skipping');
+            return;
         }
-    }, 500);
+        
+        if (translationInProgress) {
+            console.log('Translation already in progress, skipping');
+            return;
+        }
+        
+        if (translationTimeout) {
+            clearTimeout(translationTimeout);
+        }
+        
+        translationTimeout = setTimeout(() => {
+            if (window.i18n && !translationInProgress) {
+                translationInProgress = true;
+                lastTranslationTime = Date.now();
+                
+                console.log('Applying translations with debounce');
+                window.i18n.applyTranslations();
+                updateCurrentLanguageElements();
+                
+                setTimeout(() => {
+                    translationInProgress = false;
+                }, 500);
+            }
+        }, 500);
+    };
+    
+    // Apply initial translations
+    applyTranslationsDebounced();
     
     // Observer para aplicar traducciones a elementos que se agregan dinámicamente
     if (window.MutationObserver) {
@@ -57,9 +84,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
             
-            if (needsTranslation && window.i18n) {
-                console.log('🌐 New translatable elements detected, applying translations');
-                window.i18n.applyTranslations();
+            if (needsTranslation) {
+                console.log('New translatable elements detected');
+                applyTranslationsDebounced();
             }
         });
         
@@ -237,4 +264,4 @@ function reinitializeLanguageDependentComponents() {
     }, 100);
 }
 
-console.log('🌐 I18n initialization script loaded');
+console.log('I18n initialization script loaded');

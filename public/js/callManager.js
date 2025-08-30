@@ -439,11 +439,11 @@ class CallManager {
       
       // Start outgoing call sound (only for the caller)
       this.playCallSound('outgoing');
-      console.log('🔊 Playing OUTGOING sound for caller');
+      console.log('Playing OUTGOING sound for caller');
       
       // Set timeout for unanswered calls (30 seconds)
       this.callTimeout = setTimeout(() => {
-        console.log('📞 Llamada sin respuesta después de 30 segundos');
+        console.log('Llamada sin respuesta después de 30 segundos');
         this.handleUnansweredCall();
       }, 30000);
       
@@ -1044,11 +1044,11 @@ class CallManager {
     // Reset state
     this.resetState();
     
-    console.log('✅ Cleanup completed');
+    console.log('Cleanup completed');
   }
 
   handleUnansweredCall() {
-    console.log('📞 Llamada sin respuesta - registrando como perdida');
+    console.log('Llamada sin respuesta - registrando como perdida');
     
     // Stop outgoing sound
     this.stopCallSound('outgoing');
@@ -1089,7 +1089,7 @@ class CallManager {
   playCallSound(type) {
     try {
       if (this.callSounds[type]) {
-        console.log(`🔊 Playing ${type} call sound`);
+        console.log(`Playing ${type} call sound`);
         this.callSounds[type].play();
         this.currentRingtone = type;
       }
@@ -1101,7 +1101,7 @@ class CallManager {
   stopCallSound(type) {
     try {
       if (this.callSounds[type]) {
-        console.log(`🔇 Stopping ${type} call sound`);
+        console.log(`Stopping ${type} call sound`);
         this.callSounds[type].pause();
         if (type === this.currentRingtone) {
           this.currentRingtone = null;
@@ -1120,7 +1120,7 @@ class CallManager {
   }
 
   async acceptCall() {
-    console.log('📞 Accepting incoming call from:', this.currentContact.name);
+    console.log('Accepting incoming call from:', this.currentContact.name);
     
     try {
       // Limpiar timeout de llamada perdida
@@ -1229,14 +1229,14 @@ class CallManager {
           await this.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
           console.log('🧊 Queued ICE candidate processed');
         } catch (error) {
-          console.warn('⚠️ Error processing queued ICE candidate:', error);
+          console.warn('Error processing queued ICE candidate:', error);
         }
       }
     }
   }
 
   declineCall() {
-    console.log('📞 Declining call from:', this.currentContact?.name);
+    console.log('Declining call from:', this.currentContact?.name);
     
     // Limpiar timeout
     if (this.incomingCallTimeout) {
@@ -1294,7 +1294,7 @@ class CallManager {
     // Reset button states
     this.resetButtonStates();
     
-    console.log('📱 Call state reset');
+    console.log('Call state reset');
   }
 
   resetButtonStates() {
@@ -1363,7 +1363,7 @@ class CallManager {
       };
     }
     
-    console.log(`🚀 Emitting signal: ${event}`, {
+    console.log(`Emitting signal: ${event}`, {
       event,
       callId: signalData.callId,
       to: signalData.to,
@@ -1393,7 +1393,7 @@ class CallManager {
         window.Utils.Notifications.success(message);
       }
     } else {
-      console.log(`🔔 ${type.toUpperCase()}: ${message}`);
+      console.log(`${type.toUpperCase()}: ${message}`);
     }
   }
 
@@ -1446,10 +1446,10 @@ class CallManager {
 
   // Enhanced socket.io integration methods
   handleIncomingCall(data) {
-    console.log('📞 ===== HANDLE INCOMING CALL START =====');
-    console.log('📞 Incoming call received:', data);
-    console.log('📞 Current isCallActive:', this.isCallActive);
-    console.log('📞 Elements check:');
+    console.log('===== HANDLE INCOMING CALL START =====');
+    console.log('Incoming call received:', data);
+    console.log('Current isCallActive:', this.isCallActive);
+    console.log('Elements check:');
     console.log('   - incomingCallInterface:', !!this.incomingCallInterface);
     console.log('   - incomingContactName:', !!this.incomingContactName);
     console.log('   - incomingContactAvatar:', !!this.incomingContactAvatar);
@@ -1458,7 +1458,7 @@ class CallManager {
     
     // Verificar si ya hay una llamada activa
     if (this.isCallActive) {
-      console.log('📞 User busy, rejecting incoming call');
+      console.log('User busy, rejecting incoming call');
       // Enviar señal de ocupado
       this.emitCallSignal('call:busy', {
         callId: data.callId,
@@ -1480,7 +1480,7 @@ class CallManager {
     this.isInitiator = false;
     this.incomingOffer = data.offer;
     
-    console.log('📞 Showing incoming call interface for:', this.currentContact.name);
+    console.log('Showing incoming call interface for:', this.currentContact.name);
     
     // Mostrar interfaz de llamada entrante INMEDIATAMENTE
     this.showIncomingCallInterface();
@@ -1490,14 +1490,14 @@ class CallManager {
     
     // Reproducir sonido de llamada entrante
     this.playCallSound('incoming');
-    console.log('🔊 Playing incoming ringtone for call from:', this.currentContact.name);
+    console.log('Playing incoming ringtone for call from:', this.currentContact.name);
     
     // Mostrar notificación del sistema si está disponible
     this.showIncomingCallNotification();
     
     // Timeout para llamadas perdidas (30 segundos)
     this.incomingCallTimeout = setTimeout(() => {
-      console.log('📞 Incoming call missed after 30 seconds');
+      console.log('Incoming call missed after 30 seconds');
       this.handleMissedIncomingCall();
     }, 30000);
     
@@ -1511,15 +1511,15 @@ class CallManager {
   }
 
   showIncomingCallInterface() {
-    console.log('📞 ===== SHOWING INCOMING CALL INTERFACE =====');
-    console.log('📞 Looking for incoming-call-interface element...');
+    console.log('===== SHOWING INCOMING CALL INTERFACE =====');
+    console.log('Looking for incoming-call-interface element...');
     
     // Primero mostrar el modal principal de llamada
     const callModal = document.getElementById('call-modal');
     const incomingInterface = document.getElementById('incoming-call-interface');
     
-    console.log('📞 Found call-modal:', !!callModal);
-    console.log('📞 Found incoming-call-interface:', !!incomingInterface);
+    console.log('Found call-modal:', !!callModal);
+    console.log('Found incoming-call-interface:', !!incomingInterface);
     
     if (callModal && incomingInterface) {
       // Mostrar el modal principal
@@ -1533,17 +1533,17 @@ class CallManager {
       // Agregar clase al body para estilos adicionales
       document.body.classList.add('call-active', 'incoming-call-active');
       
-      console.log('📞 Classes after adding active:', incomingInterface.className);
-      console.log('📞 Display style after:', window.getComputedStyle(incomingInterface).display);
+      console.log('Classes after adding active:', incomingInterface.className);
+      console.log('Display style after:', window.getComputedStyle(incomingInterface).display);
       console.log('SUCCESS: Incoming call interface shown');
       
       // Force visibility check
       const isVisible = incomingInterface.offsetParent !== null;
-      console.log('📞 Element is visible:', isVisible);
+      console.log('Element is visible:', isVisible);
       
       // Try alternative showing method if not visible
       if (!isVisible) {
-        console.log('⚠️ Element not visible, trying inline styles...');
+        console.log('Element not visible, trying inline styles...');
         incomingInterface.style.display = 'flex';
         incomingInterface.style.position = 'fixed';
         incomingInterface.style.top = '0';
@@ -1552,11 +1552,11 @@ class CallManager {
         incomingInterface.style.height = '100%';
         incomingInterface.style.zIndex = '10001';
         incomingInterface.style.backgroundColor = 'rgba(0,0,0,0.9)';
-        console.log('📞 Forced visibility with inline styles');
+        console.log('Forced visibility with inline styles');
       }
     } else {
       console.error('ERROR: incoming-call-interface element not found in DOM');
-      console.log('📞 Available elements with "call" in ID:');
+      console.log('Available elements with "call" in ID:');
       const callElements = document.querySelectorAll('[id*="call"]');
       callElements.forEach(el => {
         console.log(`   - ${el.id}: ${el.tagName}`);
@@ -1704,7 +1704,7 @@ class CallManager {
   }
 
   handleMissedIncomingCall() {
-    console.log('📞 Incoming call missed');
+    console.log('Incoming call missed');
     
     // Stop incoming sound
     this.stopCallSound('incoming');
@@ -1819,7 +1819,7 @@ class CallManager {
   }
 
   handleCallBusy(data) {
-    console.log('📞 User is busy:', data);
+    console.log('User is busy:', data);
     
     // Stop outgoing sound
     this.stopCallSound('outgoing');
@@ -1870,7 +1870,7 @@ class CallManager {
   }
 
   handleCallEnded(data) {
-    console.log('📞 Call ended by remote user:', data);
+    console.log('Call ended by remote user:', data);
     
     // Update status with translation
     this.updateCallStatus(window.i18n?.t('calls.call_ended') || 'Llamada terminada');
@@ -1887,7 +1887,7 @@ class CallManager {
   }
 
   handleCallMissed(data) {
-    console.log('📞 Call marked as missed:', data);
+    console.log('Call marked as missed:', data);
     
     // Update message and history for outgoing missed call
     this.updateCallMessageInConversation('missed');
@@ -1930,7 +1930,7 @@ class CallManager {
       status: 'delivered' // Set message as delivered
     };
 
-    console.log('📞 Adding call message to conversation:', callMessage);
+    console.log('Adding call message to conversation:', callMessage);
 
     // For outgoing calls, display immediately
     if (direction === 'outgoing') {
@@ -1967,14 +1967,14 @@ class CallManager {
       return;
     }
 
-    console.log(`📞 Updating call message status to: ${status}`);
+    console.log(`Updating call message status to: ${status}`);
 
     // Use the stored element reference or find by message ID
     const messageElement = this.lastCallMessage.element || 
                           document.querySelector(`[data-message-id="${this.lastCallMessage.id}"]`);
                           
     if (messageElement) {
-      console.log('📞 Found call message element to update');
+      console.log('Found call message element to update');
       
       // Update the call data
       this.lastCallMessage.data.content.status = status;
@@ -2099,7 +2099,7 @@ class CallManager {
           return;
         }
         
-        console.log(`🔍 Requesting real-time availability check for user: ${userId}`);
+        console.log(`Requesting real-time availability check for user: ${userId}`);
         
         // Timeout para la respuesta
         const timeout = setTimeout(() => {
@@ -2149,7 +2149,7 @@ class CallManager {
       return;
     }
     
-    console.log('🔍 Socket info:', {
+    console.log('Socket info:', {
       id: socket.id,
       connected: socket.connected,
       listeners: Object.keys(socket._callbacks || {})
@@ -2179,7 +2179,7 @@ class CallManager {
     });
     
     document.dispatchEvent(event);
-    console.log(`📞 Event dispatched: ${eventName}`, data);
+    console.log(`Event dispatched: ${eventName}`, data);
   }
 
   // Fallback method for direct peer connection when TURN servers fail
@@ -2493,7 +2493,7 @@ class CallManager {
 // Initialize call manager when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
   window.callManager = new CallManager();
-  console.log('📞 Call Manager initialized');
+  console.log('Call Manager initialized');
   
   // Setup header call buttons after a short delay to ensure DOM is ready
   setTimeout(() => {
@@ -2509,7 +2509,7 @@ function setupHeaderCallButtons() {
   if (audioCallBtn) {
     audioCallBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      console.log('📞 Audio call button clicked');
+      console.log('Audio call button clicked');
       
       if (window.callManager) {
         window.callManager.initiateCall('audio');
@@ -2519,13 +2519,13 @@ function setupHeaderCallButtons() {
     });
     console.log('SUCCESS: Audio call button listener attached');
   } else {
-    console.warn('⚠️ Audio call button not found');
+    console.warn('Audio call button not found');
   }
   
   if (videoCallBtn) {
     videoCallBtn.addEventListener('click', (e) => {
       e.preventDefault();
-      console.log('📹 Video call button clicked');
+      console.log('Video call button clicked');
       
       if (window.callManager) {
         window.callManager.initiateCall('video');
@@ -2535,7 +2535,7 @@ function setupHeaderCallButtons() {
     });
     console.log('SUCCESS: Video call button listener attached');
   } else {
-    console.warn('⚠️ Video call button not found');
+    console.warn('Video call button not found');
   }
   
   // Setup socket event listeners
@@ -2547,7 +2547,7 @@ function setupCallSocketListeners() {
   const socket = window.SocketManager?.socket || window.socket;
   
   if (!socket) {
-    console.warn('⚠️ Socket not available for call events, retrying in 2 seconds...');
+    console.warn('Socket not available for call events, retrying in 2 seconds...');
     setTimeout(setupCallSocketListeners, 2000);
     return;
   }
@@ -2564,12 +2564,12 @@ function setupCallSocketListeners() {
   
   // Add new listeners
   socket.on('call:incoming', (data) => {
-    console.log('📞 ===== INCOMING CALL EVENT RECEIVED =====');
-    console.log('📞 Incoming call data:', data);
-    console.log('📞 Socket ID that received call:', socket.id);
-    console.log('📞 Current window.callManager exists:', !!window.callManager);
-    console.log('📞 Current call active:', window.callManager?.isCallActive);
-    console.log('📞 ==========================================');
+    console.log('===== INCOMING CALL EVENT RECEIVED =====');
+    console.log('Incoming call data:', data);
+    console.log('Socket ID that received call:', socket.id);
+    console.log('Current window.callManager exists:', !!window.callManager);
+    console.log('Current call active:', window.callManager?.isCallActive);
+    console.log('==========================================');
     
     if (window.callManager) {
       console.log('SUCCESS: Passing call to callManager.handleIncomingCall');
@@ -2594,21 +2594,21 @@ function setupCallSocketListeners() {
   });
   
   socket.on('call:busy', (data) => {
-    console.log('📞 User busy:', data);
+    console.log('User busy:', data);
     if (window.callManager) {
       window.callManager.handleCallBusy(data);
     }
   });
   
   socket.on('call:ended', (data) => {
-    console.log('📞 Call ended by remote:', data);
+    console.log('Call ended by remote:', data);
     if (window.callManager) {
       window.callManager.handleCallEnded(data);
     }
   });
   
   socket.on('call:missed', (data) => {
-    console.log('📞 Call missed:', data);
+    console.log('Call missed:', data);
     if (window.callManager) {
       window.callManager.handleCallMissed(data);
     }

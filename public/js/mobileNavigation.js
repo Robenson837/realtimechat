@@ -10,21 +10,67 @@ class MobileNavigationManager {
         if (this.isInitialized) return;
 
         console.log('Initializing mobile navigation manager');
-        this.setupEventListeners();
-        this.setupMenuHandlers();
-        this.updateActiveTab();
-        this.isInitialized = true;
+        
+        // Ensure DOM is ready before setting up event listeners
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                this.initializeAfterDOM();
+            });
+        } else {
+            this.initializeAfterDOM();
+        }
+    }
+
+    initializeAfterDOM() {
+        // Add small delay to ensure all other scripts have loaded
+        setTimeout(() => {
+            this.setupEventListeners();
+            this.setupMenuHandlers();
+            this.updateActiveTab();
+            this.isInitialized = true;
+            console.log('Mobile navigation fully initialized');
+        }, 100);
     }
 
     setupEventListeners() {
-        // Bottom navigation tabs
+        // Remove existing listeners first to prevent duplicates
+        this.removeExistingListeners();
+        
+        // Bottom navigation tabs with improved event handling
         const navTabs = document.querySelectorAll('.mobile-bottom-nav .nav-tab');
-        navTabs.forEach(tab => {
-            tab.addEventListener('click', (e) => {
+        console.log(`Found ${navTabs.length} mobile nav tabs`);
+        
+        navTabs.forEach((tab, index) => {
+            // Store reference for later removal if needed
+            const clickHandler = (e) => {
                 e.preventDefault();
+                e.stopPropagation();
                 const tabType = tab.dataset.tab;
+                console.log(`Mobile tab clicked: ${tabType} (index: ${index})`);
                 this.switchTab(tabType);
-            });
+            };
+            
+            // Store handler for cleanup
+            tab._mobileNavClickHandler = clickHandler;
+            tab.addEventListener('click', clickHandler);
+            
+            // Add touch handling for better mobile responsiveness
+            let touchStartTime;
+            const touchStartHandler = (e) => {
+                touchStartTime = Date.now();
+            };
+            
+            const touchEndHandler = (e) => {
+                const touchDuration = Date.now() - touchStartTime;
+                if (touchDuration < 300) { // Only trigger if touch is quick
+                    clickHandler(e);
+                }
+            };
+            
+            tab._mobileTouchStartHandler = touchStartHandler;
+            tab._mobileTouchEndHandler = touchEndHandler;
+            tab.addEventListener('touchstart', touchStartHandler, { passive: true });
+            tab.addEventListener('touchend', touchEndHandler, { passive: false });
         });
 
         // Mobile profile button (old)
@@ -63,32 +109,67 @@ class MobileNavigationManager {
             });
         }
 
-        // Mobile menu button
+        // Mobile menu button with improved visibility
         const mobileMenuBtn = document.getElementById('mobile-menu-btn');
         const mobileMenuDropdown = document.getElementById('mobile-menu-dropdown');
         
         if (mobileMenuBtn && mobileMenuDropdown) {
             console.log('Mobile menu elements found:', { btn: !!mobileMenuBtn, dropdown: !!mobileMenuDropdown });
             
-            // Force the button to be clickable
+            // Force the button to be clickable and visible
             mobileMenuBtn.style.pointerEvents = 'auto';
             mobileMenuBtn.style.cursor = 'pointer';
+            mobileMenuBtn.style.zIndex = '10';
+            mobileMenuBtn.style.position = 'relative';
             
-            mobileMenuBtn.addEventListener('click', (e) => {
+            // Ensure dropdown has proper styling
+            mobileMenuDropdown.style.zIndex = '9999';
+            mobileMenuDropdown.style.position = 'absolute';
+            
+            const toggleMobileMenu = (e) => {
                 e.stopPropagation();
                 e.preventDefault();
                 console.log('Mobile menu button clicked');
-                mobileMenuDropdown.classList.toggle('hidden');
-                console.log('Dropdown classes after toggle:', mobileMenuDropdown.classList.toString());
-                console.log('Dropdown is now:', mobileMenuDropdown.classList.contains('hidden') ? 'hidden' : 'visible');
-            });
-
-            // Close menu when clicking outside
-            document.addEventListener('click', (e) => {
-                if (!mobileMenuBtn.contains(e.target) && !mobileMenuDropdown.contains(e.target)) {
+                
+                const isHidden = mobileMenuDropdown.classList.contains('hidden');
+                
+                if (isHidden) {
+                    // Show menu
+                    mobileMenuDropdown.classList.remove('hidden');
+                    mobileMenuDropdown.style.display = 'block';
+                    // Create backdrop
+                    this.createMenuBackdrop();
+                } else {
+                    // Hide menu
                     mobileMenuDropdown.classList.add('hidden');
+                    mobileMenuDropdown.style.display = 'none';
+                    // Remove backdrop
+                    this.removeMenuBackdrop();
                 }
-            });
+                
+                console.log('Dropdown is now:', mobileMenuDropdown.classList.contains('hidden') ? 'hidden' : 'visible');
+            };
+
+            // Remove existing listeners first
+            if (mobileMenuBtn._mobileMenuToggleHandler) {
+                mobileMenuBtn.removeEventListener('click', mobileMenuBtn._mobileMenuToggleHandler);
+            }
+            
+            // Add new listener
+            mobileMenuBtn._mobileMenuToggleHandler = toggleMobileMenu;
+            mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+
+            // Close menu when clicking outside or on backdrop
+            if (!document._mobileMenuOutsideClickHandler) {
+                document._mobileMenuOutsideClickHandler = (e) => {
+                    if (!mobileMenuBtn.contains(e.target) && !mobileMenuDropdown.contains(e.target)) {
+                        mobileMenuDropdown.classList.add('hidden');
+                        mobileMenuDropdown.style.display = 'none';
+                        this.removeMenuBackdrop();
+                    }
+                };
+                document.addEventListener('click', document._mobileMenuOutsideClickHandler);
+            }
         }
 
         // Handle window resize to ensure proper mobile/desktop switching
@@ -183,17 +264,51 @@ class MobileNavigationManager {
     }
 
     showSidebarTab(tabType) {
-        // Hide all tab contents
+        // Smooth transition without flicker
         const tabContents = document.querySelectorAll('.tab-content');
-        tabContents.forEach(content => {
-            content.classList.remove('active');
-        });
-
-        // Show selected tab content
         const targetTab = document.getElementById(`${tabType}-tab`);
-        if (targetTab) {
-            targetTab.classList.add('active');
+        
+        if (!targetTab) {
+            console.warn(`Tab content not found: ${tabType}-tab`);
+            return;
         }
+
+        // Use batch DOM updates to prevent flickering
+        requestAnimationFrame(() => {
+            // Hide all tab contents with transition
+            tabContents.forEach(content => {
+                if (content !== targetTab && content.classList.contains('active')) {
+                    content.style.opacity = '0';
+                    content.style.transform = 'translateX(-10px)';
+                    
+                    setTimeout(() => {
+                        content.classList.remove('active');
+                        content.style.opacity = '';
+                        content.style.transform = '';
+                    }, 150);
+                }
+            });
+
+            // Show selected tab content with smooth entrance
+            setTimeout(() => {
+                targetTab.classList.add('active');
+                targetTab.style.opacity = '0';
+                targetTab.style.transform = 'translateX(10px)';
+                
+                requestAnimationFrame(() => {
+                    targetTab.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+                    targetTab.style.opacity = '1';
+                    targetTab.style.transform = 'translateX(0)';
+                    
+                    // Clean up transition styles
+                    setTimeout(() => {
+                        targetTab.style.transition = '';
+                        targetTab.style.opacity = '';
+                        targetTab.style.transform = '';
+                    }, 200);
+                });
+            }, 75);
+        });
         
         // Update sidebar state classes for CSS targeting
         const sidebar = document.querySelector('.sidebar');
@@ -589,16 +704,21 @@ class MobileNavigationManager {
         if (this.isMobileView()) {
             console.log('Initializing mobile view - loading chat list');
             
-            // Hide welcome screen completely on mobile
+            // Ensure chat area is properly displayed on mobile
+            const chatArea = document.getElementById('chat-area');
+            if (chatArea) {
+                chatArea.style.display = 'flex';
+                chatArea.style.visibility = 'visible';
+                chatArea.style.opacity = '1';
+            }
+            
+            // Hide welcome screen completely on mobile initially
             const welcomeScreen = document.querySelector('.welcome-screen');
             if (welcomeScreen) {
                 welcomeScreen.classList.add('mobile-hidden');
-            }
-            
-            // Hide welcome content on mobile
-            const welcomeContent = document.querySelector('.welcome-content');
-            if (welcomeContent) {
-                welcomeContent.style.display = 'none';
+                // Ensure it doesn't interfere with mobile layout
+                welcomeScreen.style.position = 'relative';
+                welcomeScreen.style.zIndex = '1';
             }
             
             // Show chat list by default but keep mobile header visible
@@ -613,11 +733,59 @@ class MobileNavigationManager {
             // Ensure mobile header stays visible (not in conversation mode)
             document.body.classList.remove('mobile-chat-open');
             
+            // Ensure sidebar is visible by default on mobile
+            const sidebar = document.getElementById('sidebar');
+            if (sidebar) {
+                sidebar.classList.add('mobile-active');
+                sidebar.style.visibility = 'visible';
+                sidebar.style.opacity = '1';
+            }
+            
             // Sync online status
             this.syncOnlineStatus();
+            
+            console.log('Mobile view initialization completed');
+        } else {
+            // Desktop view - ensure proper layout
+            const chatArea = document.getElementById('chat-area');
+            const welcomeScreen = document.querySelector('.welcome-screen');
+            const sidebar = document.getElementById('sidebar');
+            
+            if (chatArea) {
+                chatArea.style.display = 'flex';
+            }
+            
+            if (welcomeScreen) {
+                welcomeScreen.classList.remove('mobile-hidden');
+                welcomeScreen.style.position = '';
+                welcomeScreen.style.zIndex = '';
+            }
+            
+            if (sidebar) {
+                sidebar.classList.remove('mobile-active');
+            }
         }
     }
     
+    // Remove existing event listeners to prevent duplicates
+    removeExistingListeners() {
+        const navTabs = document.querySelectorAll('.mobile-bottom-nav .nav-tab');
+        navTabs.forEach(tab => {
+            if (tab._mobileNavClickHandler) {
+                tab.removeEventListener('click', tab._mobileNavClickHandler);
+                delete tab._mobileNavClickHandler;
+            }
+            if (tab._mobileTouchStartHandler) {
+                tab.removeEventListener('touchstart', tab._mobileTouchStartHandler);
+                delete tab._mobileTouchStartHandler;
+            }
+            if (tab._mobileTouchEndHandler) {
+                tab.removeEventListener('touchend', tab._mobileTouchEndHandler);
+                delete tab._mobileTouchEndHandler;
+            }
+        });
+    }
+
     // Fuzzy matching for better search experience
     fuzzyMatch(text, query) {
         if (!query || query.length < 2) return false;
@@ -634,6 +802,35 @@ class MobileNavigationManager {
         return queryWords.every(word => normalizedText.includes(word));
     }
     
+    // Create backdrop for mobile menu
+    createMenuBackdrop() {
+        // Remove existing backdrop first
+        this.removeMenuBackdrop();
+        
+        const backdrop = document.createElement('div');
+        backdrop.className = 'mobile-menu-backdrop show';
+        backdrop.id = 'mobile-menu-backdrop';
+        
+        backdrop.addEventListener('click', () => {
+            const dropdown = document.getElementById('mobile-menu-dropdown');
+            if (dropdown) {
+                dropdown.classList.add('hidden');
+                dropdown.style.display = 'none';
+            }
+            this.removeMenuBackdrop();
+        });
+        
+        document.body.appendChild(backdrop);
+    }
+    
+    // Remove backdrop for mobile menu
+    removeMenuBackdrop() {
+        const existingBackdrop = document.getElementById('mobile-menu-backdrop');
+        if (existingBackdrop) {
+            existingBackdrop.remove();
+        }
+    }
+
     // Toggle empty state message for search results
     toggleEmptyState(container, visibleCount, type, query) {
         let emptyStateElement = container.querySelector('.search-empty-state');

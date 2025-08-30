@@ -434,5 +434,5 @@ class CallHistoryManager {
 // Initialize call history manager when DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
   window.callHistoryManager = new CallHistoryManager();
-  console.log('📞 Call History Manager initialized');
+  console.log('Call History Manager initialized');
 });

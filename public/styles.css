@@ -4396,10 +4396,9 @@ i[class*="fa-"]:before {
 }
 
 .chat-item.active {
-    background: linear-gradient(90deg, rgba(59, 130, 246, 0.1) 0%, var(--bg-primary) 100%);
+    background: rgba(59, 130, 246, 0.1);
     border-left: 4px solid var(--primary-color);
     transform: translateX(8px);
-    box-shadow: 0 8px 20px rgba(79, 70, 229, 0.2);
 }
 
 

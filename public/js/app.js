@@ -379,7 +379,7 @@ class VigiChatApp {
         while (attempts < maxAttempts) {
             const chatManager = window.chatManager || window.Chat;
             if (chatManager && chatManager.initialized !== false) {
-                console.log('✅ Chat manager ready, rendering conversations');
+                console.log('Chat manager ready, rendering conversations');
                 if (chatManager.renderConversations) {
                     chatManager.renderConversations();
                 } else if (chatManager.loadConversations) {
@@ -394,7 +394,7 @@ class VigiChatApp {
             await new Promise(resolve => setTimeout(resolve, 100));
         }
         
-        console.error('❌ Could not render conversations - chat manager not available');
+        console.error('Could not render conversations - chat manager not available');
     }
 
     async loadContactsWithPreload() {

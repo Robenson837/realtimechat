@@ -150,19 +150,21 @@ class AudioRecorder {
             this.analyser.fftSize = 256;
             this.analyser.smoothingTimeConstant = 0.8;
 
-            // Configurar MediaRecorder con compresión optimizada
+            // Configurar MediaRecorder con formato compatible optimizado
             const preferredMimeTypes = [
-                'audio/webm;codecs=opus',
+                'audio/mp4;codecs=mp4a.40.2', // AAC - mejor compatibilidad
+                'audio/mpeg', // MP3 - compatible universalmente  
                 'audio/ogg;codecs=opus',
-                'audio/mp4;codecs=mp4a.40.2', // AAC
+                'audio/webm;codecs=opus',
                 'audio/webm',
-                'audio/mp4'
+                'audio/wav' // Fallback universal
             ];
             
             let selectedMimeType = 'audio/webm'; // Fallback
             for (const mimeType of preferredMimeTypes) {
                 if (MediaRecorder.isTypeSupported(mimeType)) {
                     selectedMimeType = mimeType;
+                    console.log('Selected audio format:', mimeType);
                     break;
                 }
             }
@@ -324,9 +326,10 @@ class AudioRecorder {
         // Obtener la duración real del archivo de audio
         const realDuration = await this.getAudioRealDuration(audioBlob);
         
-        // Crear FormData para envío
+        // Crear FormData para envío con extensión correcta
+        const fileExtension = this.getFileExtensionFromMimeType(audioBlob.type);
         const formData = new FormData();
-        formData.append('audio', audioBlob, `voice_message_${Date.now()}.webm`);
+        formData.append('audio', audioBlob, `voice_message_${Date.now()}.${fileExtension}`);
         formData.append('type', 'audio');
         
         // Agregar duración real del archivo
@@ -355,7 +358,8 @@ class AudioRecorder {
                 type: 'voice',
                 content: {
                     fileUrl: URL.createObjectURL(audioBlob), // URL temporal para preview
-                    fileName: `voice_message_${Date.now()}.webm`,
+                    fileName: `voice_message_${Date.now()}.${this.getFileExtensionFromMimeType(audioBlob.type)}`,
+                    mimeType: audioBlob.type,
                     fileSize: audioBlob.size,
                     duration: realDuration,
                     frequencies: this.recordedFrequencies.length > 0 ? this.getAverageFrequencies() : []
@@ -752,11 +756,11 @@ class AudioRecorder {
         waveformContainer.appendChild(frequencyBars);
         waveformContainer.appendChild(progressOverlay);
         
-        // Duración total - inicialmente usar duración calculada, luego actualizar con exacta
+        // Duración total - mostrar una vez de forma consistente
         const totalTime = document.createElement('span');
         totalTime.className = 'audio-total-time-preview';
         totalTime.id = 'preview-total-time';
-        totalTime.textContent = this.formatDuration(this.getRecordingDuration());
+        totalTime.textContent = this.getConsistentDuration();
         
         progressContainer.appendChild(currentTime);
         progressContainer.appendChild(waveformContainer);
@@ -772,29 +776,11 @@ class AudioRecorder {
         audioElement.preload = 'metadata';
         audioElement.controls = false;
         
-        // Configurar blob como source usando data URL (compatible con CSP)
+        // Configurar blob como source - probamos múltiples métodos para compatibilidad
         if (this.recordedAudioBlob) {
-            this.blobToDataURL(this.recordedAudioBlob).then(dataUrl => {
-                audioElement.src = dataUrl;
-                
-                // Una vez que se carga el audio, obtener la duración real
-                audioElement.addEventListener('loadedmetadata', () => {
-                    if (audioElement.duration && isFinite(audioElement.duration)) {
-                        const minutes = Math.floor(audioElement.duration / 60);
-                        const seconds = Math.floor(audioElement.duration % 60);
-                        const realDuration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
-                        
-                        // Actualizar la duración mostrada
-                        const totalTimeEl = document.getElementById('preview-total-time');
-                        if (totalTimeEl) {
-                            totalTimeEl.textContent = realDuration;
-                        }
-                        
-                        console.log(`Duración real del audio: ${realDuration}`);
-                    }
-                });
-            }).catch(error => {
-                console.error('Error converting audio blob to data URL:', error);
+            this.setupAudioSource(audioElement).catch(error => {
+                console.error('Error setting up audio source:', error);
+                this.showNotification('warning', 'Problema al configurar audio preview');
             });
         }
 
@@ -917,6 +903,7 @@ class AudioRecorder {
         this.audioChunks = [];
         this.recordedFrequencies = [];
         this.recordedAudioBlob = null;
+        this.calculatedDuration = null; // Limpiar duración calculada
         
         // Limpiar timers
         this.stopTimer();
@@ -1160,6 +1147,37 @@ class AudioRecorder {
         }
     }
 
+    // Obtener duración consistente para mostrar una sola vez
+    getConsistentDuration() {
+        // Si ya tenemos una duración calculada almacenada, usarla
+        if (this.calculatedDuration) {
+            return this.calculatedDuration;
+        }
+        
+        // Calcular y almacenar para uso consistente
+        const recordingDuration = this.getRecordingDuration();
+        this.calculatedDuration = recordingDuration;
+        
+        return this.calculatedDuration;
+    }
+    
+    // Actualizar duración solo cuando sea necesario y diferente
+    updateDurationIfDifferent(newDuration, elementId) {
+        const element = document.getElementById(elementId);
+        if (!element) return false;
+        
+        const currentDuration = element.textContent;
+        if (currentDuration !== newDuration && newDuration !== '0:00') {
+            element.textContent = newDuration;
+            // También actualizar la duración calculada si es más precisa
+            if (newDuration !== this.calculatedDuration) {
+                this.calculatedDuration = newDuration;
+            }
+            return true;
+        }
+        return false;
+    }
+
     // Formatear duración en formato mm:ss
     formatDuration(duration) {
         if (!duration || duration === "0:00") return "0:00";
@@ -1390,6 +1408,127 @@ class AudioRecorder {
             }
             this.showNotification('error', 'No se pudo reproducir el audio');
         }
+    }
+
+    // Configurar source de audio con múltiples métodos para compatibilidad
+    async setupAudioSource(audioElement) {
+        if (!this.recordedAudioBlob || !audioElement) return;
+        
+        // Método 1: Object URL (más compatible)
+        try {
+            const objectUrl = URL.createObjectURL(this.recordedAudioBlob);
+            audioElement.src = objectUrl;
+            audioElement.dataset.blobUrl = objectUrl; // Para limpiar después
+            
+            // Configurar event listeners
+            return new Promise((resolve, reject) => {
+                const onLoadedMetadata = () => {
+                    if (audioElement.duration && isFinite(audioElement.duration)) {
+                        const minutes = Math.floor(audioElement.duration / 60);
+                        const seconds = Math.floor(audioElement.duration % 60);
+                        const realDuration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                        
+                        // Actualizar la duración mostrada una sola vez
+                        this.updateDurationIfDifferent(realDuration, 'preview-total-time');
+                        
+                        console.log(`Duración real del audio: ${realDuration}`);
+                        resolve(realDuration);
+                    } else {
+                        reject(new Error('Invalid audio duration'));
+                    }
+                    
+                    // Limpiar listeners
+                    audioElement.removeEventListener('loadedmetadata', onLoadedMetadata);
+                    audioElement.removeEventListener('error', onError);
+                };
+                
+                const onError = (error) => {
+                    console.error('Error loading audio metadata:', error);
+                    audioElement.removeEventListener('loadedmetadata', onLoadedMetadata);
+                    audioElement.removeEventListener('error', onError);
+                    
+                    // Intentar método fallback
+                    this.setupAudioSourceFallback(audioElement).then(resolve).catch(reject);
+                };
+                
+                audioElement.addEventListener('loadedmetadata', onLoadedMetadata);
+                audioElement.addEventListener('error', onError);
+                
+                // Timeout de seguridad
+                setTimeout(() => {
+                    if (audioElement.readyState < 1) {
+                        onError(new Error('Audio loading timeout'));
+                    }
+                }, 5000);
+            });
+            
+        } catch (error) {
+            console.error('Error with Object URL method:', error);
+            return this.setupAudioSourceFallback(audioElement);
+        }
+    }
+    
+    // Método fallback usando data URL
+    async setupAudioSourceFallback(audioElement) {
+        try {
+            const dataUrl = await this.blobToDataURL(this.recordedAudioBlob);
+            audioElement.src = dataUrl;
+            
+            return new Promise((resolve, reject) => {
+                audioElement.addEventListener('loadedmetadata', () => {
+                    if (audioElement.duration && isFinite(audioElement.duration)) {
+                        const minutes = Math.floor(audioElement.duration / 60);
+                        const seconds = Math.floor(audioElement.duration % 60);
+                        const realDuration = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+                        
+                        this.updateDurationIfDifferent(realDuration, 'preview-total-time');
+                        
+                        resolve(realDuration);
+                    } else {
+                        // Usar duración calculada como último recurso
+                        const calculatedDuration = this.getConsistentDuration();
+                        this.updateDurationIfDifferent(calculatedDuration, 'preview-total-time');
+                        resolve(calculatedDuration);
+                    }
+                }, { once: true });
+                
+                audioElement.addEventListener('error', () => {
+                    reject(new Error('Failed to load audio with data URL'));
+                }, { once: true });
+            });
+        } catch (error) {
+            console.error('Fallback method failed:', error);
+            throw error;
+        }
+    }
+
+    // Obtener extensión de archivo según el tipo MIME
+    getFileExtensionFromMimeType(mimeType) {
+        if (!mimeType) return 'webm';
+        
+        const mimeToExt = {
+            'audio/mp4': 'mp4',
+            'audio/mpeg': 'mp3', 
+            'audio/mp3': 'mp3',
+            'audio/ogg': 'ogg',
+            'audio/webm': 'webm',
+            'audio/wav': 'wav',
+            'audio/x-wav': 'wav'
+        };
+        
+        // Verificar MIME type exacto
+        if (mimeToExt[mimeType]) {
+            return mimeToExt[mimeType];
+        }
+        
+        // Verificar por inicio de MIME type
+        for (const [mime, ext] of Object.entries(mimeToExt)) {
+            if (mimeType.startsWith(mime)) {
+                return ext;
+            }
+        }
+        
+        return 'webm'; // Fallback
     }
 
     // Método para limpiar recursos
