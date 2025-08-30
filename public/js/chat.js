@@ -15728,7 +15728,7 @@ class ChatManager {
           console.log("SUCCESS: Read status sent to server");
         } catch (serverError) {
           console.warn(
-            "Server update failed, but local update succeeded:"
+            "Server update failed, but local update succeeded:",
             serverError
           );
         }
